@@ -1,0 +1,33 @@
+.tutor-calendar-container {
+    position: relative;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    border: 5px dashed #000;
+    height: 400px;
+    width: 700px;
+    flex: 1;
+}
+
+.tutor-calendar-options {
+    display: flex;
+    justify-content: space-between;
+    text-align: center;
+    align-items: center;
+}
+
+.tutor-button-options {
+    flex: 1;
+    justify-content: space-between;
+    visibility: hidden;
+    position: absolute;
+}
+
+textarea::placeholder {
+  color: #a09d9db8;
+  opacity: 1;
+}
+
+#comments-textarea, #session-start-time, #session-end-time, #start-time-label, #end-time-label, #comment-submit-button, #time-submit-button, #show-submit-button, #select-show, #show-label {
+    visibility: hidden;
+}
