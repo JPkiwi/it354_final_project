@@ -4,10 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ISU Tutor Homepage</title>
-    <link rel="stylesheet" href="tutorStyle.css" />
+    <!--Connect with CSS Styling-->
+    <link rel="stylesheet" href="css/tutorStyle.css" />
   </head>
 
   <body>
+    <!--Navbar for tutor page-->
     <nav style="border: 5px dashed #000">
       <ul
         style="
@@ -27,12 +29,15 @@
 
     <h1 style="text-align: center; padding: 10px">Appointments</h1>
 
+    <!--Tutor container for appointment functionality-->
     <div class="tutor-container">
       <div class="tutor-calendar-options">
+        <!--Where Google Calendar is going to be-->
         <div id="tutor-calendar-container" class="tutor-calendar-container">
           <p>Calendar placeholder</p>
         </div>
 
+        <!--Tutor feature options-->
         <div id="tutor-button-options" class="tutor-button-options">
           <button id="comment-button">Edit / View Comments</button>
           <br />
@@ -41,6 +46,7 @@
           <button id="show-button">Show / No-Show</button>
         </div>
 
+        <!--Tutor feature selections and submit buttons-->
         <div id="tutor-edit-features" class="tutor-edit-features">
           <textarea
             id="comments-textarea"
@@ -76,6 +82,7 @@
       </div>
     </div>
 
-    <script src="tutorScript.js"></script>
+    <!--Connect with js functionality-->
+    <script src="js/tutorScript.js"></script>
   </body>
 </html>

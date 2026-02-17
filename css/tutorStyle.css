@@ -1,3 +1,4 @@
+/*Box styling to visualize where the Google Calendar is going to go (I don't think the positioning does anything but I'm not sure)*/
 .tutor-calendar-container {
     position: relative;
     text-align: center;
@@ -9,6 +10,7 @@
     flex: 1;
 }
 
+/*Styling for all the appointment features*/
 .tutor-calendar-options {
     display: flex;
     justify-content: space-between;
@@ -16,6 +18,7 @@
     align-items: center;
 }
 
+/*Styling and alignment of the buttons selections*/
 .tutor-button-options {
     flex: 1;
     justify-content: space-between;
@@ -23,11 +26,13 @@
     position: absolute;
 }
 
+/*Styling for the placeholder for any textareas (comments)*/
 textarea::placeholder {
   color: #a09d9db8;
   opacity: 1;
 }
 
+/*Messy and can/should be changed later, these elements are initially hidden from the user*/
 #comments-textarea, #session-start-time, #session-end-time, #start-time-label, #end-time-label, #comment-submit-button, #time-submit-button, #show-submit-button, #select-show, #show-label {
     visibility: hidden;
 }
