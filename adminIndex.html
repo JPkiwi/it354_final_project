@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Appointments</title>
+      <link rel="stylesheet" href="adminIndex.css">
+
+</head>
+
+<body>
+
+<!-- navigation bar -->
+  <nav class="navbar">
+    <ul>
+      <li><a href="adminIndex.html" class="active">Manage Appointments</a></li>
+      <li><a href="availabilityIndex.html">Manage Availability</a></li>
+      <li><a href="tutorIndex.html">Manage Tutors</a></li>
+      <li><a href="studentIndex.html">Manage Students</a></li>
+
+    </ul>
+  </nav>
+
+  <br> 
+    <button type="button" id="notifs">Notifications</button>
+
+
+  <!-- Appointment/cancellation buttons -->
+  <button type="button" id="addBtn">Add Appointment</button>
+  <button type="button" id="cancelBtn">Cancel Appointment</button>
+  <button type="button" id="historyBtn">Cancellation History</button>
+
+  <!-- Adding Appointments form -->
+  <form id="addForm" style="display:none; margin-top:10px;">
+    <!-- type = date = browser automatically creates date picker widget-->
+    <input id="date" type="date" required>
+    <!-- displays time picker-->
+    <input id="time" type="time" required>
+    <input id="student" type="text" placeholder="Student Name" required>
+<!-- Dropdown menus  -->
+ <!-- hardcoded options (tutors & the courses)-->
+<select id="tutor" required>
+  <option value="" disabled selected>Select Tutor</option>
+  <option>Jenna Benson</option>
+  <option>Emma Carter</option>
+</select>
+
+<select id="course" required>
+  <option value="" disabled selected>Select Course</option>
+  <option>IT 354</option>
+  <option>IT 358</option>
+</select>
+
+    <button type="submit">Save</button>
+  </form>
+
+  <br><br>
+
+
+
+
+  <!-- Search Appointments box/search function -->
+  <input id="search" type="text" placeholder="Search appointments..." />
+
+  <!-- Appointments Table -->
+  <table border="1" cellpadding="6" cellspacing="0" style="margin-top:10px;">
+    <thead>
+      <tr>
+          <!-- headers (1st row) -->
+
+        <th>Select</th>
+        <th>Date</th>
+        <th>Time</th>
+        <th>Student Name</th>
+        <th>Tutor Name</th>
+        <th>Course</th>
+      </tr>
+    </thead>
+
+    <!-- Adding hardcoded rows, just to how functionality rn / remove later!!!-->
+    <tbody id="rows">
+      <tr>
+        <td><input type="checkbox" class="rowCheck"></td>
+        <td>2026-02-16</td><td>10:00 AM</td><td>Molly Staniszewski</td><td>Jenna Benson</td><td>IT 330</td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" class="rowCheck"></td>
+        <td>2026-02-18</td><td>2:30 PM</td><td>Amanda Lesley</td><td>Emma Carter</td><td>IT 354</td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" class="rowCheck"></td>
+        <td>2026-02-20</td><td>9:00 AM</td><td>Alexus Calhoun</td><td>Ann Ortiz</td><td>IT 354</td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" class="rowCheck"></td>
+        <td>2026-02-22</td><td>9:30 AM</td><td>Jenna Pullega</td><td>Lidia Cook</td><td>IT 358</td>
+      </tr>
+    </tbody>
+  </table>
+
+
+
+
+  <!-- Cancellation History Modal -->
+   <!-- modal fixed (no-scroll), darkended bg when opened-->
+  <div id="historyModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.35); padding:30px;">
+   
+    <div style="background:#fff; padding:12px; max-width:900px; margin:0 auto;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+     <h3 style="margin:0;">Cancellation History</h3>
+        <button type="button" id="closeHistoryBtn">X</button>
+      </div>
+<!-- styling table margin/width, modify later in separate css-->
+      <table border="1" cellpadding="6" cellspacing="0" style="margin-top:10px; width:100%;">
+        <thead>
+          <tr>
+            <th>Canceled At</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Student</th>
+           <th>Tutor</th>
+            <th>Course</th>
+          </tr>
+        </thead>
+           <tbody id="historyRows"></tbody>
+      </table>
+  </div>
+  </div>
+
+  <script src="adminIndex.js"></script>
+</body>
+</html>
