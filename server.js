@@ -5,8 +5,8 @@ app.use(express.urlencoded({ extended: true }));
 
 const PORT = process.env.PORT || 3000; 
 const path = require('path');
-app.use('/css', express.static(path.join(__dirname, 'css'))); // gets and uses css onto page by accessing css folder
-app.use('/js', express.static(path.join(__dirname, 'js'))); // gets and uses js files by accessing js folder
+app.use('/assets/css', express.static(path.join(__dirname, 'css'))); // gets and uses css onto page by accessing css folder
+app.use('/assets/js', express.static(path.join(__dirname, 'js'))); // gets and uses js files by accessing js folder
 
 // listening on port
 app.listen(PORT, () => { 
