@@ -1,11 +1,9 @@
-<!DOCTYPE html>
-<html lang="en"> 
-<head>
-    <meta charset="UTF-8">
-    <title>Student</title>
-    <link rel="stylesheet" href="../assets/css/studentStyle.css">
-</head>
-<body>
+<%- include("includes/_header") %>
+
+<% if (error) { %>
+  <div class="alert"><strong>Error:</strong> <%= error %></div>
+<% } %>
+
     <header>
         <p>Header + navigation</p>
         <nav>
@@ -24,6 +22,6 @@
     <footer>
         <p>Footer</p>
     </footer>
-    <script src="../assets/js/studentScript.js"></script>
-</body>
-</html>
+    <script src="/assets/js/studentScript.js"></script>
+
+<%- include("includes/_footer") %>

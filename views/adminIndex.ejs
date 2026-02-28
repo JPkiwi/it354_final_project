@@ -1,21 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Admin Appointments</title>
-      <link rel="stylesheet" href="../assets/css/adminIndex.css">
+<%- include("includes/_header") %>
 
-</head>
-
-<body>
+<% if (error) { %>
+  <div class="alert"><strong>Error:</strong> <%= error %></div>
+<% } %>
 
 <!-- navigation bar -->
   <nav class="navbar">
     <ul>
       <li><a href="/adminIndex" class="active">Manage Appointments</a></li>
-      <li><a href="/availabilityIndex">Manage Availability</a></li>
-      <li><a href="/tutorIndex">Manage Tutors</a></li>
-      <li><a href="/studentIndex">Manage Students</a></li>
+      <li><a href="/adminAvailabilityIndex">Manage Availability</a></li>
+      <li><a href="/adminTutorIndex">Manage Tutors</a></li>
+      <li><a href="/adminStudentIndex">Manage Students</a></li>
 
     </ul>
   </nav>
@@ -126,6 +121,6 @@
   </div>
   </div>
 
-  <script src="../assets/js/adminIndex.js"></script>
-</body>
-</html>
+  <script src="/assets/js/adminIndex.js"></script>
+
+<%- include("includes/_footer") %>

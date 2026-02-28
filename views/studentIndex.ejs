@@ -1,16 +1,14 @@
-<!DOCTYPE html>
-<html lang="en"> 
-<head>
-    <meta charset="UTF-8">
-    <title>Student</title>
-    <link rel="stylesheet" href="../assets/css/studentStyle.css">
-</head>
-<body>
+<%- include("includes/_header") %>
+
+<% if (error) { %>
+  <div class="alert"><strong>Error:</strong> <%= error %></div>
+<% } %>
+
     <header>
         <p>Header + navigation</p>
         <nav>
             <ul>
-                <li><a href="/student">Home</a></li>
+                <li><a href="/studentIndex">Home</a></li>
                 <li><a href="/studentAppointment">My Appointments</a></li>
             </ul>
         </nav>
@@ -43,6 +41,6 @@
     <footer>
         <p>Footer</p>
     </footer>
-    <script src="../assets/js/studentScript.js"></script>
-</body>
-</html>
+    <script src="/assets/js/studentScript.js"></script>
+
+<%- include("includes/_footer") %>
