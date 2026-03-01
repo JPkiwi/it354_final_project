@@ -4,14 +4,10 @@
   <div class="alert"><strong>Error:</strong> <%= error %></div>
 <% } %>
 
-<nav class= "navBar">
-    <h1>Insert Logo Here</h1>
-    <div class="navbarLinks">
-        <li><a href="/index">Home</a></li> <!--General Center Info-->
-        <li><a href="/login">Login</a></li> <!--Login Page-->
-        <li><a href="/signup">Signup</a></li> <!--Refresh Signup Page-->
-    </div>
-</nav>
+<!--Navigation Bar-->
+<header>
+  <%- include("includes/_navbar") %>
+</header>
 
     <div class="signupBox">
       <h1>Sign-Up</h1>

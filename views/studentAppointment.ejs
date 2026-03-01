@@ -4,17 +4,11 @@
   <div class="alert"><strong>Error:</strong> <%= error %></div>
 <% } %>
 
-    <header>
-        <p>Header + navigation</p>
-        <nav>
-            <ul>
-                <li><a href="/index">Home</a></li> <!--General Center Info-->
-                <li><a href="/studentIndex">Student Home</a></li>
-                <li><a href="/studentAppointment">My Appointments</a></li>
-                <li><a href="/index">Logout Student</a></li> <!--Takes you to general center info after logging out-->
-            </ul>
-        </nav>
-    </header>
+<!--Navigation Bar-->
+<header>
+  <%- include("includes/_navbar") %>
+</header>
+
     <!-- main page content-->
     <div class="mainContent">
         <div class="contentContainer">
