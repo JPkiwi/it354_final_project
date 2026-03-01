@@ -1,11 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <title>Tutor Center Signup</title>
-    <link rel="stylesheet" href="../assets/css/signup.css" />
-  </head>
-  <body>
+<%- include("includes/_header") %>
+
+<% if (error) { %>
+  <div class="alert"><strong>Error:</strong> <%= error %></div>
+<% } %>
+
     <div class="signupBox">
       <h1>Sign-Up</h1>
       <!--Temporary action: go to adminIndex. Will change later once DB is up...-->
@@ -33,6 +31,6 @@
         <button type="submit">Submit</button>
       </form>
     </div>
-    <script src="../assets/js/signup.js"></script>
-  </body>
-</html>
+  <script src="../assets/js/signup.js"></script>
+
+<%- include("includes/_footer") %>
