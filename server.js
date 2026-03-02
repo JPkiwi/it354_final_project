@@ -11,8 +11,9 @@ app.use(express.urlencoded({ extended: true }));
 const PORT = process.env.PORT || 3000; 
 const path = require('path');
 const { connect } = require('http2');
-app.use('/assets/css', express.static(path.join(__dirname, 'css'))); // gets and uses css onto page by accessing css folder
-app.use('/assets/js', express.static(path.join(__dirname, 'js'))); // gets and uses js files by accessing js folder 
+
+// Static files (css, frontend js, images)
+app.use(express.static("assets"));
 
 // default directory, go to index/home page
 app.get('/', (req, res) => { 
