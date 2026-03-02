@@ -6,8 +6,13 @@
     <title><%= title %></title> <!--Title gets rendered inside the route-->
     <!--Connect with CSS Styling-->
     <% if (cssStylesheet) { %>
-        <link rel="stylesheet" href="../assets/css/<%- cssStylesheet %>" /> <!--Css file gets rendered inside the route-->
+        <link rel="stylesheet" href="/assets/css/<%- cssStylesheet %>" /> <!--Css file gets rendered inside the route-->
     <% } %>
     </head>
 
   <body
+
+<!-- Example: res.render('about', {
+  title: 'About',
+  stylesheet: 'about.css'
+}); -->
