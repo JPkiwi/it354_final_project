@@ -1,17 +1,18 @@
 const express = require('express'); 
+const dotenv = require("dotenv");
+
+const connectMongo = require("./server/database/connect");
+
+dotenv.config();
 
 const app = express();
 app.use(express.urlencoded({ extended: true }));
 
 const PORT = process.env.PORT || 3000; 
 const path = require('path');
+const { connect } = require('http2');
 app.use('/assets/css', express.static(path.join(__dirname, 'css'))); // gets and uses css onto page by accessing css folder
-app.use('/assets/js', express.static(path.join(__dirname, 'js'))); // gets and uses js files by accessing js folder
-
-// listening on port
-app.listen(PORT, () => { 
-  console.log('Server running on port', PORT); 
-});  
+app.use('/assets/js', express.static(path.join(__dirname, 'js'))); // gets and uses js files by accessing js folder 
 
 // default directory, go to index/home page
 app.get('/', (req, res) => { 
@@ -46,3 +47,11 @@ app.post('/adminIndex', (req, res) => {
   // res.sendStatus(202); // accepted
   res.sendFile(path.join(__dirname, 'adminIndex.html'));
 });
+
+// connect to the database
+connectMongo();
+
+// listening on port
+app.listen(PORT, () => { 
+  console.log('Server running on port', PORT); 
+}); 
