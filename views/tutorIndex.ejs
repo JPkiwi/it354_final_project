@@ -4,22 +4,10 @@
   <div class="alert"><strong>Error:</strong> <%= error %></div>
 <% } %>
 
-    <!--Navbar for tutor page-->
-    <nav style="border: 5px dashed #000">
-      <ul
-        style="
-          display: flex;
-          justify-content: space-between;
-          list-style: none;
-          padding: 30px;
-          margin: 0;
-        "
-      >
-        <li><a href="/index">Home</a></li> <!--General Center Info-->
-        <li><a href="/tutorIndex">Appointments</a></li> <!--To tutor functionality-->
-        <li><a href="/index">Logout Tutor</a></li> <!--Takes you to general center info after logging out-->
-      </ul>
-    </nav>
+<!--Navigation Bar-->
+<header>
+  <%- include("includes/_navbar") %>
+</header>
 
     <h1 style="text-align: center; padding: 10px">Appointments</h1>
 
