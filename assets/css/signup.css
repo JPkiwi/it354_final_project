@@ -20,3 +20,8 @@ h1 {
   text-align: center;
   padding-bottom: 7px;
 }
+
+.error {
+    color: red;
+    font-size: 0.9em;
+}

@@ -1,13 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>ISU IT Tutoring Center</title>
-    <!-- Insert Favicon Here-->
-    <link rel="stylesheet" href="../assets/css/index.css" />
-</head>
+<%- include("includes/_header") %>
 
-<body>
+<% if (error) { %>
+  <div class="alert"><strong>Error:</strong> <%= error %></div>
+<% } %>
+
 <nav class= "navBar">
     <h1>Insert Logo Here</h1>
     <div class="navbarLinks">
@@ -87,5 +83,4 @@
     <p>SOCIAL MEDIA / OTHER ???</p>
 </div>
 
-</body>
-</html>
+<%- include("includes/_footer") %>

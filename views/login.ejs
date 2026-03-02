@@ -1,11 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Tutor Center Login</title>
-  <link rel="stylesheet" href="../assets/css/login.css" />
-</head>
-<body>
+<%- include("includes/_header") %>
+
+<% if (error) { %>
+  <div class="alert"><strong>Error:</strong> <%= error %></div>
+<% } %>
+
   <div class="loginBox">
     <h1>Login</h1>
     <!--Temporary action: go to adminIndex. Will change later once DB is up...-->
@@ -17,5 +15,5 @@
       <button type="submit">Submit</button>
     </form>
   </div>
-</body>
-</html>
+
+<%- include("includes/_footer") %>
