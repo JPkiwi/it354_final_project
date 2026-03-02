@@ -1,0 +1,47 @@
+<nav class="navbar">
+  <div class="navbar-container">
+    <ul
+      style="
+        display: flex;
+        justify-content: space-between;
+        list-style: none;
+        padding: 30px;
+        margin: 0;
+      "
+    >
+        <!--For every user to see-->
+        <li><a href="/index">Logo</a></li><!--Logo with a link to home page for all users-->
+        <li><a href="/index">Home</a></li> <!--General Center Info for all users-->
+
+        <% if (user.role === 'admin') { %>
+            <li><a href="/adminIndex">Manage Appointments</a></li>
+            <li><a href="/adminAvailabilityIndex">Manage Availability</a></li>
+            <li><a href="/adminTutorIndex">Manage Tutors</a></li>
+            <li><a href="/adminStudentIndex">Manage Students</a></li>
+            <li>
+                <form action="/logout" method="POST"> <!--After log out action, get sent to index page-->
+                    <button id="logout-admin-button">Logout Admin</button>
+                </form>
+            </li>
+        <% } else if (user.role === 'tutor') { %>
+            <li><a href="/tutorIndex">Appointments</a></li> <!--To tutor functionality-->
+            <li>
+                <form action="/logout" method="POST"> <!--After log out action, get sent to index page-->
+                    <button id="logout-tutor-button">Logout Tutor</button>
+                </form>
+            </li>
+        <% } else if (user.role === 'student') { %>
+            <li><a href="/studentIndex">Student Home</a></li>
+            <li><a href="/studentAppointment">My Appointments</a></li>
+            <li>
+                <form action="/logout" method="POST"> <!--After log out action, get sent to index page-->
+                    <button id="logout-student-button">Logout Student</button>
+                </form>
+            </li>
+        <% } else { %> <!--For non-auth user-->
+            <li><a href="/login">Login</a></li> <!--Login Page-->
+            <li><a href="/signup">Signup</a></li> <!--Signup Page-->
+        <% } %>
+    </ul>
+  </div>
+</nav>
