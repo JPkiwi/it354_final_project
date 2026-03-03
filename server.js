@@ -1,22 +1,35 @@
 const express = require('express'); 
 const dotenv = require("dotenv");
-
+const morgan = require("morgan");
 const connectMongo = require("./server/database/connect");
 
 dotenv.config();
 
 const app = express();
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 const PORT = process.env.PORT || 3000; 
 const path = require('path');
 const { connect } = require('http2');
-app.use('/assets/css', express.static(path.join(__dirname, 'css'))); // gets and uses css onto page by accessing css folder
-app.use('/assets/js', express.static(path.join(__dirname, 'js'))); // gets and uses js files by accessing js folder 
+
+// Logging
+app.use(morgan("tiny"));
+
+// view engine
+app.set("view engine", "ejs");
+
+// Static files (css, frontend js, images)
+app.use(express.static("assets"));
 
 // default directory, go to index/home page
 app.get('/', (req, res) => { 
-  res.sendFile(path.join(__dirname, 'index.html'));
+  res.render('index',
+    {
+      error: null,
+      title: 'ISU Learning Center',
+      cssStylesheet: 'index.css'
+  });
 });
 
 // when select the login button on the index page, go to the login page

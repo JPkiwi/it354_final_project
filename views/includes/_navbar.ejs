@@ -10,10 +10,15 @@
       "
     >
         <!--For every user to see-->
-        <li><a href="/index">Logo</a></li><!--Logo with a link to home page for all users-->
+        <li><a href="/index">
+            <!--Logo with a link to home page for all users-->
+            <!--Logo downloaded from ISU Website-->
+            <img src="/assets/images/ISU_Seal_1C_186.svg" alt="Illinois State University Logo">
+        </a></li>
         <li><a href="/index">Home</a></li> <!--General Center Info for all users-->
 
-        <% if (user.role === 'admin') { %>
+        <!--Won't work until we create a controller where user is defined???-->
+        <% if (user && user.role === 'admin') { %>
             <li><a href="/adminIndex">Manage Appointments</a></li>
             <li><a href="/adminAvailabilityIndex">Manage Availability</a></li>
             <li><a href="/adminTutorIndex">Manage Tutors</a></li>
@@ -23,14 +28,14 @@
                     <button id="logout-admin-button">Logout Admin</button>
                 </form>
             </li>
-        <% } else if (user.role === 'tutor') { %>
+        <% } else if (user && user.role === 'tutor') { %>
             <li><a href="/tutorIndex">Appointments</a></li> <!--To tutor functionality-->
             <li>
                 <form action="/logout" method="POST"> <!--After log out action, get sent to index page-->
                     <button id="logout-tutor-button">Logout Tutor</button>
                 </form>
             </li>
-        <% } else if (user.role === 'student') { %>
+        <% } else if (user && user.role === 'student') { %>
             <li><a href="/studentIndex">Student Home</a></li>
             <li><a href="/studentAppointment">My Appointments</a></li>
             <li>
