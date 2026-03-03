@@ -22,15 +22,9 @@ app.set("view engine", "ejs");
 // Static files (css, frontend js, images)
 app.use(express.static("assets"));
 
-// default directory, go to index/home page
-app.get('/', (req, res) => { 
-  res.render('index',
-    {
-      error: null,
-      title: 'ISU Learning Center',
-      cssStylesheet: 'index.css'
-  });
-});
+// Default route
+const defaultRoute = require("./server/routes/defaultRoute");
+app.use("/", defaultRoute);
 
 // when select the login button on the index page, go to the login page
 app.get('/login', (req, res) => {

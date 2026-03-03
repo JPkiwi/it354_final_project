@@ -13,11 +13,11 @@
         <li><a href="/index">
             <!--Logo with a link to home page for all users-->
             <!--Logo downloaded from ISU Website-->
-            <img src="/assets/images/ISU_Seal_1C_186.svg" alt="Illinois State University Logo">
+            <img src="/images/ISU_Seal_1C_186.svg" alt="Illinois State University Logo" style="width: 80px; height: auto;">
         </a></li>
         <li><a href="/index">Home</a></li> <!--General Center Info for all users-->
 
-        <!--Won't work until we create a controller where user is defined???-->
+        <!--Won't work until we create a controller where user (or whatever name we choose) is defined-->
         <% if (user && user.role === 'admin') { %>
             <li><a href="/adminIndex">Manage Appointments</a></li>
             <li><a href="/adminAvailabilityIndex">Manage Availability</a></li>
