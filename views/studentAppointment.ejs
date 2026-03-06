@@ -1,3 +1,8 @@
+<!--This pulls the availableShifts array from the controller and-->
+<!--renders each one as a dropdown.-->
+
+<!--When a student submits, it sends the selected tutorShiftId and course-->
+<!--to our POST route.-->
 <%- include("includes/_header") %>
 
 <% if (error) { %>
@@ -9,15 +14,32 @@
   <%- include("includes/_navbar") %>
 </header>
 
-    <!-- main page content-->
-    <div class="mainContent">
-        <div class="contentContainer">
-            <p>list of appointments goes here</p>
-        </div>
+<div class="mainContent">
+    <div class="contentContainer">
+        <h1>Book an Appointment</h1>
+        <!--Checks for available shifts-->
+        <% if (availableShifts.length === 0) { %>
+            <p>No available appointments at this time.</p>
+        <% } else { %>
+            <form action="/studentAppointment" method="post">
+                <label for="course">Course:</label>
+                <input type="text" id="course" name="course" required /><br/><br/>
+
+                <label for="tutorShiftId">Select an Available Time:</label>
+                <select id="tutorShiftId" name="tutorShiftId" required>
+                    <% availableShifts.forEach(shift => { %>
+                        <option value="<%= shift._id %>">
+                            <%= shift.tutorId.fname %> <%= shift.tutorId.lname %> —
+                            <%= shift.shiftDate.toDateString() %>
+                            <%= shift.startTime %> - <%= shift.endTime %>
+                        </option>
+                    <% }) %>
+                </select><br/><br/>
+
+                <button type="submit">Book Appointment</button>
+            </form>
+        <% } %>
     </div>
-    <footer>
-        <p>Footer</p>
-    </footer>
-    <script src="/assets/js/studentScript.js"></script>
+</div>
 
 <%- include("includes/_footer") %>
