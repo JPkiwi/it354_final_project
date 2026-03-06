@@ -14,7 +14,7 @@ async function getBookingPage(req, res) {
             cssStylesheet: "studentAppointment.css",
             jsFile: "studentScript.js",
             error: null,
-            user: req.session.user || { role: "student" },
+            user: req.session.user || { role: "student" },  // you can swith to admin/tutor/student as needed
             availableShifts
         });
     } catch (err) {

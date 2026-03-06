@@ -9,7 +9,6 @@ const { getBookingPage, createAppointment } = require('./server/controller/appoi
 
 // instances of User and TutorShift
 // imports the Mongoose models, validates data, and inserts into MongoDB collection
-// once validated.
 const User = require('./server/model/userModel');
 const TutorShift = require('./server/model/tutorShiftModel');
 
