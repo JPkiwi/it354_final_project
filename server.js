@@ -26,9 +26,19 @@ app.use(express.static("assets"));
 const defaultRoute = require("./server/routes/defaultRoute");
 app.use("/", defaultRoute);
 
-// when select the login button on the index page, go to the login page
-app.get('/login', (req, res) => {
-  res.sendFile(path.join(__dirname, 'login.html'));
+// // when select the login button on the index page, go to the login page
+// app.get('/login', (req, res) => {
+//   res.sendFile(path.join(__dirname, 'login.html'));
+// });
+
+app.get("/login", (req, res) => {
+  res.render("login", {
+    error: null,
+    user: null,
+    title: "Login",
+    cssStylesheet: "login.css",
+    jsFile: null
+  });
 });
 
 // when select the signup button on the index page, go to the signup page

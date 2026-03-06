@@ -10,7 +10,8 @@ route.get('/', (req, res) => {
       error: null,
       title: 'ISU Learning Center',
       cssStylesheet: 'index.css',
-      jsFile: null
+      jsFile: null,
+      user: null
   });
 });
 
