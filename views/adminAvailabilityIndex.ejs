@@ -1,0 +1,23 @@
+<%- include("includes/_header") %>
+
+<% if (error) { %>
+  <div class="alert"><strong>Error:</strong> <%= error %></div>
+<% } %>
+
+
+<!--Navigation Bar-->
+<header>
+  <%- include("includes/_navbar") %>
+</header>
+
+  <br>
+  
+  <p>Calendar placement</p>
+
+
+  <button type="button" id="editHours">Edit Hours</button>
+  <button type="button" id="addTime">Add Time Block</button>
+  <button type="button" id="editHours">Add Exception</button>
+  <button type="button" id="editHours">Add Blackout Date</button>
+
+<%- include("includes/_footer") %>

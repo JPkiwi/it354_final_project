@@ -1,0 +1,25 @@
+
+  .navbar ul {
+    list-style: none;         
+    margin: 0;                 
+    padding: 0;                
+    display: flex;             
+    gap: 20px;                 
+  }
+
+/* hyperlink styling */
+  .navbar a {
+    text-decoration: none;     
+    color: #000;               
+    padding: 8px 12px;         
+    font-weight: bold;         
+  }
+
+  .navbar a:hover {
+    background: #ddd;          
+  }
+
+  /* active link */
+  .navbar a.active {
+    color: #4a148c;            
+  }

@@ -1,0 +1,54 @@
+<%- include("includes/_header") %>
+
+<% if (error) { %>
+  <div class="alert"><strong>Error:</strong> <%= error %></div>
+<% } %>
+
+<!--Navigation Bar-->
+<header>
+  <%- include("includes/_navbar") %>
+</header>
+ 
+  <br>
+
+  <!-- Search -->
+  <input type="text" id="search" placeholder="Search students..." />
+
+  <button type="button" id="toggleActiveBtn">Toggle Active</button>
+<br><br>
+
+
+
+
+
+  <!-- Tutors Table -->
+  <table border="1" cellpadding="6" cellspacing="0">
+    <thead>
+      <tr>
+        <th>Select</th>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Active</th>
+      </tr>
+    </thead>
+
+    <tbody id="tutorRows">
+      <tr>
+        <td><input type="checkbox" class="rowCheck"></td>
+        <td>1</td>
+        <td>student 1</td>
+        <td>stu1@ilstu.edu</td>
+        <td>Yes</td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" class="rowCheck"></td>
+        <td>2</td>
+        <td>student 2</td>
+        <td>stu2@ilstu.edu</td>
+        <td>No</td>
+      </tr>
+    </tbody>
+  </table>
+
+<%- include("includes/_footer") %>

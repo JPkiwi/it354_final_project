@@ -1,0 +1,67 @@
+<%- include("includes/_header") %>
+
+<% if (error) { %>
+  <div class="alert"><strong>Error:</strong> <%= error %></div>
+<% } %>
+
+<!--Navigation Bar-->
+<header>
+  <%- include("includes/_navbar") %>
+</header>
+
+    <h1 style="text-align: center; padding: 10px">Appointments</h1>
+
+    <!--Tutor container for appointment functionality-->
+    <div class="tutor-container">
+      <div class="tutor-calendar-options">
+        <!--Where Google Calendar is going to be-->
+        <div id="tutor-calendar-container" class="tutor-calendar-container">
+          <p>Calendar placeholder</p>
+        </div>
+
+        <!--Tutor feature options-->
+        <div id="tutor-button-options" class="tutor-button-options">
+          <button id="comment-button">Edit / View Comments</button>
+          <br />
+          <button id="time-button">Add Start / End Time</button>
+          <br />
+          <button id="show-button">Show / No-Show</button>
+        </div>
+
+        <!--Tutor feature selections and submit buttons-->
+        <div id="tutor-edit-features" class="tutor-edit-features">
+          <textarea
+            id="comments-textarea"
+            name="comments-textarea"
+            placeholder="Enter tutoring session comments here..."
+            rows="10"
+            cols="50"
+          ></textarea>
+          <br />
+          <label id="start-time-label" for="session-start-time"
+            >Start Time:</label
+          >
+          <input
+            type="time"
+            id="session-start-time"
+            name="session-start-time"
+          />
+          <label id="end-time-label" for="session-end-time">End Time:</label>
+          <input type="time" id="session-end-time" name="session-end-time" />
+          <br />
+          <label id="show-label" for="select-show">Show / No-Show: </label>
+          <select id="select-show" name="select-show">
+            <option value="show">Show</option>
+            <option value="no-show">No-Show</option>
+          </select>
+          <br />
+          <button id="comment-submit-button" type="button">
+            Submit Comment
+          </button>
+          <button id="time-submit-button" type="button">Submit Time</button>
+          <button id="show-submit-button" type="button">Submit Show / No-Show</button>
+        </div>
+      </div>
+    </div>
+
+<%- include("includes/_footer") %>

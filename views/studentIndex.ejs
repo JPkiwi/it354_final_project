@@ -1,0 +1,38 @@
+<%- include("includes/_header") %>
+
+<% if (error) { %>
+  <div class="alert"><strong>Error:</strong> <%= error %></div>
+<% } %>
+
+<!--Navigation Bar-->
+<header>
+  <%- include("includes/_navbar") %>
+</header>
+
+    <!-- main page content-->
+    <div class="mainContent">
+        <div class="contentContainer">
+            <div class="topSection">
+                <label for="course">Select course:</label>
+                <select id="course" name="course">
+                    <option value="course1">IT179</option>
+                </select>
+            </div>
+            <div class="columns">
+                <div class="column">
+                    <p>Calender</p>
+                     <button id="dayBtn">12</button>
+                </div>
+                <div class="column" id="scheduleInfo">
+                    <p>Schedule</p>
+                    <div id="daySchedule">
+                        <p>Schedule info goes here</p>
+                        <button id="time">11:00</button>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+<%- include("includes/_footer") %>

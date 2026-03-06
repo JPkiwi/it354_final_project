@@ -1,0 +1,37 @@
+header {
+    border: 2px dotted black;
+    padding: 10px;
+    text-align: center;
+}
+footer {
+    border: 2px dotted black;
+    padding: 10px;
+    text-align: center;
+}
+.mainContent {
+    background-color: lightgray;
+    padding: 20px 0;
+}
+.contentContainer {
+    background-color: white;
+    width: 90%;
+    margin: 0 auto;
+    padding: 20px;
+}
+.topSection {
+    margin-bottom: 20px;
+}
+.columns {
+    display: flex;
+    gap: 20px;
+}
+.column {
+    flex: 1;
+    background-color: white;
+    padding: 20px;
+    border: 1px solid black;
+}
+#daySchedule {
+    display: none;
+    margin-top: 20px;
+}

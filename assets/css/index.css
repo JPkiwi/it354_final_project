@@ -1,0 +1,102 @@
+body {
+  margin: 0;
+}
+
+.navBar {
+  display: flex;
+  justify-content: space-between;
+}
+
+.navbarLinks {
+  padding-top: 10px;
+  padding-right: 5px;
+  color: white;
+}
+
+.headlinerContainer {
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 100px;
+}
+
+.buttonRow {
+  display: flex;
+  flex-direction: row;
+  gap: 30px;
+}
+
+.whySection {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 20px;
+}
+
+.whySection h3 {
+  padding-top: 140px;
+}
+
+.reasons {
+  display: flex;
+  flex-direction: column;
+  width: 50%;
+}
+
+.hoursAndLocation {
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px;
+}
+
+.hoursAndLocation h2 {
+  text-align: center;
+}
+
+.hoursRow {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.hours,
+.location {
+  width: 48%;
+  text-align: center;
+}
+
+.testimonialsContainer {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+.testimonials {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+  text-align: center;
+}
+
+.test1,
+.test2,
+.test3 {
+  width: 30%;
+}
+
+.footer {
+  background-color: white;
+  display: flex;
+  flex-direction: row;
+  padding-left: 10px;
+}
+
+html {
+  background-color: red;
+}

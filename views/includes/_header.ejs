@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %></title> <!--Title gets rendered inside the route-->
+    <!--Connect with CSS Styling-->
+    <% if (cssStylesheet) { %>
+        <link rel="stylesheet" href="/css/<%- cssStylesheet %>" /> <!--Css file gets rendered inside the route-->
+    <% } %>
+    </head>
+
+  <body
