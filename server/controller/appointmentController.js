@@ -2,7 +2,7 @@ const Appointment = require("../model/appointmentModel");
 const TutorShift = require("../model/tutorShiftModel");
 
 // GET: load the booking page with available shifts
-async function getBookingPage(req, res) {
+exports.getBookingPage = async (req, res) => {
     try {
         // find all shifts that haven't been booked yet
         const availableShifts = await TutorShift.find({ isBooked: false })
@@ -28,10 +28,10 @@ async function getBookingPage(req, res) {
             availableShifts: []
         });
     }
-}
+};
 
 // POST: handle appointment form submission
-async function createAppointment(req, res) {
+exports.createAppointment = async (req, res) => {
     try {
         const { tutorShiftId, course } = req.body;
 
@@ -76,6 +76,4 @@ async function createAppointment(req, res) {
             availableShifts: []
         });
     }
-}
-
-module.exports = { getBookingPage, createAppointment };
+};
