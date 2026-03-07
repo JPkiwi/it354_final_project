@@ -1,31 +1,25 @@
 const express = require('express');
-const router = express.Router();
-const { google } = require('googleapis');
+const route = express.Router();
 
-const oauth2Client = new google.auth.OAuth2(
-    process.env.GOOGLE_CLIENT_ID,
-    process.env.GOOGLE_CLIENT_SECRET,
-    process.env.GOOGLE_REDIRECT_URI
-);
-
-const SCOPES = ['https://www.googleapis.com/auth/calendar'];
+const controller = require('../controller/authController');
 
 // Step 1: Redirect user to Google login
-router.get('/auth/google', (req, res) => {
-    const url = oauth2Client.generateAuthUrl({
-        access_type: 'offline',
-        scope: SCOPES
-    });
-    res.redirect(url);
-});
+route.get('/auth/google', controller.redirectToGoogleLogin);
 
 // Step 2: Google redirects back here with a code
-router.get('/auth/google/callback', async (req, res) => {
-    const { code } = req.query;
-    const { tokens } = await oauth2Client.getToken(code);
-    req.session.tokens = tokens;
-    oauth2Client.setCredentials(tokens);
-    res.redirect('/studentIndex');
-});
+route.get('/auth/google/callback', controller.googleCallback);
 
-module.exports = { router, oauth2Client };
+
+// when select the login button on the index page, go to the login page
+route.get('/login', controller.getLoginPage);
+
+// when select the signup button on the index page, go to the signup page
+route.get('/signup', controller.getSignupPage);
+
+// when enter credentials and submit on the login page, get the request body
+route.post('/login', controller.useLoginInfo);
+
+// when enter credentials and submit on the signup page, get the request body
+route.post('/signup', controller.useSignupInfo);
+
+module.exports = route;
