@@ -50,6 +50,10 @@ const authRoute = require('./server/routes/authRoute');
 // registers our auth routes with Express so they are accessible when someone goes to these URLs
 app.use('/', authRoute);
 
+// Tutor route
+const tutorRoute = require('./server/routes/tutorRoute');
+app.use("/", tutorRoute);
+
 // Student route
 const studentRoute = require('./server/routes/studentRoute');
 app.use("/", studentRoute);
