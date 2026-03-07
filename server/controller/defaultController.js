@@ -7,7 +7,7 @@ exports.getLandingPage = async (req, res) => {
       title: 'ISU Learning Center',
       cssStylesheet: 'index.css',
       jsFile: null,
-      user: null
+      user: req.session.user || null
   });
 };
 
