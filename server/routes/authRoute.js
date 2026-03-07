@@ -22,4 +22,7 @@ route.post('/login', controller.useLoginInfo);
 // when enter credentials and submit on the signup page, get the request body
 route.post('/signup', controller.useSignupInfo);
 
+// when user logs out, end session
+
+
 module.exports = route;

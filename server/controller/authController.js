@@ -57,3 +57,6 @@ exports.useSignupInfo = async (req, res) => {
     // console.log(req.body);
     res.sendStatus(202); // accepted
 };
+
+// POST
+// MARK: Functionality for logout
