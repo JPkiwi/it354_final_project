@@ -4,14 +4,6 @@ const morgan = require("morgan");
 const connectMongo = require("./server/database/connect");
 const session = require('express-session'); // allows us to store session tokens (logging into Google Calendar)
 
-// imports these two functions defined in appointmentController.js so server.js can use them
-const { getBookingPage, createAppointment } = require('./server/controller/appointmentController');
-
-// instances of User and TutorShift
-// imports the Mongoose models, validates data, and inserts into MongoDB collection
-const User = require('./server/model/userModel');
-const TutorShift = require('./server/model/tutorShiftModel');
-
 dotenv.config();
 
 const app = express();
@@ -45,58 +37,33 @@ app.use(express.static("assets"));
 const defaultRoute = require("./server/routes/defaultRoute");
 app.use("/", defaultRoute);
 
-// tells Express to run the getBookingPage function when someone navigates to /studentAppointment
-app.get('/studentAppointment', getBookingPage);
+// Appointment route
+const appointmentRoute = require('./server/routes/appointmentRoute');
+app.use("/", appointmentRoute);
 
-// tells Express when the booking form is submitted, run the createAppointment function
-app.post('/studentAppointment', createAppointment);
-
-// when select the login button on the index page, go to the login page
-app.get('/login', (req, res) => {
-  res.sendFile(path.join(__dirname, 'login.html'));
-});
-
-// when select the signup button on the index page, go to the signup page
-app.get('/signup', (req, res) => {
-  res.sendFile(path.join(__dirname, 'signup.html'));
-});
-
-// when enter credentials and submit on the login page, get the request body
-app.post('/login', (req, res) => {
-  console.log(req.body);
-  res.sendStatus(202); // accepted
-});
-
-// when enter credentials and submit on the signup page, get the request body
-app.post('/signup', (req, res) => {
-  console.log(req.body);
-  res.sendStatus(202); // accepted
-});
-
-// after hitting submit for either login or signup, go to the admin page (this will eventually change depending on the user)
-app.post('/adminIndex', (req, res) => {
-  console.log(req.body);
-  // res.sendStatus(202); // accepted
-  res.sendFile(path.join(__dirname, 'adminIndex.html'));
-});
+// Admin route
+const adminRoute = require('./server/routes/adminRoute');
+app.use("/", adminRoute);
 
 // imports our auth router
-const { router: authRoute } = require('./server/routes/authRoute');
-
+const authRoute = require('./server/routes/authRoute');
 // registers our auth routes with Express so they are accessible when someone goes to these URLs
 app.use('/', authRoute);
 
-// renders studentIndex
-app.get('/studentIndex', (req, res) => {
-    res.render('studentIndex', {
-        title: 'Student Index',
-        cssStylesheet: 'studentIndex.css',
-        jsFile: 'studentScript.js',
-        error: null,
-        user: { role: 'student' } // TEMPORARY PLACE HOLDER
-        // eventually we will replace this with a real user, like: req.session.user
-    });
-});
+// Tutor route
+const tutorRoute = require('./server/routes/tutorRoute');
+app.use("/", tutorRoute);
+
+// Student route
+const studentRoute = require('./server/routes/studentRoute');
+app.use("/", studentRoute);
+
+
+// MARK: Remove evenutally: Models and temporary test data
+// instances of User and TutorShift
+// imports the Mongoose models, validates data, and inserts into MongoDB collection
+const User = require('./server/model/userModel');
+const TutorShift = require('./server/model/tutorShiftModel');
 
 // TEMPORARY TEST DATA - one admin/one tutor/one shift
 app.get('/seed', async (req, res) => {
