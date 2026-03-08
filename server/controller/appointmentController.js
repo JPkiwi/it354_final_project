@@ -1,36 +1,8 @@
 const Appointment = require("../model/appointmentModel");
 const TutorShift = require("../model/tutorShiftModel");
 
-// GET: load the booking page with available shifts
-exports.getBookingPage = async (req, res) => {
-    try {
-        // find all shifts that haven't been booked yet
-        const availableShifts = await TutorShift.find({ isBooked: false })
-            .populate("tutorId", "fname lname") // pull tutor's name from User model
-            .sort({ shiftDate: 1, startTime: 1 });
-
-        res.render("studentAppointment", {
-            title: "Book an Appointment",
-            cssStylesheet: "studentAppointment.css",
-            jsFile: "studentScript.js",
-            error: null,
-            user: req.session.user || { role: "student" },  // you can swith to admin/tutor/student as needed
-            availableShifts
-        });
-    } catch (err) {
-        console.error(err);
-        res.render("studentAppointment", {
-            title: "Book an Appointment",
-            cssStylesheet: "studentAppointment.css",
-            jsFile: "studentScript.js",
-            error: "Failed to load available appointments.",
-            user: req.session.user || { role: "student" },
-            availableShifts: []
-        });
-    }
-};
-
-// POST: handle appointment form submission
+//not currently working
+// POST: handle bookingappointment form submission
 exports.createAppointment = async (req, res) => {
     try {
         const { tutorShiftId, course } = req.body;
@@ -69,7 +41,7 @@ exports.createAppointment = async (req, res) => {
         console.error(err);
         res.render("studentAppointment", {
             title: "Book an Appointment",
-            cssStylesheet: "studentAppointment.css",
+            cssStylesheet: "studentStyle.css",
             jsFile: "studentScript.js",
             error: "Failed to book appointment.",
             user: req.session.user || { role: "student" },
@@ -77,3 +49,20 @@ exports.createAppointment = async (req, res) => {
         });
     }
 };
+
+// this is not currently working fully. It is more of a placeholder
+// eventually this will be used to display the student's booked appointments
+// GET: display the student's booked appointments
+exports.getBookedAppointments = async (req, res) => {
+    const bookedAppointments = await Appointment.find();
+
+    res.render('studentAppointment', {
+        title: 'Booked Appointments',
+        cssStylesheet: 'studentStyle.css',
+        jsFile: 'studentScript.js',
+        error: null,
+        user: { role: 'student' }, // TEMPORARY PLACE HOLDER
+        // eventually we will replace this with a real user, like: req.session.user
+        bookedAppointments
+    });
+}
