@@ -1,9 +1,5 @@
 <%- include("includes/_header") %>
 
-<% if (error) { %>
-  <div class="alert"><strong>Error:</strong> <%= error %></div>
-<% } %>
-
 <!--Navigation Bar-->
 <header>
   <%- include("includes/_navbar") %>
@@ -13,22 +9,45 @@
     <div class="mainContent">
         <div class="contentContainer">
             <div class="topSection">
-                <label for="course">Select course:</label>
-                <select id="course" name="course">
-                    <option value="course1">IT179</option>
-                </select>
+                <h2>Book an Appointment</h2>
             </div>
             <div class="columns">
                 <div class="column">
-                    <p>Calender</p>
-                     <button id="dayBtn">12</button>
+                    <form action="/viewAvailableAppointments" method="post">
+                        <label for="course">Course:</label>
+                        <select id="course" name="course" required>
+                            <% courses.forEach(course => { %>
+                                <option value="<%= course._id %>" <%= form && form.course == course._id ? 'selected' : '' %>>
+                                    <%= course.courseName %>
+                                </option>
+                            <% }) %>
+                        </select><br/><br/>
+                        <label for="selectDay">Select a Day:</label>
+                        <input type="date" id="selectDay" name="selectDay" value="<%= form ? form.selectDay : '' %>" required><br/><br/>
+                        <button id="viewAppointments" type="submit">View Available Appointments</button>
+                        <% if (error) { %>
+                            <br/><br/>
+                            <div class="alert"><%= error %></div>
+                        <% } %>
+                    </form>
                 </div>
                 <div class="column" id="scheduleInfo">
-                    <p>Schedule</p>
-                    <div id="daySchedule">
-                        <p>Schedule info goes here</p>
-                        <button id="time">11:00</button>
-                    </div>
+                    <% if (availableShifts.length === 0) { %>
+                        <p>Select a day and course to view available appointments.</p>
+                    <% } else { %>
+                        <% availableShifts.forEach(shift => { %>
+                            <div type="hidden" class="tutorShiftInfo" value="<%= shift._id %>">
+                                <form action="/bookAppointment" method="post">
+                                    <p><strong><%= shift.fname %> <%= shift.lname %></strong></p>
+                                    <p><%= shift.courseName %></p>
+                                    <p><%= shift.shiftDate.toDateString() %></p>
+                                    <p><%= shift.startTime %> - <%= shift.endTime %></p>
+                                    <button type="submit">Book</button>
+                                </form>
+                                    
+                            </div>
+                        <% }) %>
+                    <% } %>
                 </div>
             </div>
             

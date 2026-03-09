@@ -16,28 +16,14 @@
 
 <div class="mainContent">
     <div class="contentContainer">
-        <h1>Book an Appointment</h1>
-        <!--Checks for available shifts-->
-        <% if (availableShifts.length === 0) { %>
-            <p>No available appointments at this time.</p>
+        <% if (bookedAppointments.length === 0) { %>
+            <p>You have no upcoming appointments.</p>
         <% } else { %>
-            <form action="/studentAppointment" method="post">
-                <label for="course">Course:</label>
-                <input type="text" id="course" name="course" required /><br/><br/>
-
-                <label for="tutorShiftId">Select an Available Time:</label>
-                <select id="tutorShiftId" name="tutorShiftId" required>
-                    <% availableShifts.forEach(shift => { %>
-                        <option value="<%= shift._id %>">
-                            <%= shift.tutorId.fname %> <%= shift.tutorId.lname %> —
-                            <%= shift.shiftDate.toDateString() %>
-                            <%= shift.startTime %> - <%= shift.endTime %>
-                        </option>
-                    <% }) %>
-                </select><br/><br/>
-
-                <button type="submit">Book Appointment</button>
-            </form>
+            <% bookedAppointment.forEach(shift => { %>
+                <div class="tutorShiftInfo">
+                    <p><strong>placeholder</strong></p>
+                </div>
+            <% }) %>
         <% } %>
     </div>
 </div>
