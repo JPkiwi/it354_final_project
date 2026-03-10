@@ -14,14 +14,18 @@
   <%- include("includes/_navbar") %>
 </header>
 
+<!--Display student's booked appointments if any-->
 <div class="mainContent">
     <div class="contentContainer">
-        <% if (bookedAppointments.length === 0) { %>
+        <% if (!bookedAppointments || bookedAppointments.length === 0) { %>
             <p>You have no upcoming appointments.</p>
         <% } else { %>
-            <% bookedAppointment.forEach(shift => { %>
+            <% bookedAppointments.forEach(appointment => { %>
                 <div class="tutorShiftInfo">
-                    <p><strong>placeholder</strong></p>
+                    <p><%= appointment.course %></p>
+                    <!--used toUTCString() instead of .toDateString() to get the proper date and slice to look nice-->
+                    <p><%= appointment.appointmentDate.toUTCString().slice(0, 16) %></p>
+                    <p><%= appointment.startTime %> - <%= appointment.endTime %></p>
                 </div>
             <% }) %>
         <% } %>

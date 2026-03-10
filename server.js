@@ -64,6 +64,7 @@ app.use("/", studentRoute);
 // imports the Mongoose models, validates data, and inserts into MongoDB collection
 const User = require('./server/model/userModel');
 const TutorShift = require('./server/model/tutorShiftModel');
+const Course = require('./server/model/courseModel');
 
 // TEMPORARY TEST DATA - one admin/one tutor/one shift
 app.get('/seed', async (req, res) => {
@@ -77,24 +78,56 @@ app.get('/seed', async (req, res) => {
             passwordHash: 'hashedpassword123'
         });
 
+        // create courses
+        const course179 = await Course.create({ courseName: "IT179" });
+        const course168 = await Course.create({ courseName: "IT168" });
+
         // create a test tutor
         const tutor = await User.create({
             role: 'tutor',
             fname: 'John',
             lname: 'Doe',
             email: 'tutor@ilstu.edu',
-            passwordHash: 'hashedpassword123'
+            passwordHash: 'hashedpassword123',
+            tutorCourses: [course179._id, course168._id]
         });
 
         // create a test tutor shift
-        await TutorShift.create({
+        const shift = await TutorShift.create({
             tutorId: tutor._id,
             assignedByAdminId: admin._id,
-            shiftDate: new Date('2026-03-10'),
+            shiftDate: new Date(Date.UTC(2026, 2, 10)), // months are indexed, new Date('2026-03-10')
             startTime: '10:00',
             endTime: '11:00',
             isBooked: false
         });
+
+        // create another test tutor shift
+        const shift2 = await TutorShift.create({
+            tutorId: tutor._id,
+            assignedByAdminId: admin._id,
+            shiftDate: new Date(Date.UTC(2026, 2, 11)), // new Date('2026-03-11')
+            startTime: '15:00',
+            endTime: '16:00',
+            isBooked: false
+        });
+
+        // create a test student
+        const student = await User.create({
+            role: 'student',
+            fname: 'Jane',
+            lname: 'Doe',
+            email: 'student@ilstu.edu',
+            passwordHash: 'hashedpassword123'
+        });
+
+        // create a test session for student user
+        req.session.user = {
+            _id: student._id,
+            role: student.role,
+            fname: student.fname,
+            lname: student.lname
+        };
 
         res.send('Test data seeded successfully!');
     } catch (err) {

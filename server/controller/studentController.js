@@ -15,7 +15,7 @@ exports.getStudentIndex = async (req, res) => {
             jsFile: "studentScript.js",
             error: null,
             form: {},
-            user: req.session.user || { role: "student" },  // you can swith to admin/tutor/student as needed
+            user: req.session.user || { role: "student" },
             courses,
             availableShifts: []
         });

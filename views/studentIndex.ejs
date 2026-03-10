@@ -32,19 +32,25 @@
                     </form>
                 </div>
                 <div class="column" id="scheduleInfo">
+                    <!--Display available shifts-->
                     <% if (availableShifts.length === 0) { %>
                         <p>Select a day and course to view available appointments.</p>
                     <% } else { %>
                         <% availableShifts.forEach(shift => { %>
-                            <div type="hidden" class="tutorShiftInfo" value="<%= shift._id %>">
+                            <div class="tutorShiftInfo">
                                 <form action="/bookAppointment" method="post">
+                                    <!--need to send tutor shift id and course to /bookAppointment route,
+                                    use type="hidden" to visually hide from the user for clean UI-->
+                                    <input type="hidden" name="tutorShiftId" value="<%= shift._id %>">
+                                    <input type="hidden" name="course" value="<%= shift.courseName %>">
+
                                     <p><strong><%= shift.fname %> <%= shift.lname %></strong></p>
                                     <p><%= shift.courseName %></p>
-                                    <p><%= shift.shiftDate.toDateString() %></p>
+                                    <!--used toUTCString() instead of .toDateString() to get the proper date and slice to look nice-->
+                                    <p><%= shift.shiftDate.toUTCString().slice(0, 16) %></p>
                                     <p><%= shift.startTime %> - <%= shift.endTime %></p>
                                     <button type="submit">Book</button>
                                 </form>
-                                    
                             </div>
                         <% }) %>
                     <% } %>
