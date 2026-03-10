@@ -1,13 +1,12 @@
 /*Box styling to visualize where the Google Calendar is going to go (I don't think the positioning does anything but I'm not sure)*/
 .tutor-calendar-container {
-    position: relative;
+    display: flex;
+    align-items: flex-start;
     text-align: center;
     justify-content: center;
-    align-items: center;
-    border: 5px dashed #000;
-    height: 400px;
-    width: 700px;
-    flex: 1;
+    border: 5px solid #e8bbed;
+    height: 300px;
+    width: 400px;
 }
 
 /*Styling for all the appointment features*/
@@ -16,14 +15,15 @@
     justify-content: space-between;
     text-align: center;
     align-items: center;
+    gap: 50px;
 }
 
 /*Styling and alignment of the buttons selections*/
 .tutor-button-options {
-    flex: 1;
+    display: flex;
+    flex-direction: column;
     justify-content: space-between;
     visibility: hidden;
-    position: absolute;
 }
 
 /*Styling for the placeholder for any textareas (comments)*/

@@ -1,5 +1,5 @@
 /*All the element options related to selecting, clicking, and changing visibility of appointment features*/
-const calendarDiv = document.getElementById("tutor-calendar-container");
+const shiftDate = document.getElementById("shift-date");
 const buttonOptions = document.getElementById("tutor-button-options");
 const addCommentButton = document.getElementById("comment-button");
 const addTimeButton = document.getElementById("time-button");
@@ -15,16 +15,16 @@ const showSubmitButton = document.getElementById("show-submit-button");
 const showLabel = document.getElementById("show-label");
 const selectShow = document.getElementById("select-show");
 
+
 /*
-When selecting the calendar div, the tutor button options for entering data appear.
+When select a date on the calendar, the tutor button options for entering data appear.
 These button options do not disappear until you select one of the button options and click submit.
-This functionality can change later, but I was just getting the basic idea down.
-The calendar div is a placeholder for the Google Calendar, will eventually show the button options when selecting a 
-specifc appointment on a specific date.
 */
-calendarDiv.addEventListener("click", ()=> {
-    if (getComputedStyle(buttonOptions).visibility === "hidden")
-        buttonOptions.classList.toggle("tutor-button-options");
+shiftDate.addEventListener("change", () => {
+    const selectedDate = shiftDate.value;
+    if (selectedDate) {
+        buttonOptions.style.visibility = "visible";
+    }
 });
 
 
@@ -57,7 +57,8 @@ showButton.addEventListener("click", ()=> {
 commentSubmitButton.addEventListener("click", ()=> {
     commentText.style.visibility = "hidden";
     commentSubmitButton.style.visibility = "hidden";
-    buttonOptions.classList.toggle("tutor-button-options");
+    // buttonOptions.classList.toggle("tutor-button-options");
+    buttonOptions.style.visibility = "hidden";
 });
 
 
@@ -68,7 +69,8 @@ timeSubmitButton.addEventListener("click", ()=> {
     startTimeLabel.style.visibility = "hidden";
     endTimeLabel.style.visibility = "hidden";
     timeSubmitButton.style.visibility = "hidden";
-    buttonOptions.classList.toggle("tutor-button-options");
+    // buttonOptions.classList.toggle("tutor-button-options");
+    buttonOptions.style.visibility = "hidden";
 });
 
 
@@ -77,5 +79,6 @@ showSubmitButton.addEventListener("click", ()=> {
     showLabel.style.visibility = "hidden";
     selectShow.style.visibility = "hidden";
     showSubmitButton.style.visibility = "hidden";
-    buttonOptions.classList.toggle("tutor-button-options");
+    // buttonOptions.classList.toggle("tutor-button-options");
+    buttonOptions.style.visibility = "hidden";
 });
