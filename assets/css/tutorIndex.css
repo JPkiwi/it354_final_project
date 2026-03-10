@@ -23,3 +23,10 @@
   .navbar a.active {
     color: #4a148c;            
   }
+
+
+
+  .inactive-row {
+  color: #888;
+  background-color: #f2f2f2;
+}

@@ -12,18 +12,18 @@
   <br>
  
 
-  <!-- Search -->
+  <form action="/adminTutorIndex/toggle" method="POST">
+
   <input type="text" id="search" placeholder="Search tutors..." />
 
-  <button type="button" id="toggleActiveBtn">Toggle Active</button>
-<br><br>
+  <button type="submit">Toggle Active</button>
 
-  <!-- Tutors Table -->
+  <br><br>
+
   <table border="1" cellpadding="6" cellspacing="0">
     <thead>
       <tr>
         <th>Select</th>
-        <th>ID</th>
         <th>Name</th>
         <th>Email</th>
         <th>Active</th>
@@ -31,21 +31,19 @@
     </thead>
 
     <tbody id="tutorRows">
-      <tr>
-        <td><input type="checkbox" class="rowCheck"></td>
-        <td>1</td>
-        <td>Sydney Whilton</td>
-        <td>swhilt2@ilstu.edu</td>
-        <td>Yes</td>
-      </tr>
-      <tr>
-        <td><input type="checkbox" class="rowCheck"></td>
-        <td>2</td>
-        <td>Lola James</td>
-        <td>ljames3@ilstu.edu</td>
-        <td>No</td>
-      </tr>
+      <% tutors.forEach(tutor => { %>
+         <tr class="<%= tutor.isActive ? '' : 'inactive-row' %>">
+
+          <td>
+            <input type="radio" name="selectedTutor" value="<%= tutor._id %>">
+          </td>
+          <td><%= tutor.fname %> <%= tutor.lname %></td>
+          <td><%= tutor.email %></td>
+          <td><%= tutor.isActive ? "Yes" : "No" %></td>
+        </tr>
+      <% }) %>
     </tbody>
   </table>
 
+</form>
 <%- include("includes/_footer") %>
