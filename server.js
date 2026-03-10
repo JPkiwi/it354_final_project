@@ -96,7 +96,7 @@ app.get('/seed', async (req, res) => {
         const shift = await TutorShift.create({
             tutorId: tutor._id,
             assignedByAdminId: admin._id,
-            shiftDate: new Date('2026-03-10'),
+            shiftDate: new Date(Date.UTC(2026, 2, 10)), // months are indexed, new Date('2026-03-10')
             startTime: '10:00',
             endTime: '11:00',
             isBooked: false
@@ -106,7 +106,7 @@ app.get('/seed', async (req, res) => {
         const shift2 = await TutorShift.create({
             tutorId: tutor._id,
             assignedByAdminId: admin._id,
-            shiftDate: new Date('2026-03-11'),
+            shiftDate: new Date(Date.UTC(2026, 2, 11)), // new Date('2026-03-11')
             startTime: '15:00',
             endTime: '16:00',
             isBooked: false

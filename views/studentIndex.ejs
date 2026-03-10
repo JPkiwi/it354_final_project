@@ -46,11 +46,11 @@
 
                                     <p><strong><%= shift.fname %> <%= shift.lname %></strong></p>
                                     <p><%= shift.courseName %></p>
-                                    <p><%= shift.shiftDate.toDateString() %></p>
+                                    <!--used toUTCString() instead of .toDateString() to get the proper date and slice to look nice-->
+                                    <p><%= shift.shiftDate.toUTCString().slice(0, 16) %></p>
                                     <p><%= shift.startTime %> - <%= shift.endTime %></p>
                                     <button type="submit">Book</button>
                                 </form>
-                                    
                             </div>
                         <% }) %>
                     <% } %>
