@@ -17,27 +17,41 @@
   <button type="button" id="addBtn">Add Appointment</button>
   <button type="button" id="cancelBtn">Cancel Appointment</button>
   <button type="button" id="historyBtn">Cancellation History</button>
+  <button type="button" id="assignTutorBtn">Assign Tutor</button>
+
 
   <!-- Adding Appointments form -->
-  <form id="addForm" style="display:none; margin-top:10px;">
-    <!-- type = date = browser automatically creates date picker widget-->
-    <input id="date" type="date" required>
-    <!-- displays time picker-->
-    <input id="time" type="time" required>
-    <input id="student" type="text" placeholder="Student Name" required>
-<!-- Dropdown menus  -->
- <!-- hardcoded options (tutors & the courses)-->
-<select id="tutor" required>
-  <option value="" disabled selected>Select Tutor</option>
-  <option>Jenna Benson</option>
-  <option>Emma Carter</option>
+
+  <!-- Form appears when "Add Appointment" is clicked-->
+<form id="addForm" action="/adminIndex/findTutors" method="GET" style="display:none; margin-top:10px;">
+  <input name="studentFName" type="text" placeholder="Student First Name" required>
+  <input name="studentLName" type="text" placeholder="Student Last Name" required>
+  <input name="date" type="date" required>
+  <input name="time" type="time" required>
+
+ <!-- Course dropdown (dynamically populated from db!)-->
+  <select name="course" required>
+    <!--default placeholder of courses-->
+  <option value="" disabled selected>Select Course</option>
+  <!-- Looping through course array (passed from cont.)-->
+  <% courses.forEach(course => { %>
+    <!-- passing each course as an option (in dropdown menu)-->
+     <!-- note to self, value = course's db id-->
+  <option value="<%= course._id %>"><%= course.courseName %></option>
+<% }) %>
 </select>
 
-<select id="course" required>
-  <option value="" disabled selected>Select Course</option>
-  <option>IT 354</option>
-  <option>IT 358</option>
-</select>
+  <button type="submit">Find Tutors</button>
+</form>
+
+
+<!-- AFTER SUBMISSION (clicking the "Find Tutors" button above)
+ A DROPDOWN SHOULD BE POPULATED showing all tutors available 
+ to be assigned to the chosen appointment (and/or showing that selected appointment 
+ is not valid/all tutors are not available during selected appointment range?) 
+ If appointment range is valid, admin should then choose a tutor from dropdown 
+ and click a final "save" button which adds/creates appointment-->
+    </select>
 
     <button type="submit">Save</button>
   </form>
@@ -65,25 +79,57 @@
       </tr>
     </thead>
 
-    <!-- Adding hardcoded rows, just to how functionality rn / remove later!!!-->
     <tbody id="rows">
+ <!-- checking if appointments exist -->
+      <% if (appointments && appointments.length > 0) { %>
+        <!-- looping through appointments-->
+    <% appointments.forEach(function(appointment) { %>
       <tr>
-        <td><input type="checkbox" class="rowCheck"></td>
-        <td>2026-02-16</td><td>10:00 AM</td><td>Molly Staniszewski</td><td>Jenna Benson</td><td>IT 330</td>
+        <!-- radio button instead of checkbox -> only one appt selected at a time to cancel or assign tutor-->
+    <td><input type="radio" name="selectedAppointment" value="<%= appointment._id %>"> </td> 
+    <!-- if appointment date exists, convert to string (using .split to get 00:00:000Z from mongodb date)-->
+        <td><%= appointment.appointmentDate ? appointment.appointmentDate.toISOString().split('T')[0] : "No date" %></td>
+        <!-- printing start time and endtime-->
+        <td><%= appointment.startTime %> - <%= appointment.endTime %></td>
+        <!-- -->
+        <td>
+          <!-- if student id/firstName exists -->
+          <% if (appointment.studentId && appointment.studentId.fname) { %>
+            <!-- print first and last name-->
+            <%= appointment.studentId.fname %> <%= appointment.studentId.lname %>
+          <% } else { %>
+            <!-- print fallback (to avoid crashing) -->
+            Unknown student
+          <% } %>
+        </td>
+<!-- -->
+        <td>
+          <!-- if tutor shift id exists/tutorId/first name,-->
+  <% if (
+    appointment.tutorShiftId &&
+    appointment.tutorShiftId.tutorId &&
+    appointment.tutorShiftId.tutorId.fname
+  ) { %>
+    <!-- print tutor first and last name-->
+    <%= appointment.tutorShiftId.tutorId.fname %>
+    <%= appointment.tutorShiftId.tutorId.lname %>
+  <% } else { %>
+     <!-- print fallback (to avoid crashing) -->
+
+    No tutor assigned
+  <% } %>
+</td>
+<!-- prints course name-->
+        <td><%= appointment.course %></td>
+
       </tr>
-      <tr>
-        <td><input type="checkbox" class="rowCheck"></td>
-        <td>2026-02-18</td><td>2:30 PM</td><td>Amanda Lesley</td><td>Emma Carter</td><td>IT 354</td>
-      </tr>
-      <tr>
-        <td><input type="checkbox" class="rowCheck"></td>
-        <td>2026-02-20</td><td>9:00 AM</td><td>Alexus Calhoun</td><td>Ann Ortiz</td><td>IT 354</td>
-      </tr>
-      <tr>
-        <td><input type="checkbox" class="rowCheck"></td>
-        <td>2026-02-22</td><td>9:30 AM</td><td>Jenna Pullega</td><td>Lidia Cook</td><td>IT 358</td>
-      </tr>
-    </tbody>
+    <% }); %>
+  <% } else { %>
+    <tr>
+      <td colspan="6">No appointments found.</td>
+    </tr>
+  <% } %>
+</tbody>
   </table>
 
 

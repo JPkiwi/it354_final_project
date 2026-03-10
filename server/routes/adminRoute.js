@@ -8,6 +8,10 @@ route.get('/adminIndex', controller.getAdminIndex);
 
 // renders adminAvailabilityIndex
 route.get('/adminAvailabilityIndex', controller.getAdminAvailabilityIndex);
+// (re)Renders adminTutorIndex when tutor active status is toggled
+route.post("/adminTutorIndex/toggle", controller.toggleTutorStatus);
+
+
 
 // renders adminTutorIndex
 route.get('/adminTutorIndex', controller.getAdminTutorIndex);
