@@ -4,8 +4,8 @@ const mongoose = require("mongoose");
 const attendanceSchema = new mongoose.Schema(
     {
         attendanceStatus: {type: String, enum: ["pending", "attended", "noShow"], default: "pending"},
-        actualStart: {type: String, required: true},
-        actualEnd: {type: String, required: true}
+        actualStart: {type: String}, // not initially required so tutor can add later and not need it to book appointment
+        actualEnd: {type: String} // not initially required so tutor can add later and not need it to book appointment
     }, 
     { _id: false }
 );
