@@ -19,26 +19,44 @@
         <button type="submit">Login</button>
         </form>
     </div>
-    <div class="signupButton">
-        <form action="/signup" method="get">
-        <button type="submit">Sign Up Now</button>
-        </form>
-    </div>
     </div>
 </div>
 
 <div class = "whySection">
-    <h3>Why Use the IT Learning Center?</h3>
+    <h2>Why Use the IT Tutoring Center?</h2>
 
  <div class = "reasons">
-    <h4>REASON 1</h4>
-    <p>blahblahlbahl</p>
-    <h4>REASON 2</h4>
-    <p>blahblaasjfngksadjndksjfnkdjsfskhlbahl</p>
-    <h4>REASON 3</h4>
-    <p>blahblahlbahl</p>
+    <h3>1. Personalized Support</h3>
+    <p>Get one-on-one help tailored to your specific questions and learning pace, 
+        so you're never left behind.</p>
+    <h3>2. Flexible Scheduling</h3>
+    <p>Book appointments around your schedule with available time slots that fit your day.</p>
+    <h3>3. Expert Tutors</h3>
+    <p>Work with knowledgeable tutors who have hands-on experience in the subject matter and 
+        are here to help you succeed.</p>
  </div>
 </div>
+
+<section aria-label="Photo Gallery">
+    <div class = "carousel" data-carousel>
+        <button class = "carousel-button prev" data-carousel-button="prev">&#10508;</button>
+        <button class = "carousel-button next" data-carousel-button="next">&#10509;</button>
+    <ul data-slides>
+        <li class = "slide" data-active>
+            <img src = "/images/oldunion1.jpg" alt = "Old Union Building">
+        </li>
+        <li class = "slide">
+            <img src = "/images/isuseal2.jpg" alt = "ISU Seal">
+        </li>
+        <li class = "slide">
+            <img src = "/images/stockPhoto3.jpg" alt = "Women teaching Girl Stock Image">
+        </li>
+        <li class = "slide">
+            <img src = "/images/stockPhoto4.jpg" alt = "Technology Stock Image">
+        </li>
+    </ul>
+    </div>
+</section>
 
 <div class = "hoursAndLocation">
     <!--Create Javascript toggle for open/closed-->
@@ -60,27 +78,30 @@
 </div>
 
 <div class = "testimonialsContainer">
-    <h2>Our Testimonials / TBD</h2>
+    <h2>Our Testimonials</h2>
     <div class = testimonials>
         <div class="test1">
-        <h4>Test1</h4>
-        <p>blahblahblah</p>
+        <h1> ★ ★ ★ ★ ★</h1>
+        <p>" Great tutoring center! "</p>
+        <p><b>- John Doe, Junior</b></p>
         </div>
         <div class="test2">
-        <h4>Test2</h4>
-        <p>blahblahblah</p>
+        <h1> ★ ★ ★ ★ ★</h1>
+        <p>" The tutors here are the best!"</p>
+        <p><b>- Joe Smith, Freshman</b></p>
         </div>
         <div class="test3">
-        <h4>Test3</h4>
-        <p>blahblahblah</p>
+        <h1> ★ ★ ★ ★ ⯪</h1>
+        <p>" Really friendly and knowledgeable staff!"</p>
+        <p><b>- Jane Doe, Senior</b></p>
         </div>
     </div>
 </div>
 
-<div class = "footer">
+<!-- <div class = "footer">
     <h1>LOGO</h1>
     <h3>Link 1 | Link 2 | Link 3</h3>
     <p>SOCIAL MEDIA / OTHER ???</p>
-</div>
+</div> -->
 
 <%- include("includes/_footer") %>
