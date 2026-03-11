@@ -1,4 +1,4 @@
-const express = require('express'); 
+const express = require("express");
 const dotenv = require("dotenv");
 const morgan = require("morgan");
 const connectMongo = require("./server/database/connect");
@@ -12,9 +12,9 @@ const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-const PORT = process.env.PORT || 3000; 
-const path = require('path');
-const { connect } = require('http2'); // not being used currently
+const PORT = process.env.PORT || 3000;
+const path = require("path");
+const { connect } = require("http2"); // not being used currently
 
 // Logging
 app.use(morgan("tiny"));
@@ -23,11 +23,13 @@ app.use(morgan("tiny"));
 // A session allows our server to remember things about a user between requests
 // In this case, it'll store the user's Google OAuth tokens so they STAY authenticated
 // as they move around our web app.
-app.use(session({
+app.use(
+  session({
     secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: true
-}));
+    saveUninitialized: true,
+  }),
+);
 
 // view engine
 app.set("view engine", "ejs");
@@ -40,102 +42,162 @@ const defaultRoute = require("./server/routes/defaultRoute");
 app.use("/", defaultRoute);
 
 // Appointment route
-const appointmentRoute = require('./server/routes/appointmentRoute');
+const appointmentRoute = require("./server/routes/appointmentRoute");
 app.use("/", appointmentRoute);
 
 // Admin route
-const adminRoute = require('./server/routes/adminRoute');
+const adminRoute = require("./server/routes/adminRoute");
 app.use("/", adminRoute);
 
 // imports our auth router
-const authRoute = require('./server/routes/authRoute');
+const authRoute = require("./server/routes/authRoute");
 // registers our auth routes with Express so they are accessible when someone goes to these URLs
-app.use('/', authRoute);
+app.use("/", authRoute);
 
 // Tutor route
-const tutorRoute = require('./server/routes/tutorRoute');
+const tutorRoute = require("./server/routes/tutorRoute");
 app.use("/", tutorRoute);
 
 // Student route
-const studentRoute = require('./server/routes/studentRoute');
+const studentRoute = require("./server/routes/studentRoute");
 app.use("/", studentRoute);
-
 
 // MARK: Remove evenutally: Models and temporary test data
 // instances of User and TutorShift
 // imports the Mongoose models, validates data, and inserts into MongoDB collection
-const User = require('./server/model/userModel');
-const TutorShift = require('./server/model/tutorShiftModel');
-const Course = require('./server/model/courseModel');
+const User = require("./server/model/userModel");
+const TutorShift = require("./server/model/tutorShiftModel");
+const Course = require("./server/model/courseModel");
+const Appointment = require("./server/model/appointmentModel");
 
 // TEMPORARY TEST DATA - one admin/one tutor/one shift
-app.get('/seed', async (req, res) => {
-    try {
-        // create a test admin
-        const admin = await User.create({
-            role: 'admin',
-            fname: 'Admin',
-            lname: 'User',
-            email: 'admin@ilstu.edu',
-            passwordHash: 'hashedpassword123'
-        });
+app.get("/seed", async (req, res) => {
+  try {
+    // create a test admin
+    const admin = await User.create({
+      role: "admin",
+      fname: "Admin",
+      lname: "User",
+      email: "admin@ilstu.edu",
+      passwordHash: "hashedpassword123",
+    });
 
-        // create courses
-        const course179 = await Course.create({ courseName: "IT179" });
-        const course168 = await Course.create({ courseName: "IT168" });
+    // create courses
+    const course179 = await Course.create({ courseName: "IT179" });
+    const course168 = await Course.create({ courseName: "IT168" });
 
-        // create a test tutor
-        const tutor = await User.create({
-            role: 'tutor',
-            fname: 'John',
-            lname: 'Doe',
-            email: 'tutor@ilstu.edu',
-            passwordHash: 'hashedpassword123',
-            tutorCourses: [course179._id, course168._id]
-        });
+    // create a test tutor
+    const tutor = await User.create({
+      role: "tutor",
+      fname: "John",
+      lname: "Doe",
+      email: "tutor@ilstu.edu",
+      passwordHash: "hashedpassword123",
+      tutorCourses: [course179._id, course168._id],
+    });
 
-        // create a test tutor shift
-        const shift = await TutorShift.create({
-            tutorId: tutor._id,
-            assignedByAdminId: admin._id,
-            shiftDate: new Date(Date.UTC(2026, 2, 10)), // months are indexed, new Date('2026-03-10')
-            startTime: '10:00',
-            endTime: '11:00',
-            isBooked: false
-        });
+    const tutor2 = await User.create({
+      role: "tutor",
+      fname: "Jane",
+      lname: "Doe",
+      email: "tutor2@ilstu.edu",
+      passwordHash: "hashedpassword123",
+      tutorCourses: [course179._id, course168._id],
+    });
 
-        // create another test tutor shift
-        const shift2 = await TutorShift.create({
-            tutorId: tutor._id,
-            assignedByAdminId: admin._id,
-            shiftDate: new Date(Date.UTC(2026, 2, 11)), // new Date('2026-03-11')
-            startTime: '15:00',
-            endTime: '16:00',
-            isBooked: false
-        });
+    // create a test student
+    const student = await User.create({
+      role: "student",
+      fname: "Jane",
+      lname: "Doe",
+      email: "student@ilstu.edu",
+      passwordHash: "hashedpassword123",
+    });
 
-        // create a test student
-        const student = await User.create({
-            role: 'student',
-            fname: 'Jane',
-            lname: 'Doe',
-            email: 'student@ilstu.edu',
-            passwordHash: 'hashedpassword123'
-        });
+    // create a test tutor shift
+    const shift = await TutorShift.create({
+      tutorId: tutor2._id,
+      assignedByAdminId: admin._id,
+      shiftDate: new Date(Date.UTC(2026, 2, 11)), // months are indexed, new Date('2026-03-10')
+      startTime: "10:00",
+      endTime: "11:00",
+      isBooked: false,
+    });
 
-        // create a test session for student user
-        req.session.user = {
-            _id: student._id,
-            role: student.role,
-            fname: student.fname,
-            lname: student.lname
-        };
+    // create another test tutor shift
+    const shift2 = await TutorShift.create({
+      tutorId: tutor._id,
+      assignedByAdminId: admin._id,
+      shiftDate: new Date(Date.UTC(2026, 2, 12)), // new Date('2026-03-12')
+      startTime: "15:00",
+      endTime: "16:00",
+      isBooked: true,
+    });
 
-        res.send('Test data seeded successfully!');
-    } catch (err) {
-        console.error(err);
-        res.send('Seeding failed: ' + err.message);
-    }
+    const shift3 = await TutorShift.create({
+      tutorId: tutor._id,
+      assignedByAdminId: admin._id,
+      shiftDate: new Date(Date.UTC(2026, 2, 11)), // new Date('2026-03-11')
+      startTime: "12:00",
+      endTime: "13:00",
+      isBooked: true,
+    });
+
+    const appointment = await Appointment.create({
+      studentId: student._id,
+      tutorShiftId: shift2._id,
+      course: "IT179",
+      appointmentDate: shift2.shiftDate,
+      startTime: shift2.startTime,
+      endTime: shift2.endTime,
+      appointmentStatus: "scheduled",
+      attendance: { attendanceStatus: "pending" },
+    });
+
+    const appointment2 = await Appointment.create({
+      studentId: student._id,
+      tutorShiftId: shift3._id,
+      course: "IT168",
+      appointmentDate: shift3.shiftDate,
+      startTime: shift3.startTime,
+      endTime: shift3.endTime,
+      appointmentStatus: "scheduled",
+      attendance: { attendanceStatus: "pending" },
+    });
+
+    const appointment3 = await Appointment.create({
+      studentId: student._id,
+      tutorShiftId: shift._id,
+      course: "IT179",
+      appointmentDate: shift.shiftDate,
+      startTime: shift.startTime,
+      endTime: shift.endTime,
+      appointmentStatus: "scheduled",
+      attendance: { attendanceStatus: "pending" },
+    });
+
+    // create a test session for student user
+    // req.session.user = {
+    //     _id: student._id,
+    //     role: student.role,
+    //     fname: student.fname,
+    //     lname: student.lname
+    // };
+    req.session.user = {
+      _id: tutor._id,
+      role: tutor.role,
+      fname: tutor.fname,
+      lname: tutor.lname,
+    };
+
+    req.session.save(() => {
+      res.send("Test data seeded successfully!");
+    });
+    // res.send('Test data seeded successfully!');
+  } catch (err) {
+    console.error(err);
+    res.send("Seeding failed: " + err.message);
+  }
 });
 
 
@@ -160,6 +222,6 @@ app.get('/seedCenter', async (req, res) => {
 connectMongo();
 
 // listening on port
-app.listen(PORT, () => { 
-  console.log('Server running on port', PORT); 
-}); 
+app.listen(PORT, () => {
+  console.log("Server running on port", PORT);
+});
