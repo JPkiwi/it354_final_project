@@ -8,7 +8,7 @@ route.get('/adminIndex', controller.getAdminIndex);
 
 // renders adminAvailabilityIndex
 route.get('/adminAvailabilityIndex', controller.getAdminAvailabilityIndex);
-// (re)Renders adminTutorIndex when tutor active status is toggled
+// Receives POST request to toggle tutor active status
 route.post("/adminTutorIndex/toggle", controller.toggleTutorStatus);
 
 
@@ -18,5 +18,13 @@ route.get('/adminTutorIndex', controller.getAdminTutorIndex);
 
 // renders adminStudentIndex
 route.get('/adminStudentIndex', controller.getAdminStudentIndex);
+
+// Receives POST request to toggle student active status
+route.post("/adminStudentIndex/toggle", controller.toggleStudentStatus);
+
+// Handles form submission to create a new user (student or tutor)
+route.post("/adminUsers/add", controller.addUser);
+
+
 
 module.exports = route;

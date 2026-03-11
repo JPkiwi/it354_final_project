@@ -90,6 +90,9 @@ exports.getAdminTutorIndex = async (req, res) => {
   try {
     // finding tutors in user collection
     const tutors = await User.find({ role: "tutor" });
+    // retrieving courses (for when admin adds a tutor, they need to select the course(s) tutor will teach)
+const courses = await Course.find();
+
 
     // open adminTutorIndex view
     res.render("adminTutorIndex", {
@@ -99,7 +102,9 @@ exports.getAdminTutorIndex = async (req, res) => {
       jsFile: "tutorIndex.js",
       user: { role: "admin" },
       // passing list of tutors into view
-      tutors: tutors
+      tutors: tutors,
+      // passing courses into view 
+      courses: courses
     });
   } catch (err) {
     // prints erroe to console
@@ -120,7 +125,6 @@ exports.getAdminTutorIndex = async (req, res) => {
 
 
 // Changing a tutor's status from active to inactive or vice versa
-
 exports.toggleTutorStatus = async (req, res) => {
   try {
     // retrieving selected tutor ID from submitted form (selected Tutor)
@@ -169,15 +173,165 @@ exports.toggleTutorStatus = async (req, res) => {
 
 
 // renders admin student index
-exports.getAdminStudentIndex = (req, res) => {
-    res.render('adminStudentIndex', 
+exports.getAdminStudentIndex = async(req, res) => {
+
+try {
+  // retrieving students from user collection
+  const students = await User.find({role: "student"});
+ res.render("adminStudentIndex", 
         {
             error: null,
-            title: 'Admin Manage Students',
-            cssStylesheet: 'studentIndex.css',
-            jsFile: 'studentIndex.js',
-            user: { role: 'admin' } // TEMPORARY PLACE HOLDER
-            // eventually we will replace this with a real user, like: req.session.user
+            title: "Admin Manage Students",
+            cssStylesheet: "studentIndex.css",
+            jsFile: "studentIndex.js",
+            user: { role: "admin" }, 
+            // pass list of students into view 
+            students: students
     });
+} catch (err){
+  res.render("adminStudentIndex", 
+{
+  error: "Could not load students",
+  title: "Admin Manage Students",
+            cssStylesheet: "studentIndex.css",
+            jsFile: "studentIndex.js",
+            user: { role: "admin" },
+            // empty array when error occurs
+            students: []
+}
+)}
+
 };
 
+
+
+
+
+
+
+// Changing a student's status from active to inactive or vice versa
+exports.toggleStudentStatus = async (req, res) => {
+  try {
+    // retrieving selected student ID from submitted form (this is from the radio button "SelectedStudent")
+    const studentId = req.body.selectedStudent;
+
+    // if a student is not selected (no Id retrived), re-render page -> makes sure undefined id's are updated
+    if (!studentId) {
+      const students = await User.find({ role: "student" });
+
+      return res.render("adminStudentIndex", {
+        error: "Please select a student first.",
+        title: "Admin Manage Students",
+        cssStylesheet: "studentIndex.css",
+        jsFile: "studentIndex.js",
+        user: { role: "admin" },
+        students: students
+      });
+    }
+
+    // findin gthe selected user (student) by their id and role
+    const student = await User.findOne({
+      _id: studentId,
+      role: "student"
+    });
+
+    // Makes sure student exists in db 
+    if (!student) {
+      return res.status(404).send("Student not found.");
+    }
+
+    // Toggle the students isActive value / update it
+    await User.updateOne(
+      { _id: studentId, role: "student" },
+      { $set: { isActive: !student.isActive } }
+    );
+
+    // re-renders updated list (active vs. inactive) and redirects to the manage students page
+    res.redirect("/adminStudentIndex");
+
+  } 
+    // in case of any erros, can log them and 500 for unfulfilled req 
+
+  catch (err) {
+    console.error(err);
+    res.status(500).send("Could not update student status.");
+  }
+};
+
+
+
+
+// Function to control ADDINg new user (student/tutor)from admnin
+exports.addUser = async (req, res) => {
+  try {
+    // get data from what was entered in the modal
+    const { fname, lname, email, password, role } = req.body;
+    // 
+    let { tutorCourses } = req.body;
+
+    // make sure all fields were filled out
+    if (!fname || !lname || !email || !password || !role) {
+      return res.status(400).send("All fields are required.");
+    }
+
+    // Admin can only assign students and students, 
+    // if we need to change to add another admin this is just temporary for now
+    if (role !== "student" && role !== "tutor") {
+      return res.status(400).send("Invalid role.");
+    }
+
+    // Security check to make sure that emails will not be dupliated 
+    // (if a diff user already has email, return the 400/cannot process req)
+    const existingUser = await User.findOne({ email: email });
+    if (existingUser) {
+      return res.status(400).send("A user with that email already exists.");
+    }
+
+
+
+    // if there is no tutor course selected when filling out "Add Tutor", 
+    // then 400/cannot process req is sent and that at least one course must be selected
+    if(role == "tutor"){
+      if(!tutorCourses){
+        return res.status(400).send("Course(s) must be selected to add a tutor")
+      }
+   
+      // making sure selected course(s) is turned into an array bc model expects 
+      // tutorCourses to be an array
+if (!Array.isArray(tutorCourses)) {
+  tutorCourses = [tutorCourses];
+}
+
+ }
+ else {
+  // students don't have tutor courses
+  tutorCourses = [];
+ }
+
+    // when all above is passed/checked, create the new user 
+    await User.create({
+      fname: fname,
+      lname: lname,
+      email: email,
+      passwordHash: password,
+      role: role,
+      isActive: true,
+      tutorCourses: tutorCourses
+    });
+
+    // redirect back to the correct page after creating the user
+    if (role === "student") {
+      return res.redirect("/adminStudentIndex");
+    } 
+    // I only have the "Add User" for students right now, adding tutor very soon
+    else {
+      return res.redirect("/adminTutorIndex");
+    }
+
+  } 
+  // in case of any erros, can log them and 500 for unfulfilled req 
+  catch (err) {
+    console.error(err);
+    res.status(500).send("Could not add user.");
+  }
+};

@@ -11,44 +11,90 @@
  
   <br>
 
+  <form action="/adminStudentIndex/toggle" method="POST">
+
   <!-- Search -->
   <input type="text" id="search" placeholder="Search students..." />
+<!-- toggle student status (active vs. inactive) button-->
+  <button type="submit" id="toggleActiveBtn">Toggle Active</button>
+<!-- Add user (student) button -> opens Modal-->
+  <button type="button" id="openAddStudentModal">Add Student</button>
 
-  <button type="button" id="toggleActiveBtn">Toggle Active</button>
 <br><br>
 
 
 
 
 
-  <!-- Tutors Table -->
+  <!-- Students Table -->
   <table border="1" cellpadding="6" cellspacing="0">
     <thead>
       <tr>
         <th>Select</th>
-        <th>ID</th>
         <th>Name</th>
         <th>Email</th>
         <th>Active</th>
       </tr>
     </thead>
 
-    <tbody id="tutorRows">
-      <tr>
-        <td><input type="checkbox" class="rowCheck"></td>
-        <td>1</td>
-        <td>student 1</td>
-        <td>stu1@ilstu.edu</td>
-        <td>Yes</td>
-      </tr>
-      <tr>
-        <td><input type="checkbox" class="rowCheck"></td>
-        <td>2</td>
-        <td>student 2</td>
-        <td>stu2@ilstu.edu</td>
-        <td>No</td>
-      </tr>
+<!-- Loop through student array (from adminController)-->
+    <tbody id="studentRows">
+       <% students.forEach(student => { %>
+        <!-- use no class (' ') if student is active, use 'inactive-row' styling if student is not active-->
+         <tr class="<%= student.isActive ? '' : 'inactive-row' %>">
+<!-- creates a radio button per student for selection (to edit student status as inactive/actvie)-->
+          <td>
+            <input type="radio" name="selectedStudent" value="<%= student._id %>">
+          </td>
+          <td><%= student.fname %> <%= student.lname %></td>
+          <td><%= student.email %></td>
+          <!-- prints student's status based on isActive -->
+          <td><%= student.isActive ? "Yes" : "No" %></td>
+        </tr>
+      <% }) %>
     </tbody>
   </table>
+
+
+  </form>
+
+
+  <!-- "Add Student" Modal -> form to create/Add new student to db  -->
+   <!-- pop-up container-->
+<div id="addStudentModal" class="modal">
+  <!-- content box (temp white)-->
+  <div class="modal-content">
+    <!-- x to close modal-->
+    <span class="close-btn" id="closeAddStudentModal">&times;</span>
+
+    <h2>Add Student</h2>
+<!-- connected to route, sends data to /adminUsers/add, POST req for submission-->
+    <form action="/adminUsers/add" method="POST">
+      <!-- data to be sent (first name, last name, email, password (We can just have it as a 
+       temporary password set by admin for students to use to login and then student can change password after
+       / be sent a link to change password? ) )-->
+      <input type="hidden" name="role" value="student">
+      <label>First Name:</label>
+  <input type="text" name="fname" required>
+      <br><br>
+
+      <label>Last Name:</label>
+     <input type="text" name="lname" required>
+      <br><br>
+
+      <label>Email:</label>
+      <input type="email" name="email" required>
+    <br><br>
+      <label>Password:</label>
+      <input type="text" name="password" required>
+
+      <br><br>
+      <button type="submit">Create Student</button>
+    </form>
+  </div>
+</div>
+
+
+
 
 <%- include("includes/_footer") %>

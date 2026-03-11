@@ -14,50 +14,11 @@
 
 
   <!-- Appointment/cancellation buttons -->
-  <button type="button" id="addBtn">Add Appointment</button>
   <button type="button" id="cancelBtn">Cancel Appointment</button>
   <button type="button" id="historyBtn">Cancellation History</button>
-  <button type="button" id="assignTutorBtn">Assign Tutor</button>
 
-
-  <!-- Adding Appointments form -->
-
-  <!-- Form appears when "Add Appointment" is clicked-->
-<form id="addForm" action="/adminIndex/findTutors" method="GET" style="display:none; margin-top:10px;">
-  <input name="studentFName" type="text" placeholder="Student First Name" required>
-  <input name="studentLName" type="text" placeholder="Student Last Name" required>
-  <input name="date" type="date" required>
-  <input name="time" type="time" required>
-
- <!-- Course dropdown (dynamically populated from db!)-->
-  <select name="course" required>
-    <!--default placeholder of courses-->
-  <option value="" disabled selected>Select Course</option>
-  <!-- Looping through course array (passed from cont.)-->
-  <% courses.forEach(course => { %>
-    <!-- passing each course as an option (in dropdown menu)-->
-     <!-- note to self, value = course's db id-->
-  <option value="<%= course._id %>"><%= course.courseName %></option>
-<% }) %>
-</select>
-
-  <button type="submit">Find Tutors</button>
-</form>
-
-
-<!-- AFTER SUBMISSION (clicking the "Find Tutors" button above)
- A DROPDOWN SHOULD BE POPULATED showing all tutors available 
- to be assigned to the chosen appointment (and/or showing that selected appointment 
- is not valid/all tutors are not available during selected appointment range?) 
- If appointment range is valid, admin should then choose a tutor from dropdown 
- and click a final "save" button which adds/creates appointment-->
-    </select>
-
-    <button type="submit">Save</button>
-  </form>
 
   <br><br>
-
 
 
 
