@@ -18,6 +18,9 @@
 
   <button type="submit">Toggle Active</button>
 
+  <!-- Add tutor button -> opens Modal-->
+  <button type="button" id="openAddTutorModal">Add Tutor</button>
+
   <br><br>
 
   <table border="1" cellpadding="6" cellspacing="0">
@@ -46,4 +49,65 @@
   </table>
 
 </form>
+
+
+
+  <!-- "Add Tutor" Modal -> form to create/Add new tutor to db  -->
+   <!-- pop-up container-->
+<div id="addTutorModal" class="modal">
+  <!-- content box (temp white)-->
+  <div class="modal-content">
+    <!-- x to close modal-->
+    <span class="close-btn" id="closeAddTutorModal">&times;</span>
+
+    <h2>Add Tutor</h2>
+<!-- connected to route, sends data to /adminUsers/add, POST req for submission-->
+    <form action="/adminUsers/add" method="POST">
+      <!-- data to be sent (first name, last name, email, password (We can just have it as a 
+       temporary password set by admin for students to use to login and then student can change password after
+       / be sent a link to change password? ) )-->
+      <input type="hidden" name="role" value="tutor">
+      <label>First Name:</label>
+  <input type="text" name="fname" required>
+      <br><br>
+
+      <label>Last Name:</label>
+     <input type="text" name="lname" required>
+      <br><br>
+
+      <label>Email:</label>
+      <input type="email" name="email" required>
+    <br><br>
+      <label>Password:</label>
+      <input type="text" name="password" required>
+
+<!-- a tutor NEEDS to be assigned to at least one course based on User model, 
+ so we need to make sure that when admin creates a tutor, they assign them to the 
+ existing courses from db
+ 
+ so this is a checkbox functionality where admin can select which courses the tutor will 
+ be tutoring students for-->
+<label>Courses:</label><br>
+      <% courses.forEach(course => { %>
+        <label>
+          <input type="checkbox" name="tutorCourses" value="<%= course._id %>">
+         <%= course.courseName %>
+        </label>
+        <br>
+      <% }) %>
+
+
+
+
+
+      <br><br>
+      <button type="submit">Create Tutor</button>
+    </form>
+  </div>
+</div>
+
+
+
+
+
 <%- include("includes/_footer") %>

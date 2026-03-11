@@ -13,9 +13,9 @@
         <li><a href="/">
             <!--Logo with a link to home page for all users-->
             <!--Logo downloaded from ISU Website-->
-            <img src="/images/ISU_Seal_1C_186.svg" alt="Illinois State University Logo" style="width: 80px; height: auto;">
+            <img src="/images/ISU_Seal_1C_186.svg" alt="Illinois State University Logo" style="width: 90px; height: auto;">
         </a></li>
-        <li><a href="/">Home</a></li> <!--General Center Info for all users-->
+        <li><a href="/" style="margin-right: 20px;">Home</a></li> <!--General Center Info for all users-->
 
         <!--Won't work until we create a controller where user (or whatever name we choose) is defined-->
         <% if (user && user.role === 'admin') { %>
@@ -45,7 +45,6 @@
             </li>
         <% } else { %> <!--For non-auth user-->
             <li><a href="/login">Login</a></li> <!--Login Page-->
-            <li><a href="/signup">Signup</a></li> <!--Signup Page-->
         <% } %>
     </ul>
   </div>
