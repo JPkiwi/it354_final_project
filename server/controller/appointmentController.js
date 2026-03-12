@@ -19,7 +19,7 @@ exports.bookAppointment = async (req, res) => {
         cssStylesheet: "studentAppointment.css",
         jsFile: "studentScript.js",
         error: "That shift is no longer available.",
-        user: req.session.user || { role: "student" },
+        user: req.session.user,
         availableShifts: [],
         bookedAppointments: [],
       });
@@ -49,7 +49,7 @@ exports.bookAppointment = async (req, res) => {
       cssStylesheet: "studentStyle.css",
       jsFile: "studentScript.js",
       error: "Failed to book appointment.",
-      user: req.session.user || { role: "student" },
+      user: req.session.user,
       availableShifts: [],
       bookedAppointments: [],
     });
@@ -69,8 +69,7 @@ exports.getBookedAppointments = async (req, res) => {
       cssStylesheet: "studentStyle.css",
       jsFile: "studentScript.js",
       error: null,
-      user: req.session.user || { role: "student" }, // TEMPORARY PLACE HOLDER
-      // eventually we will replace this with a real user, like: req.session.user
+      user: req.session.user,
       bookedAppointments,
     });
   } catch (err) {
@@ -80,7 +79,7 @@ exports.getBookedAppointments = async (req, res) => {
       cssStylesheet: "studentStyle.css",
       jsFile: "studentScript.js",
       error: "Failed to book appointment.",
-      user: req.session.user || { role: "student" },
+      user: req.session.user,
       availableShifts: [],
       bookedAppointments: [],
     });

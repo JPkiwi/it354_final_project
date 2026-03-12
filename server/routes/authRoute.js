@@ -2,7 +2,6 @@ const express = require('express');
 const route = express.Router();
 
 const controller = require('../controller/authController');
-const { loginUser } = require('../controller/loginController');
 
 // Step 1: Redirect user to Google login
 route.get('/auth/google', controller.redirectToGoogleLogin);
@@ -15,9 +14,9 @@ route.get('/auth/google/callback', controller.googleCallback);
 route.get('/login', controller.getLoginPage);
 
 // when enter credentials and submit on the login page, get the request body
-route.post('/login', loginUser);
+route.post('/login', controller.loginUser);
 
 // when user logs out, end session
-// INSERT LOGOUT HERE
+route.post('/logout', controller.logout);
 
 module.exports = route;
