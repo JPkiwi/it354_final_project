@@ -2,7 +2,7 @@ const express = require("express");
 const dotenv = require("dotenv");
 const morgan = require("morgan");
 const connectMongo = require("./server/database/connect");
-const session = require('express-session'); // allows us to store session tokens (logging into Google Calendar) 
+const session = require('express-session'); // allows us to store session tokens
 const seedOpenCenter = require("./server/seed/seedOpenCenter");
 
 
