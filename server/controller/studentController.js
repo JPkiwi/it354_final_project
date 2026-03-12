@@ -15,7 +15,7 @@ exports.getStudentIndex = async (req, res) => {
             jsFile: "studentScript.js",
             error: null,
             form: {},
-            user: req.session.user || { role: "student" },
+            user: req.session.user,
             courses,
             availableShifts: []
         });
@@ -27,7 +27,7 @@ exports.getStudentIndex = async (req, res) => {
             jsFile: "studentScript.js",
             error: "Failed to load courses for student index page.",
             form: {},
-            user: req.session.user || { role: "student" },
+            user: req.session.user,
             courses: [],
             availableShifts: []
         });
@@ -60,7 +60,7 @@ exports.viewAvailableAppointments = async (req, res) => {
                 jsFile: "studentScript.js",
                 error: "You cannot view appointments for a past day.",
                 form: { course, selectDay },
-                user: req.session.user || { role: "student" },
+                user: req.session.user,
                 courses,
                 availableShifts: []
             });
@@ -103,7 +103,7 @@ exports.viewAvailableAppointments = async (req, res) => {
                     jsFile: "studentScript.js",
                     error: "There are no available appointments for that course and day.",
                     form: { course: req.body.course, selectDay: req.body.selectDay },
-                    user: req.session.user || { role: "student" },
+                    user: req.session.user,
                     courses,
                     availableShifts: []
                 });
@@ -115,7 +115,7 @@ exports.viewAvailableAppointments = async (req, res) => {
                     jsFile: "studentScript.js",
                     error: null,
                     form: { course: req.body.course, selectDay: req.body.selectDay },
-                    user: req.session.user || { role: "student" },
+                    user: req.session.user,
                     courses,
                     availableShifts
                 });

@@ -9,7 +9,7 @@ exports.getLandingPage = async (req, res) => {
       title: "ISU Learning Center",
       cssStylesheet: "index.css",
       jsFile: "index.js",
-      user: req.session.user || null,
+      user: req.session.user,
       weekdays
     });
   } catch (err) {
@@ -19,7 +19,7 @@ exports.getLandingPage = async (req, res) => {
       title: "ISU Learning Center",
       cssStylesheet: "index.css",
       jsFile: "index.js",
-      user: req.session.user || null,
+      user: req.session.user,
       weekdays: []
     });
   }

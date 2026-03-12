@@ -2,9 +2,9 @@ const express = require("express");
 const dotenv = require("dotenv");
 const morgan = require("morgan");
 const connectMongo = require("./server/database/connect");
-const session = require('express-session'); // allows us to store session tokens (logging into Google Calendar)
-// 
+const session = require('express-session'); // allows us to store session tokens
 const seedOpenCenter = require("./server/seed/seedOpenCenter");
+
 
 dotenv.config();
 
@@ -70,9 +70,20 @@ const TutorShift = require("./server/model/tutorShiftModel");
 const Course = require("./server/model/courseModel");
 const Appointment = require("./server/model/appointmentModel");
 
-// TEMPORARY TEST DATA - one admin/one tutor/one shift
+// TEMPORARY TEST DATA BELOW
+
+// NOTE: IF YOU WANT THE LOGIN FUNCTIONALITY TO WORK FOR TEST DATA, YOU MUST USE A HASHED PASSWORD !!!
+// The password checker specifically checks hashed passwords, if you used unhashed passwords IT WILL FAIL
+
+// use this to create a password for each user you want to test:
+// const hashedPassword1 = await bcrypt.hash('use an actual password here', 10);
+// ^ the "10" refers to the length of the string that the password will be salted with.
+
 app.get("/seed", async (req, res) => {
   try {
+    // for hashing passwords
+    const bcrypt = require("bcrypt");
+
     // create a test admin
     const admin = await User.create({
       role: "admin",
@@ -80,6 +91,17 @@ app.get("/seed", async (req, res) => {
       lname: "User",
       email: "admin@ilstu.edu",
       passwordHash: "hashedpassword123",
+    });
+
+    // FOR TESTING PASSWORD HASHING with the "adminHash" admin below:
+    const hashedPassword1 = await bcrypt.hash('adminHashPass1234', 10);
+    // admin with a hashed password
+      const adminHash = await User.create({
+      role: "admin",
+      fname: "Admin",
+      lname: "Hashed",
+      email: "adminHash@ilstu.edu",
+      passwordHash: hashedPassword1,
     });
 
     // create courses

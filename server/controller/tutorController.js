@@ -21,7 +21,7 @@ exports.getTutorIndex = (req, res) => {
             cssStylesheet: 'login.css',
             jsFile: null,
             error: "Access denied. Only tutors can view this page.",
-            user: null
+            user: req.session.user
         });
     }
 
