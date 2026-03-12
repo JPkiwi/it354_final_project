@@ -42,67 +42,85 @@ exports.viewAvailableAppointments = async (req, res) => {
 
         // convert courseId string to ObjectId to use in availableShifts query
         const courseId = new mongoose.Types.ObjectId(course); 
+
+        //get the current date to compare to shift dates and only show future appointments
+        const currentDate = new Date();
         
         // create a date range for the whole day (using UTC to avoid timezone issues)
         const startOfDay = new Date(selectDay);
         const endOfDay = new Date(selectDay);
         startOfDay.setUTCHours(0, 0, 0, 0);
         endOfDay.setUTCHours(23, 59, 59, 999);
-        
-        // pull shifts that are not booked and on the date and course the user selected
-        let availableShifts = await TutorShift.aggregate([
-            { $match: {isBooked: false, shiftDate: { $gte: startOfDay, $lte: endOfDay }} },
-            { $lookup: {from: "users", localField: "tutorId", foreignField: "_id", as: "tutor"} },
-            { $unwind: "$tutor" },
-            { $match: {"tutor.tutorCourses": courseId } },
-            { $lookup: {from: "courses", localField: "tutor.tutorCourses", foreignField: "_id", as: "courses"} },
-            { $project: {shiftDate: 1, startTime: 1, endTime: 1, tutorId: "$tutor._id", fname: "$tutor.fname", lname: "$tutor.lname",
-                courseName: { 
-                    $arrayElemAt: [{
-                        $map: {
-                            input: {
-                                $filter: {
-                                    input: "$courses", 
-                                    as: "course", 
-                                    cond: { $eq: ["$$course._id", courseId] }
-                                } 
-                            },
-                            as: "course",
-                            in: "$$course.courseName"
-                        }
-                    }, 0]
 
-                }}
-            },
-            { $sort: { shiftDate: 1, startTime: 1 } }
-        ]);
-
-        console.log("Available shifts:", availableShifts.length);
-
-        if (availableShifts.length === 0) {
+        // allow same day appointments but not past day appointments
+        if (endOfDay < currentDate) {
             return res.render("studentIndex", {
                 title: "Book an Appointment",
                 cssStylesheet: "studentStyle.css",
                 jsFile: "studentScript.js",
-                error: "There are no available appointments for that course and day.",
-                form: { course: req.body.course, selectDay: req.body.selectDay },
+                error: "You cannot view appointments for a past day.",
+                form: { course, selectDay },
                 user: req.session.user || { role: "student" },
                 courses,
                 availableShifts: []
             });
         }
         else {
-            res.render("studentIndex", {
-                title: "Book an Appointment",
-                cssStylesheet: "studentStyle.css",
-                jsFile: "studentScript.js",
-                error: null,
-                form: { course: req.body.course, selectDay: req.body.selectDay },
-                user: req.session.user || { role: "student" },
-                courses,
-                availableShifts
-            });
-        }  
+            // pull shifts that are not booked and on the date and course the user selected
+            let availableShifts = await TutorShift.aggregate([
+                { $match: {isBooked: false, shiftDate: { $gte: startOfDay, $lte: endOfDay }} },
+                { $lookup: {from: "users", localField: "tutorId", foreignField: "_id", as: "tutor"} },
+                { $unwind: "$tutor" },
+                { $match: {"tutor.tutorCourses": courseId } },
+                { $lookup: {from: "courses", localField: "tutor.tutorCourses", foreignField: "_id", as: "courses"} },
+                { $project: {shiftDate: 1, startTime: 1, endTime: 1, tutorId: "$tutor._id", fname: "$tutor.fname", lname: "$tutor.lname",
+                    courseName: { 
+                        $arrayElemAt: [{
+                            $map: {
+                                input: {
+                                    $filter: {
+                                        input: "$courses", 
+                                        as: "course", 
+                                        cond: { $eq: ["$$course._id", courseId] }
+                                    } 
+                                },
+                                as: "course",
+                                in: "$$course.courseName"
+                            }
+                        }, 0]
+
+                    }}
+                },
+                { $sort: { shiftDate: 1, startTime: 1 } }
+            ]);
+
+            console.log("Available shifts:", availableShifts.length);
+
+            if (availableShifts.length === 0) {
+                return res.render("studentIndex", {
+                    title: "Book an Appointment",
+                    cssStylesheet: "studentStyle.css",
+                    jsFile: "studentScript.js",
+                    error: "There are no available appointments for that course and day.",
+                    form: { course: req.body.course, selectDay: req.body.selectDay },
+                    user: req.session.user || { role: "student" },
+                    courses,
+                    availableShifts: []
+                });
+            }
+            else {
+                res.render("studentIndex", {
+                    title: "Book an Appointment",
+                    cssStylesheet: "studentStyle.css",
+                    jsFile: "studentScript.js",
+                    error: null,
+                    form: { course: req.body.course, selectDay: req.body.selectDay },
+                    user: req.session.user || { role: "student" },
+                    courses,
+                    availableShifts
+                });
+            }
+        }
 
     } catch (err) {
         console.error(err);
