@@ -12,12 +12,49 @@
 
   <br>
   
-  <p>Calendar placement</p>
+  <!-- <p>Calendar placement</p> --> <!--For later-->
 
 
-  <button type="button" id="editHours">Edit Hours</button>
-  <button type="button" id="addTime">Add Time Block</button>
-  <button type="button" id="editHours">Add Exception</button>
-  <button type="button" id="editHours">Add Blackout Date</button>
+  <button type="button" id="editHoursButton">Edit Hours</button>
+  <button type="button" id="addTimeButton">Add Time Block</button>
+  <button type="button" id="editExceptionButton">Add Exception</button>
+  <button type="button" id="editBlackoutButton">Add Blackout Date</button>
+
+  <br />
+  <br />
+  <br />
+  <br />
+
+  <div class="changeHours">
+    <form id="changeHoursForm" action="/changeHours" method="post" style="display: none;"> <!--Initially hidden-->
+      <label for="selectWeekday">Select Day of the Week:</label>
+      <select name="weekday" id="weekday" required>
+        <option value="Monday">Monday</option>
+        <option value="Tuesday">Tuesday</option>
+        <option value="Wednesday">Wednesday</option>
+        <option value="Thursday">Thursday</option>
+        <option value="Friday">Friday</option>
+        <option value="Saturday">Saturday</option>
+        <option value="Sunday">Sunday</option>
+      </select>
+
+      <br />
+      <br />
+      
+      <label id="center-open-label" for="centerOpenTime">Open Time:</label>
+      <input type="time" id="centerOpenTime" name="centerOpenTime" />
+      <label id="center-close-label" for="centerCloseTime">Close Time:</label>
+      <input type="time" id="centerCloseTime" name="centerCloseTime" />
+      <br />
+      <strong>Note:</strong> If Open Time and Close Time are set to less than
+      <br />
+      one hour apart, then the weekday will be set to closed.
+
+      <br />
+      <br />
+
+      <button type="submit" id="submitHoursButton">Submit Hours</button>
+    </form>
+  </div>
 
 <%- include("includes/_footer") %>
