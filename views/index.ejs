@@ -59,19 +59,52 @@
 </section>
 
 <div class = "hoursAndLocation">
-    <!--Create Javascript toggle for open/closed-->
-    <h2>We are currently OPEN / CLOSED</h2>
+    <!--Retrieve current time to display if center is currently open/closed-->
+    <%
+        const today = new Date();
+        const weekdayIndex = today.getDay() <!--.getDay() gets the weekday index (0-6)-->
+        const currHour = today.getHours(); <!--.getHours() gets the current hour-->
+        const openHour = Number(weekdays[weekdayIndex].openTime.split(":")[0]); <!--Get open hour as an integer-->
+        const closeHour = Number(weekdays[weekdayIndex].closeTime.split(":")[0]); <!--Get close hour as an integer-->
+        const openMinute = Number(weekdays[weekdayIndex].openTime.split(":")[1]); <!--Get open minute as an integer-->
+        const closeMinute = Number(weekdays[weekdayIndex].closeTime.split(":")[1]); <!--Get close minute as an integer-->
+    %>
+    <% if (weekdays[weekdayIndex].isClosed || openHour > currHour || (openHour === currHour && openMinute > currMinute) || closeHour < currHour || (closeHour === currHour && closeMinute <= currMinute)) { %>
+        <h2>We are currently closed!</h2>
+    <% } else { %>
+        <h2>We are currently open!</h2>
+    <% } %>
+    
     <div class = "hoursRow">
     <div class = "hours">
         <h1>HOURS</h1>
-        <h3>Monday - Friday: xx:xx - xx:xx</h3>
-        <h3>Saturday & Sunday: xx:xx - xx:xx</h3>
+        <!--Display the day of the week and the open and closed hours, in AM/PM-->
+        <% weekdays.forEach(day => { %>
+            <% 
+                const [openHour, openMinute] = day.openTime.split(":");
+                const [closeHour, closeMinute] = day.closeTime.split(":");
+                let openHourNum = parseInt(openHour);
+                let closeHourNum = parseInt(closeHour);
+                const openAMPM = openHourNum >= 12 ? "PM" : "AM";
+                const closeAMPM = closeHourNum >= 12 ? "PM" : "AM";
+                openHourNum = openHourNum % 12 || 12;
+                closeHourNum = closeHourNum % 12 || 12;
+            %>
+            <h3>
+                <%= day.weekday %>:
+                <% if(day.isClosed){ %>
+                    Closed
+                <% } else { %>
+                    <%= openHourNum + ":" + openMinute + " " + openAMPM + " - " + closeHourNum + ":" + closeMinute + " " + closeAMPM %>
+                <% } %>
+            </h3>
+        <% }) %>
     </div>
     <div class = "location">
         <h1>LOCATION</h1>
-        <h3>Blahblahblah Street,<br>
-        blahblah, Blahblahblah<br>
-        123456
+        <h3>424 S School St,<br>
+        Normal, IL<br>
+        61761
         </h3>
     </div>
 </div>
@@ -97,11 +130,5 @@
         </div>
     </div>
 </div>
-
-<!-- <div class = "footer">
-    <h1>LOGO</h1>
-    <h3>Link 1 | Link 2 | Link 3</h3>
-    <p>SOCIAL MEDIA / OTHER ???</p>
-</div> -->
 
 <%- include("includes/_footer") %>
