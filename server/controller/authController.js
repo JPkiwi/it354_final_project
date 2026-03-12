@@ -43,14 +43,6 @@ exports.getSignupPage = async (req, res) => {
             user: null
     });
 };
-
-// POST
-// MARK: Functionality for login
-exports.useLoginInfo = async (req, res) => {
-    // console.log(req.body);
-    res.sendStatus(202); // accepted
-};
-
 // POST
 // MARK: Functionality for signup
 exports.useSignupInfo = async (req, res) => {

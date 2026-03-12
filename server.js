@@ -2,9 +2,9 @@ const express = require("express");
 const dotenv = require("dotenv");
 const morgan = require("morgan");
 const connectMongo = require("./server/database/connect");
-const session = require('express-session'); // allows us to store session tokens (logging into Google Calendar)
-// 
+const session = require('express-session'); // allows us to store session tokens (logging into Google Calendar) 
 const seedOpenCenter = require("./server/seed/seedOpenCenter");
+
 
 dotenv.config();
 
@@ -73,6 +73,11 @@ const Appointment = require("./server/model/appointmentModel");
 // TEMPORARY TEST DATA - one admin/one tutor/one shift
 app.get("/seed", async (req, res) => {
   try {
+    // for salting passwords
+    const bcrypt = require("bcrypt");
+
+    // FOR TESTING PASSWORD HASHING:
+    const hashedPassword = await bcrypt.hash('adminHashPass1234', 10); // DELETE EVENTUALLY
     // create a test admin
     const admin = await User.create({
       role: "admin",
@@ -80,6 +85,15 @@ app.get("/seed", async (req, res) => {
       lname: "User",
       email: "admin@ilstu.edu",
       passwordHash: "hashedpassword123",
+    });
+
+    // admin with a hashed password
+      const adminHash = await User.create({
+      role: "admin",
+      fname: "Admin",
+      lname: "Hashed",
+      email: "adminHash@ilstu.edu",
+      passwordHash: hashedPassword,
     });
 
     // create courses
