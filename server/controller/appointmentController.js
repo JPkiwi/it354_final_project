@@ -6,6 +6,30 @@ const mongoose = require("mongoose");
 // POST: handle bookAppointment form submission
 exports.bookAppointment = async (req, res) => {
   try {
+    // if not an auth user, send to login page
+    if (!req.session.user) {
+      return res.render('login', 
+      {
+        title: 'Login Page',
+        cssStylesheet: 'login.css',
+        jsFile: null,
+        error: "User not logged in.",
+        user: null,
+      });
+    }
+
+    // if auth user but not a student, send to login page
+    if (req.session.user.role !== "student") {
+      return res.render('login', 
+      {
+        title: 'Login Page',
+        cssStylesheet: 'login.css',
+        jsFile: null,
+        error: "Access denied. Only students can view this page.",
+        user: req.session.user,
+      });
+    }
+
     // get the tutorShiftId and course
     const { tutorShiftId, course } = req.body;
 
@@ -60,6 +84,30 @@ exports.bookAppointment = async (req, res) => {
 // GET: display the student's booked appointments
 exports.getBookedAppointments = async (req, res) => {
   try {
+    // if not an auth user, send to login page
+    if (!req.session.user) {
+      return res.render('login', 
+      {
+        title: 'Login Page',
+        cssStylesheet: 'login.css',
+        jsFile: null,
+        error: "User not logged in.",
+        user: null,
+      });
+    }
+
+    // if auth user but not a student, send to login page
+    if (req.session.user.role !== "student") {
+      return res.render('login', 
+      {
+        title: 'Login Page',
+        cssStylesheet: 'login.css',
+        jsFile: null,
+        error: "Access denied. Only students can view this page.",
+        user: req.session.user,
+      });
+    }
+
     // get any booked appointments
     const bookedAppointments = await Appointment.find({ studentId: req.session.user._id });
 

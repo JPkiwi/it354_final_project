@@ -84,6 +84,10 @@ app.get("/seed", async (req, res) => {
     // for hashing passwords
     const bcrypt = require("bcrypt");
 
+    // create courses
+    const course179 = await Course.create({ courseName: "IT179" });
+    const course168 = await Course.create({ courseName: "IT168" });
+
     // create a test admin
     const admin = await User.create({
       role: "admin",
@@ -104,9 +108,27 @@ app.get("/seed", async (req, res) => {
       passwordHash: hashedPassword1,
     });
 
-    // create courses
-    const course179 = await Course.create({ courseName: "IT179" });
-    const course168 = await Course.create({ courseName: "IT168" });
+    const hashedPassword2 = await bcrypt.hash('tutorHashPass1234', 10);
+    // tutor with a hashed password
+      const tutorHash = await User.create({
+      role: "tutor",
+      fname: "Tutor",
+      lname: "Hashed",
+      email: "tutorHash@ilstu.edu",
+      passwordHash: hashedPassword2,
+      tutorCourses: [course179._id, course168._id],
+    });
+
+    const hashedPassword3 = await bcrypt.hash('studentHashPass1234', 10);
+    // student with a hashed password
+      const studentHash = await User.create({
+      role: "student",
+      fname: "Student",
+      lname: "Hashed",
+      email: "studentHash@ilstu.edu",
+      passwordHash: hashedPassword3,
+    });
+
 
     // create a test tutor
     const tutor = await User.create({
