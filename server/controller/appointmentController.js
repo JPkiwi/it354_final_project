@@ -1,3 +1,5 @@
+const { sendEmail } = require("../services/emailService");
+const {confirmationTemplate, cancellationTemplate} = require("../../views/templates/appointmentEmail");
 const Appointment = require("../model/appointmentModel");
 const TutorShift = require("../model/tutorShiftModel");
 const mongoose = require("mongoose");
@@ -34,7 +36,7 @@ exports.bookAppointment = async (req, res) => {
     const { tutorShiftId, course } = req.body;
 
     // get the selected shift
-    const shift = await TutorShift.findById(tutorShiftId);
+    const shift = await TutorShift.findById(tutorShiftId).populate("tutorId", "fname lname");
 
     // shift not available if doesn't exist or is booked
     if (!shift || shift.isBooked) {
@@ -64,6 +66,20 @@ exports.bookAppointment = async (req, res) => {
     // mark the shift as booked
     shift.isBooked = true;
     await shift.save();
+
+    // send confirmation email to student and CC admin
+    await sendEmail({
+      to: req.session.user.email,
+      cc: process.env.GMAIL_EMAIL, // CC admin
+      subject: "Appointment Confirmation",
+      html: confirmationTemplate({
+        studentName: req.session.user.fname,
+        tutorName: shift.tutorId.fname + " " + shift.tutorId.lname,
+        date: shift.shiftDate.toLocaleDateString('en-US', {timeZone: 'UTC'}),
+        time: `${shift.startTime} - ${shift.endTime}`,
+        course
+      })
+    });
 
     res.redirect("/studentIndex");
   } catch (err) {

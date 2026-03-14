@@ -2,8 +2,10 @@ const express = require("express");
 const dotenv = require("dotenv");
 const morgan = require("morgan");
 const connectMongo = require("./server/database/connect");
-const session = require('express-session'); // allows us to store session tokens
-// const seedOpenCenter = require("./server/seed/seedOpenCenter");
+const session = require('express-session'); // allows us to store session tokens (logging into Google Calendar)
+// 
+const seedOpenCenter = require("./server/seed/seedOpenCenter");
+const seedTutorShiftsAndStudent = require("./server/seed/seedTutorShifts");
 
 dotenv.config();
 
@@ -252,15 +254,15 @@ app.get("/seed", async (req, res) => {
 // On later visits → should log "Center hours already exist", check terminal for "Center hours already exist" message!!
 // I used mongosh to double-check, all weekdays correctly inserted from seedOpenCenter.js, terminal 
 // showed "Center hours already exit" after visiting url 2+ times, used db.centeropens.countDocuments() = 7 
-// app.get('/seedCenter', async (req, res) => {
-//     try {
-//         await seedOpenCenter();
-//         res.send('Center hours seeded successfully!');
-//     } catch (err) {
-//         console.error(err);
-//         res.send('Seeding failed: ' + err.message);
-//     }
-// });
+app.get('/seedCenter', async (req, res) => {
+    try {
+        await seedOpenCenter();
+        res.send('Center hours seeded successfully!');
+    } catch (err) {
+        console.error(err);
+        res.send('Seeding failed: ' + err.message);
+    }
+});
 
 
 // connect to the database
