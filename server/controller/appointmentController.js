@@ -1,3 +1,5 @@
+const { sendEmail } = require("../services/emailService");
+const {confirmationTemplate, cancellationTemplate} = require("../../views/templates/appointmentEmail");
 const Appointment = require("../model/appointmentModel");
 const TutorShift = require("../model/tutorShiftModel");
 const mongoose = require("mongoose");
@@ -40,6 +42,19 @@ exports.bookAppointment = async (req, res) => {
     // mark the shift as booked
     shift.isBooked = true;
     await shift.save();
+
+    // send confirmation email to student
+    await sendEmail({
+      to: req.session.user.email,
+      subject: "Appointment Confirmation",
+      html: confirmationTemplate({
+        studentName: req.session.user.name,
+        tutorName: shift.fname + " " + shift.lname,
+        date: shift.shiftDate.toLocaleDateString(),
+        time: `${shift.startTime} - ${shift.endTime}`,
+        course
+      })
+    });
 
     res.redirect("/studentIndex");
   } catch (err) {

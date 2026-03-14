@@ -5,6 +5,7 @@ const connectMongo = require("./server/database/connect");
 const session = require('express-session'); // allows us to store session tokens (logging into Google Calendar)
 // 
 const seedOpenCenter = require("./server/seed/seedOpenCenter");
+const seedTutorShiftsAndStudent = require("./server/seed/seedTutorShifts");
 
 dotenv.config();
 
@@ -209,7 +210,9 @@ app.get("/seed", async (req, res) => {
 // showed "Center hours already exit" after visiting url 2+ times, used db.centeropens.countDocuments() = 7 
 app.get('/seedCenter', async (req, res) => {
     try {
-        await seedOpenCenter();
+        // await seedOpenCenter();
+        // res.send('Center hours seeded successfully!');
+        await seedTutorShiftsAndStudent();
         res.send('Center hours seeded successfully!');
     } catch (err) {
         console.error(err);
