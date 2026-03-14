@@ -3,8 +3,7 @@ const dotenv = require("dotenv");
 const morgan = require("morgan");
 const connectMongo = require("./server/database/connect");
 const session = require('express-session'); // allows us to store session tokens
-const seedOpenCenter = require("./server/seed/seedOpenCenter");
-
+// const seedOpenCenter = require("./server/seed/seedOpenCenter");
 
 dotenv.config();
 
@@ -62,6 +61,8 @@ app.use("/", tutorRoute);
 const studentRoute = require("./server/routes/studentRoute");
 app.use("/", studentRoute);
 
+
+
 // MARK: Remove evenutally: Models and temporary test data
 // instances of User and TutorShift
 // imports the Mongoose models, validates data, and inserts into MongoDB collection
@@ -84,6 +85,10 @@ app.get("/seed", async (req, res) => {
     // for hashing passwords
     const bcrypt = require("bcrypt");
 
+    // create courses
+    const course179 = await Course.create({ courseName: "IT179" });
+    const course168 = await Course.create({ courseName: "IT168" });
+
     // create a test admin
     const admin = await User.create({
       role: "admin",
@@ -104,9 +109,27 @@ app.get("/seed", async (req, res) => {
       passwordHash: hashedPassword1,
     });
 
-    // create courses
-    const course179 = await Course.create({ courseName: "IT179" });
-    const course168 = await Course.create({ courseName: "IT168" });
+    const hashedPassword2 = await bcrypt.hash('tutorHashPass1234', 10);
+    // tutor with a hashed password
+      const tutorHash = await User.create({
+      role: "tutor",
+      fname: "Tutor",
+      lname: "Hashed",
+      email: "tutorHash@ilstu.edu",
+      passwordHash: hashedPassword2,
+      tutorCourses: [course179._id, course168._id],
+    });
+
+    const hashedPassword3 = await bcrypt.hash('studentHashPass1234', 10);
+    // student with a hashed password
+      const studentHash = await User.create({
+      role: "student",
+      fname: "Student",
+      lname: "Hashed",
+      email: "studentHash@ilstu.edu",
+      passwordHash: hashedPassword3,
+    });
+
 
     // create a test tutor
     const tutor = await User.create({
@@ -205,12 +228,12 @@ app.get("/seed", async (req, res) => {
     //     fname: student.fname,
     //     lname: student.lname
     // };
-    req.session.user = {
-      _id: tutor._id,
-      role: tutor.role,
-      fname: tutor.fname,
-      lname: tutor.lname,
-    };
+    // req.session.user = {
+    //   _id: tutor._id,
+    //   role: tutor.role,
+    //   fname: tutor.fname,
+    //   lname: tutor.lname,
+    // };
 
     req.session.save(() => {
       res.send("Test data seeded successfully!");
@@ -229,15 +252,15 @@ app.get("/seed", async (req, res) => {
 // On later visits → should log "Center hours already exist", check terminal for "Center hours already exist" message!!
 // I used mongosh to double-check, all weekdays correctly inserted from seedOpenCenter.js, terminal 
 // showed "Center hours already exit" after visiting url 2+ times, used db.centeropens.countDocuments() = 7 
-app.get('/seedCenter', async (req, res) => {
-    try {
-        await seedOpenCenter();
-        res.send('Center hours seeded successfully!');
-    } catch (err) {
-        console.error(err);
-        res.send('Seeding failed: ' + err.message);
-    }
-});
+// app.get('/seedCenter', async (req, res) => {
+//     try {
+//         await seedOpenCenter();
+//         res.send('Center hours seeded successfully!');
+//     } catch (err) {
+//         console.error(err);
+//         res.send('Seeding failed: ' + err.message);
+//     }
+// });
 
 
 // connect to the database

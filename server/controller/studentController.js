@@ -6,6 +6,30 @@ const mongoose = require("mongoose");
 // GET: load the student index page with selection for course and day to view available appointments
 exports.getStudentIndex = async (req, res) => {
     try {
+        // if not an auth user, send to login page
+        if (!req.session.user) {
+            return res.render('login', 
+            {
+                title: 'Login Page',
+                cssStylesheet: 'login.css',
+                jsFile: null,
+                error: "User not logged in.",
+                user: null,
+            });
+        }
+
+        // if auth user but not a student, send to login page
+        if (req.session.user.role !== "student") {
+            return res.render('login', 
+            {
+                title: 'Login Page',
+                cssStylesheet: 'login.css',
+                jsFile: null,
+                error: "Access denied. Only students can view this page.",
+                user: req.session.user,
+            });
+        }
+
         // get all courses for the dropdown
         const courses = await Course.find().sort({ courseName: 1 });
 
@@ -37,6 +61,30 @@ exports.getStudentIndex = async (req, res) => {
 // POST: display available appointments for the day and course selected by the student
 exports.viewAvailableAppointments = async (req, res) => {
     try {
+        // if not an auth user, send to login page
+        if (!req.session.user) {
+            return res.render('login', 
+            {
+                title: 'Login Page',
+                cssStylesheet: 'login.css',
+                jsFile: null,
+                error: "User not logged in.",
+                user: null,
+            });
+        }
+
+        // if auth user but not a student, send to login page
+        if (req.session.user.role !== "student") {
+            return res.render('login', 
+            {
+                title: 'Login Page',
+                cssStylesheet: 'login.css',
+                jsFile: null,
+                error: "Access denied. Only students can view this page.",
+                user: req.session.user,
+            });
+        }
+
         const { course, selectDay } = req.body;
         const courses = await Course.find().sort({ courseName: 1 });
 
