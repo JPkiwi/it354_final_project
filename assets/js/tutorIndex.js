@@ -1,3 +1,5 @@
+// ADMIN - Manage Tutors page 
+
 const search = document.getElementById("search");
 
 search.addEventListener("input", () => {
@@ -31,5 +33,30 @@ closeAddTutorModal.addEventListener("click", () => {
 window.addEventListener("click", (event) => {
   if (event.target === addTutorModal) {
     addTutorModal.style.display = "none";
+  }
+});
+
+
+
+
+// Assign Tutor Hours modal elements
+const assignTutorModal = document.getElementById("assignTutorModal");
+const openAssignTutorModal = document.getElementById("openAssignTutorModal");
+const closeAssignTutorModal = document.getElementById("closeAssignTutorModal");
+
+// open Assign Tutor Hours modal
+openAssignTutorModal.addEventListener("click", function () {
+  assignTutorModal.style.display = "block";
+});
+
+// close Assign Tutor Hours modal when X is clicked
+closeAssignTutorModal.addEventListener("click", function () {
+  assignTutorModal.style.display = "none";
+});
+
+// close Assign Tutor Hours modal if user clicks outside modal content
+window.addEventListener("click", function (event) {
+  if (event.target === assignTutorModal) {
+    assignTutorModal.style.display = "none";
   }
 });

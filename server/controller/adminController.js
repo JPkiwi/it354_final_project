@@ -2,31 +2,32 @@
 const Appointment = require("../model/appointmentModel");
 const User = require("../model/userModel");
 const Course = require("../model/courseModel");
-const CenterOpen = require("../model/centerOpenSchedule");
+const tutorShift = require("../model/tutorShiftModel")
 
+// -------------------------------------------------------------------------------------------
 
-// renders admin index
+// renders ADMIN INDEX
 exports.getAdminIndex = async (req, res) => {
   try {
-// finding all appointments in db
-const appointments = await Appointment.find()
-  // replace studentId ref with full student doc
-.populate("studentId")
-  // replace tutorShiftId ref with full tutor shift doc
-  // also replace tutorId w/ full user doc 
-  // getting full info instead of just Id's
-  .populate({
-    path: "tutorShiftId",
-    populate: {
-      path: "tutorId",
-      model: "User"
-    }
-  });
+    // finding all appointments in db
+    const appointments = await Appointment.find()
+      // replace studentId ref with full student doc
+      .populate("studentId")
+      // replace tutorShiftId ref with full tutor shift doc
+      // also replace tutorId w/ full user doc 
+      // getting full info instead of just Id's
+      .populate({
+        path: "tutorShiftId",
+        populate: {
+          path: "tutorId",
+          model: "User"
+        }
+      });
 
-  // find all courses in db
-  const courses = await Course.find();
+    // find all courses in db
+    const courses = await Course.find();
 
-  // render adminIndex view 
+    // render adminIndex view 
     res.render("adminIndex", {
       error: null,
       title: "Admin Page",
@@ -41,14 +42,14 @@ const appointments = await Appointment.find()
       // so a crash does not occur -> form fields always 
       // have something defined even without submitted data
       eligibleTutorShifts: [],
-    studentFName: "",
-    studentLName: "",
-    date: "",
-    time: "",
-    course: ""
+      studentFName: "",
+      studentLName: "",
+      date: "",
+      time: "",
+      course: ""
     });
 
-  } 
+  }
   catch (err) {
     console.error(err);
     // render same page, with error message & empty arrays passed 
@@ -62,35 +63,44 @@ const appointments = await Appointment.find()
       appointments: [],
       courses: [],
       // default form values
-    eligibleTutorShifts: [],
-    studentFName: "",
-    studentLName: "",
-    date: "",
-    time: "",
-    course: ""
+      eligibleTutorShifts: [],
+      studentFName: "",
+      studentLName: "",
+      date: "",
+      time: "",
+      course: ""
     });
   }
 };
 
-// renders admin availability index
+
+// -------------------------------------------------------------------------------------------
+
+// renders ADMIN AVAILABILITY INDEX
 exports.getAdminAvailabilityIndex = (req, res) => {
-    res.render('adminAvailabilityIndex', 
-        {
-            error: null,
-            title: 'Admin Availability',
-            cssStylesheet: 'availabilityIndex.css',
-            jsFile: 'adminAvailability.js', // will have js for this page at some point
-            user: req.session.user
+  res.render('adminAvailabilityIndex',
+    {
+      error: null,
+      title: 'Admin Availability',
+      cssStylesheet: 'availabilityIndex.css',
+      jsFile: null, // will have js for this page at some point
+      user: req.session.user
     });
 };
 
-// renders admin tutor index
+// -------------------------------------------------------------------------------------------
+
+// renders ADMIN TUTOR INDEX
 exports.getAdminTutorIndex = async (req, res) => {
   try {
     // finding tutors in user collection
     const tutors = await User.find({ role: "tutor" });
+    const activeTutors = await User.find({ role: "tutor", isActive: true });
+
     // retrieving courses (for when admin adds a tutor, they need to select the course(s) tutor will teach)
-const courses = await Course.find();
+    const courses = await Course.find();
+    const today = new Date().toISOString().split("T")[0];
+
 
 
     // open adminTutorIndex view
@@ -101,13 +111,18 @@ const courses = await Course.find();
       jsFile: "tutorIndex.js",
       user: req.session.user,
       // passing list of tutors into view
-      tutors: tutors,
+      tutors,
       // passing courses into view 
-      courses: courses
+      activeTutors,
+      courses,
+      today
     });
   } catch (err) {
+
     // prints erroe to console
     console.error(err);
+    const today = new Date().toISOString().split("T")[0];
+
     // even w/ error, page will still render
     res.render("adminTutorIndex", {
       error: "Could not load tutors.",
@@ -116,23 +131,31 @@ const courses = await Course.find();
       jsFile: "tutorIndex.js",
       user: req.session.user,
       // passing empty array instead of tutor data for error
-      tutors: []
+      tutors: [],
+      activeTutors: [],
+      courses: [],
+      today
     });
   }
 };
 
+// -------------------------------------------------------------------------------------------
 
-
-// Changing a tutor's status from active to inactive or vice versa
+// Changing a TUTOR'S STATUS FROM ACTIVE TO INACTIVE or vice versa
 exports.toggleTutorStatus = async (req, res) => {
   try {
     // retrieving selected tutor ID from submitted form (selected Tutor)
     const tutorId = req.body.selectedTutor;
 
+    const today = new Date().toISOString().split("T")[0];
+
     // checks if tutor was selected -> security measure, if missing,
     // re-renders page and stops function
     if (!tutorId) {
       const tutors = await User.find({ role: "tutor" });
+      const activeTutors = await User.find({ role: "tutor", isActive: true });
+      const today = new Date().toISOString().split("T")[0];
+      const courses = await Course.find();
 
       return res.render("adminTutorIndex", {
         // tells user to select tutor 
@@ -140,8 +163,11 @@ exports.toggleTutorStatus = async (req, res) => {
         title: "Admin Manage Tutors",
         cssStylesheet: "tutorIndex.css",
         jsFile: "tutorIndex.js",
-        user: { role: "admin" },
-        tutors: tutors
+        user: req.session.user,
+        tutors,
+        activeTutors,
+        courses,
+        today
       });
     }
 
@@ -163,52 +189,336 @@ exports.toggleTutorStatus = async (req, res) => {
     // reloads page/show's updated active status
     res.redirect("/adminTutorIndex");
   } catch (err) {
-    // security measure, if failure
-    console.error(err);
-    res.status(500).send("Could not update tutor status.");
+    const tutors = await User.find({ role: "tutor" });
+    const courses = await Course.find();
+    const activeTutors = await User.find({ role: "tutor", isActive: true });
+    const today = new Date().toISOString().split("T")[0];
+
+
+    res.render("adminTutorIndex", {
+      error: "Please select a tutor first.",
+      title: "Admin Manage Tutors",
+      cssStylesheet: "tutorIndex.css",
+      jsFile: "tutorIndex.js",
+      user: req.session.user,
+      tutors,
+      activeTutors,
+      courses,
+      today
+    });
+
   }
 };
 
+// -------------------------------------------------------------------------------------------
 
 
-// renders admin student index
-exports.getAdminStudentIndex = async(req, res) => {
+// handling submitted form data for ASSIGNING TUTOR HOURS
+exports.assignTutorHours = async (req, res) => {
+  try {
+    // retrieve hours entered into form 
+    const { tutorId, shiftDate, startTime, endTime } = req.body;
+    let today = new Date();
 
-try {
-  // retrieving students from user collection
-  const students = await User.find({role: "student"});
- res.render("adminStudentIndex", 
-        {
-            error: null,
-            title: "Admin Manage Students",
-            cssStylesheet: "studentIndex.css",
-            jsFile: "studentIndex.js",
-            user: { role: "admin" }, 
-            // pass list of students into view 
-            students: students
+    // ensure all fields in form are filled out -> if all fields in modal are NOT filled out, then :
+    if (!tutorId || !shiftDate || !startTime || !endTime) {
+      // reload tutors for page/dropdown 
+      const tutors = await User.find({ role: "tutor" });
+      const activeTutors = await User.find({ role: "tutor", isActive: true });
+      const courses = await Course.find();
+      today = new Date().toISOString().split("T")[0];
+
+      //re-render the page 
+      return res.render("adminTutorIndex", {
+        error: "All fields are required",
+        title: "Admin Manage Tutors",
+        cssStylesheet: "tutorIndex.css",
+        jsFile: "tutorIndex.js",
+        user: req.session.user,
+        tutors,
+        activeTutors,
+        courses,
+        today
+      });
+    } // end of if(!tutorId || !shiftDate etc...)
+
+    // make sure selected tutor exists in db/role is a tutor
+    const tutor = await User.findOne({ _id: tutorId, role: "tutor" });
+
+    // if a match is NOT found 
+    if (!tutor) {
+      // (reloading data page needs again)
+      const tutors = await User.find({ role: "tutor" });
+      const courses = await Course.find();
+      const activeTutors = await User.find({ role: "tutor", isActive: true });
+      today = new Date().toISOString().split("T")[0];
+
+      // re-render page to show message that the selected tutor was not found
+      return res.render("adminTutorIndex", {
+        error: "Tutor not found",
+        title: "Admin Manage Tutors",
+        cssStylesheet: "tutorIndex.css",
+        jsFile: "tutorIndex.js",
+        user: req.session.user,
+        tutors,
+        activeTutors,
+        courses,
+        today
+      });
+
+    }// end of if(!tutor)
+
+
+    // now work with the times (startTime & endTime)
+
+    // splitting start time (should only need the 0 index (hour index) if we're not going to worry about minutes?)
+    // I can still check minutes just in case??
+    const startHr = parseInt(startTime.split(":")[0]);
+    const startMin = parseInt(startTime.split(":")[1]);
+    // now for the submitted endTime from form 
+    const endHr = parseInt(endTime.split(":")[0]);
+    const endMin = parseInt(endTime.split(":")[1]);
+
+
+    // ensure the endTime is later than startTime
+    if (endHr < startHr || (endHr === startHr && endMin <= startMin)) {
+      const tutors = await User.find({ role: "tutor" });
+      const courses = await Course.find();
+      today = new Date().toISOString().split("T")[0];
+      const activeTutors = await User.find({ role: "tutor", isActive: true });
+
+
+      // re-render page/show error message
+      return res.render("adminTutorIndex", {
+        error: "End time must be later than start time",
+        title: "Admin Manage Tutors",
+        cssStylesheet: "tutorIndex.css",
+        jsFile: "tutorIndex.js",
+        user: req.session.user,
+        tutors,
+        activeTutors,
+        courses,
+        today
+      });
+    }
+
+
+    // shifts are stored in 1-hr blocks, verification 
+    if (startMin !== 0 || endMin !== 0) {
+      const tutors = await User.find({ role: "tutor" });
+      today = new Date().toISOString().split("T")[0];
+      const courses = await Course.find();
+      const activeTutors = await User.find({ role: "tutor", isActive: true });
+
+
+      // re-render page/show error message
+      return res.render("adminTutorIndex", {
+        error: "Shift times must be exactly on the hour",
+        title: "Admin Manage Tutors",
+        cssStylesheet: "tutorIndex.css",
+        jsFile: "tutorIndex.js",
+        user: req.session.user,
+        tutors,
+        activeTutors,
+        courses,
+        today
+      });
+
+    }
+
+
+    // initialize array (to store shift blocks) 
+    const shiftsToCreate = [];
+
+    // counters for log
+    let addedShifts = 0;
+    let skippedShifts = 0;
+
+    // comparing the start/end time to existing tutor shift 
+
+
+
+    console.log("START", startTime);
+
+    const earlierShifts = await tutorShift.find({
+    tutorId: tutorId,
+    shiftDate: new Date(shiftDate),
+    startTime: { $lt: startTime }
+});
+
+    console.log(earlierShifts);
+
+    if (earlierShifts.length > 0){
+
+      // removing the earlier shifts 
+      for (let i = 0; i < earlierShifts.length; i++) {
+        // await tutorShift.deleteOne({earlierShifts[i]});
+        await tutorShift.deleteOne({ _id: earlierShifts[i]._id });
+        // console.log(earlierShifts[i]);
+      }
+
+    }
+
+
+
+    const laterShifts = await tutorShift.find({
+    tutorId: tutorId,
+    shiftDate: new Date(shiftDate),
+    endTime: { $gte: endTime }
+  });
+
+  console.log(laterShifts);
+
+    if (laterShifts.length > 0 ) {
+      // removing the later shifts 
+      for (let i = 0; i < laterShifts.length; i++) {
+        await tutorShift.deleteOne({ _id: laterShifts[i]._id });
+
+      }
+
+    }
+
+
+
+    // taking each hr #, making sure it's always two-digits when storing (example -> get 9 hour, store as 09: )
+    // adding "00" at end to make it full time string storing in db 
+    // loop through the hours in selected range 
+    for (let hour = startHr; hour < endHr; hour++) {
+      const blockStart = `${String(hour).padStart(2, "0")}:00`
+      const blockEnd = `${String(hour + 1).padStart(2, "0")}:00`;
+
+      // check if the shift block exists 
+      const existingShift = await tutorShift.findOne({
+        tutorId: tutorId,
+        shiftDate: new Date(shiftDate),
+        startTime: blockStart,
+        endTime: blockEnd
+      });
+
+
+
+      // if the shift exists, ignore it/skip (using continue; )
+      // "continue;" stops current iteration, re-processes to next
+      if (existingShift) {
+        skippedShifts++;
+        continue;
+
+      }
+
+
+      // if shift block does not exist, add to the shiftsToCreate array 
+      shiftsToCreate.push({
+        tutorId: tutorId,
+        assignedByAdminId: req.session.user._id,
+        shiftDate: new Date(shiftDate),
+        startTime: blockStart,
+        endTime: blockEnd,
+        isBooked: false
+      });
+
+      addedShifts++;
+
+    }// END OF FOR  
+
+
+
+    // logging how many shifts were added and if there were any skipped (already-exisitng) shifts 
+    // not necessary, just so we can test
+    console.log(`Shifts added: ${addedShifts}`);
+    console.log(`Shifts skipped (duplicates): ${skippedShifts}`);
+
+
+    // if shiftsToCreate is empty (ALL shift blocks have already been added)
+    if (shiftsToCreate.length === 0) {
+      const tutors = await User.find({ role: "tutor" });
+      today = new Date().toISOString().split("T")[0];
+      const courses = await Course.find();
+      const activeTutors = await User.find({ role: "tutor", isActive: true });
+
+
+
+      // re-render page/show error message
+      return res.render("adminTutorIndex", {
+        error: "All selected shift blocks already exist",
+        title: "Admin Manage Tutors",
+        cssStylesheet: "tutorIndex.css",
+        jsFile: "tutorIndex.js",
+        user: req.session.user,
+        tutors,
+        activeTutors,
+        courses,
+        today
+      });
+    }
+
+
+    // inserting the shifts to database :) 
+    await tutorShift.insertMany(shiftsToCreate);
+    res.redirect("/adminTutorIndex");
+
+  } //end of try
+  catch (err) {
+    console.error(err);
+
+    const tutors = await User.find({ role: "tutor" });
+    const courses = await Course.find();
+    today = new Date().toISOString().split("T")[0];
+    const activeTutors = await User.find({ role: "tutor", isActive: true });
+
+    res.render("adminTutorIndex", {
+      error: "Could not assign tutor shifts.",
+      title: "Admin Manage Tutors",
+      cssStylesheet: "tutorIndex.css",
+      jsFile: "tutorIndex.js",
+      user: req.session.user,
+      tutors,
+      activeTutors,
+      courses,
+      today
     });
-} catch (err){
-  res.render("adminStudentIndex", 
-{
-  error: "Could not load students",
-  title: "Admin Manage Students",
-            cssStylesheet: "studentIndex.css",
-            jsFile: "studentIndex.js",
-            user: { role: "admin" },
-            // empty array when error occurs
-            students: []
-}
-)}
+
+  }// end of catch 
+
+};
+// -------------------------------------------------------------------------------------------
+
+
+// RENDERS ADMIN STUDENT INDEX
+exports.getAdminStudentIndex = async (req, res) => {
+
+  try {
+    // retrieving students from user collection
+    const students = await User.find({ role: "student" });
+    res.render("adminStudentIndex",
+      {
+        error: null,
+        title: "Admin Manage Students",
+        cssStylesheet: "studentIndex.css",
+        jsFile: "studentIndex.js",
+        user: req.session.user,
+        // pass list of students into view 
+        students: students
+      });
+  } catch (err) {
+    res.render("adminStudentIndex",
+      {
+        error: "Could not load students",
+        title: "Admin Manage Students",
+        cssStylesheet: "studentIndex.css",
+        jsFile: "studentIndex.js",
+        user: req.session.user,
+        // empty array when error occurs
+        students: []
+      }
+    )
+  }
 
 };
 
 
+// -------------------------------------------------------------------------------------------
 
-
-
-
-
-// Changing a student's status from active to inactive or vice versa
+// Changing a STUDENT'S STATUS FROM ACTIVE TO INACTIVE or vice versa
 exports.toggleStudentStatus = async (req, res) => {
   try {
     // retrieving selected student ID from submitted form (this is from the radio button "SelectedStudent")
@@ -223,7 +533,7 @@ exports.toggleStudentStatus = async (req, res) => {
         title: "Admin Manage Students",
         cssStylesheet: "studentIndex.css",
         jsFile: "studentIndex.js",
-        user: { role: "admin" },
+        user: req.session.user,
         students: students
       });
     }
@@ -248,19 +558,30 @@ exports.toggleStudentStatus = async (req, res) => {
     // re-renders updated list (active vs. inactive) and redirects to the manage students page
     res.redirect("/adminStudentIndex");
 
-  } 
-    // in case of any erros, can log them and 500 for unfulfilled req 
+  }
+  // in case of any erros, can log them and 500 for unfulfilled req 
 
   catch (err) {
     console.error(err);
-    res.status(500).send("Could not update student status.");
+
+    const students = await User.find({ role: "student" });
+
+    res.render("adminStudentIndex", {
+      error: "Could not update student status.",
+      title: "Admin Manage Students",
+      cssStylesheet: "studentIndex.css",
+      jsFile: "studentIndex.js",
+      user: req.session.user,
+      students
+    });
   }
 };
 
 
+// -------------------------------------------------------------------------------------------
 
 
-// Function to control ADDINg new user (student/tutor)from admnin
+// Function to control ADDING NEW USER (student/tutor)from admnin
 exports.addUser = async (req, res) => {
   try {
     // get data from what was entered in the modal
@@ -290,22 +611,22 @@ exports.addUser = async (req, res) => {
 
     // if there is no tutor course selected when filling out "Add Tutor", 
     // then 400/cannot process req is sent and that at least one course must be selected
-    if(role == "tutor"){
-      if(!tutorCourses){
+    if (role == "tutor") {
+      if (!tutorCourses) {
         return res.status(400).send("Course(s) must be selected to add a tutor")
       }
-   
+
       // making sure selected course(s) is turned into an array bc model expects 
       // tutorCourses to be an array
-if (!Array.isArray(tutorCourses)) {
-  tutorCourses = [tutorCourses];
-}
+      if (!Array.isArray(tutorCourses)) {
+        tutorCourses = [tutorCourses];
+      }
 
- }
- else {
-  // students don't have tutor courses
-  tutorCourses = [];
- }
+    }
+    else {
+      // students don't have tutor courses
+      tutorCourses = [];
+    }
 
     // when all above is passed/checked, create the new user 
     await User.create({
@@ -321,66 +642,16 @@ if (!Array.isArray(tutorCourses)) {
     // redirect back to the correct page after creating the user
     if (role === "student") {
       return res.redirect("/adminStudentIndex");
-    } 
+    }
     // I only have the "Add User" for students right now, adding tutor very soon
     else {
       return res.redirect("/adminTutorIndex");
     }
 
-  } 
+  }
   // in case of any erros, can log them and 500 for unfulfilled req 
   catch (err) {
     console.error(err);
     res.status(500).send("Could not add user.");
-  }
-};
-
-
-// POST: Handles form submission to change weekday hours
-exports.changeHours = async (req, res) => {
-  try {
-    const { weekday, centerOpenTime, centerCloseTime } = req.body;
-
-    // make sure all fields were filled out
-    if (!weekday || !centerOpenTime || !centerCloseTime) {
-      return res.status(400).send("All fields are required.");
-    }
-
-    const openHour = Number(centerOpenTime.split(":")[0]); // Get open hour as an integer
-    const closeHour = Number(centerCloseTime.split(":")[0]); // Get close hour as an integer
-    const openMinute = Number(centerOpenTime.split(":")[1]); // Get open minute as an integer
-    const closeMinute = Number(centerCloseTime.split(":")[1]); // Get close minute as an integer
-    
-    // make sure entered start time is less than entered end time
-    if (openHour > closeHour) {
-      return res.status(400).send("Open Time must be earlier than Close Time.");
-    }
-
-    // if center hours set to less than one-hour difference, then close the day
-    if (((closeHour * 60 + closeMinute)-(openHour * 60 + openMinute)) < 60) {
-      await CenterOpen.findOneAndUpdate({weekday: weekday}, { openTime: centerOpenTime, closeTime: centerCloseTime, isClosed: true });
-    } else { // otherwise, update the weekday open and close hours, open the day
-      await CenterOpen.findOneAndUpdate({weekday: weekday}, { openTime: centerOpenTime, closeTime: centerCloseTime, isClosed: false });
-    }
-
-    // re-render page once update completes
-    res.render('adminAvailabilityIndex', 
-    {
-      error: null,
-      title: 'Admin Availability',
-      cssStylesheet: 'availabilityIndex.css',
-      jsFile: 'adminAvailability.js', // will have js for this page at some point
-      user: req.session.user
-    });
-  } catch (err) {
-    console.log("Change hours failed:", err);
-    res.render('adminAvailabilityIndex', 
-    {
-      error: 'Failed to change hours.',
-      title: 'Admin Availability',
-      cssStylesheet: 'availabilityIndex.css',
-      jsFile: 'adminAvailability.js', // will have js for this page at some point
-      user: req.session.user
-    });
   }
 };

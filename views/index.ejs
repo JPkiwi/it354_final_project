@@ -67,6 +67,8 @@
         const today = new Date();
         const weekdayIndex = today.getDay() <!--.getDay() gets the weekday index (0-6)-->
         const currHour = today.getHours(); <!--.getHours() gets the current hour-->
+        <!-- needed to initialize currMinute-->
+        const currMinute = today.getMinutes();
         const openHour = Number(weekdays[weekdayIndex].openTime.split(":")[0]); <!--Get open hour as an integer-->
         const closeHour = Number(weekdays[weekdayIndex].closeTime.split(":")[0]); <!--Get close hour as an integer-->
         const openMinute = Number(weekdays[weekdayIndex].openTime.split(":")[1]); <!--Get open minute as an integer-->

@@ -25,6 +25,32 @@
   <!-- Search Appointments box/search function -->
   <input id="search" type="text" placeholder="Search appointments..." />
 
+
+
+  <%
+  <!-- defined func for formatting the time in adminIndex (appointment view)-->
+function formatTo12Hour(timeStr) {
+  if (!timeStr) return "No time";
+
+  const [hourStr, minute] = timeStr.split(":");
+  let hour = parseInt(hourStr, 10);
+
+  const ampm = hour >= 12 ? "PM" : "AM";
+
+  hour = hour % 12;
+  if (hour === 0) hour = 12;
+
+  return `${hour}:${minute} ${ampm}`;
+}
+%>
+
+
+
+
+
+
+
+  
   <!-- Appointments Table -->
   <table border="1" cellpadding="6" cellspacing="0" style="margin-top:10px;">
     <thead>
@@ -51,7 +77,7 @@
     <!-- if appointment date exists, convert to string (using .split to get 00:00:000Z from mongodb date)-->
         <td><%= appointment.appointmentDate ? appointment.appointmentDate.toISOString().split('T')[0] : "No date" %></td>
         <!-- printing start time and endtime-->
-        <td><%= appointment.startTime %> - <%= appointment.endTime %></td>
+        <td>  <%= formatTo12Hour(appointment.startTime) %> -  <%= formatTo12Hour(appointment.endTime) %> </td>
         <!-- -->
         <td>
           <!-- if student id/firstName exists -->

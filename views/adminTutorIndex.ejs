@@ -21,6 +21,8 @@
   <!-- Add tutor button -> opens Modal-->
   <button type="button" id="openAddTutorModal">Add Tutor</button>
 
+  <button type="button" id= "openAssignTutorModal">Assign Tutor Hours </button>
+
   <br><br>
 
   <table border="1" cellpadding="6" cellspacing="0">
@@ -99,12 +101,72 @@
 
 
 
-
       <br><br>
       <button type="submit">Create Tutor</button>
     </form>
   </div>
 </div>
+
+
+
+  <!-- "Assign Tutor Hours" Modal -> FORM TO ASSIGN TUTOR HOURS  -->
+   <!-- pop-up container-->
+<div id="assignTutorModal" class="modal">
+  <!-- content box (temp white)-->
+  <div class="assign-modal-content">
+    <!-- x to close modal-->
+    <span class="assign-close-btn" id="closeAssignTutorModal">&times;</span>
+
+    <h2>Assign Tutor Hours</h2>
+<!-- connected to route, sends data to /adminUsers/add, POST req for submission-->
+    <form action="/assignTutorHours/add" method="POST">
+      <!-- data to be sent (first name, last name, email, password (We can just have it as a 
+       temporary password set by admin for students to use to login and then student can change password after
+       / be sent a link to change password? ) )-->
+      <input type="hidden" name="role" value="tutor">
+      
+<!-- looping through tutors in dropdown menu -->
+<select name="tutorId" required>
+  <option value="">-- Select Tutor --</option>
+
+      <% activeTutors.forEach(function(tutor) { %>
+      <option value="<%= tutor._id %>">
+      <%= tutor.fname %> <%= tutor.lname %>
+    </option>
+  <% }); %>
+</select>
+
+<br><br>
+
+<!-- Date (input type = date) with minimum of "today" : admin has to choose a date 
+ for assign tutor shift from today and onward only-->
+<input type="date" name="shiftDate" min="<%= today %>"  required>
+
+<br><br>
+
+<!-- step = "3600" ensures time picker only allows hour increments to choose from-->
+<Label>Start Time: </Label>
+<input type = "time" name = "startTime" step = "3600" required> 
+
+<br><br>
+
+<Label>End Time: </Label>
+<input type = "time" name = "endTime" step = "3600" required> 
+
+
+      <br><br>
+      <button type="submit">Assign Hours</button>
+      <br><br>
+    </form>
+
+
+
+
+  </div>
+</div>
+
+
+
 
 
 

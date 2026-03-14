@@ -83,26 +83,18 @@ app.get("/seed", async (req, res) => {
   try {
     // for hashing passwords
     const bcrypt = require("bcrypt");
+    const adminHash = await bcrypt.hash("admin123", 10);
 
     // create a test admin
+    // use email admin@ilstu.edu and password admin123 to login
     const admin = await User.create({
       role: "admin",
       fname: "Admin",
       lname: "User",
       email: "admin@ilstu.edu",
-      passwordHash: "hashedpassword123",
+      passwordHash: adminHash
     });
 
-    // FOR TESTING PASSWORD HASHING with the "adminHash" admin below:
-    const hashedPassword1 = await bcrypt.hash('adminHashPass1234', 10);
-    // admin with a hashed password
-      const adminHash = await User.create({
-      role: "admin",
-      fname: "Admin",
-      lname: "Hashed",
-      email: "adminHash@ilstu.edu",
-      passwordHash: hashedPassword1,
-    });
 
     // create courses
     const course179 = await Course.create({ courseName: "IT179" });
