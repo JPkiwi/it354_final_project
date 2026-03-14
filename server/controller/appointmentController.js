@@ -36,7 +36,7 @@ exports.bookAppointment = async (req, res) => {
     const { tutorShiftId, course } = req.body;
 
     // get the selected shift
-    const shift = await TutorShift.findById(tutorShiftId);
+    const shift = await TutorShift.findById(tutorShiftId).populate("tutorId", "fname lname");
 
     // shift not available if doesn't exist or is booked
     if (!shift || shift.isBooked) {
@@ -67,14 +67,15 @@ exports.bookAppointment = async (req, res) => {
     shift.isBooked = true;
     await shift.save();
 
-    // send confirmation email to student
+    // send confirmation email to student and CC admin
     await sendEmail({
       to: req.session.user.email,
+      cc: process.env.GMAIL_EMAIL, // CC admin
       subject: "Appointment Confirmation",
       html: confirmationTemplate({
-        studentName: req.session.user.name,
-        tutorName: shift.fname + " " + shift.lname,
-        date: shift.shiftDate.toLocaleDateString(),
+        studentName: req.session.user.fname,
+        tutorName: shift.tutorId.fname + " " + shift.tutorId.lname,
+        date: shift.shiftDate.toLocaleDateString('en-US', {timeZone: 'UTC'}),
         time: `${shift.startTime} - ${shift.endTime}`,
         course
       })

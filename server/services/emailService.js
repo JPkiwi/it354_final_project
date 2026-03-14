@@ -8,10 +8,11 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-async function sendEmail({ to, subject, html }) {
+async function sendEmail({ to, cc, subject, html }) {
   await transporter.sendMail({
     from: `"IT Learning Center" <${process.env.GMAIL_EMAIL}>`,
     to,
+    cc,
     subject,
     html
   });

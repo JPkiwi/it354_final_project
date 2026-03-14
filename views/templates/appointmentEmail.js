@@ -1,6 +1,5 @@
 function confirmationTemplate({ studentName, tutorName, date, time, course }) {
   return `
-    <h2>IT Learning Center Appointment Confirmation</h2>
     <p>Hi ${studentName},</p>
     <p>Your tutoring appointment with ${tutorName} has been scheduled.</p>
 
@@ -15,7 +14,6 @@ function confirmationTemplate({ studentName, tutorName, date, time, course }) {
 
 function cancellationTemplate({ studentName, tutorName, date, time, course }) {
   return `
-    <h2>IT Learning Center Appointment Cancelled</h2>
     <p>Hi ${studentName},</p>
     <p>Your tutoring appointment with ${tutorName} has been cancelled.</p>
 
