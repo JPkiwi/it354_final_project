@@ -8,6 +8,30 @@ const mongoose = require("mongoose");
 // POST: handle bookAppointment form submission
 exports.bookAppointment = async (req, res) => {
   try {
+    // if not an auth user, send to login page
+    if (!req.session.user) {
+      return res.render('login', 
+      {
+        title: 'Login Page',
+        cssStylesheet: 'login.css',
+        jsFile: null,
+        error: "User not logged in.",
+        user: null,
+      });
+    }
+
+    // if auth user but not a student, send to login page
+    if (req.session.user.role !== "student") {
+      return res.render('login', 
+      {
+        title: 'Login Page',
+        cssStylesheet: 'login.css',
+        jsFile: null,
+        error: "Access denied. Only students can view this page.",
+        user: req.session.user,
+      });
+    }
+
     // get the tutorShiftId and course
     const { tutorShiftId, course } = req.body;
 
@@ -21,7 +45,7 @@ exports.bookAppointment = async (req, res) => {
         cssStylesheet: "studentAppointment.css",
         jsFile: "studentScript.js",
         error: "That shift is no longer available.",
-        user: req.session.user || { role: "student" },
+        user: req.session.user,
         availableShifts: [],
         bookedAppointments: [],
       });
@@ -64,7 +88,7 @@ exports.bookAppointment = async (req, res) => {
       cssStylesheet: "studentStyle.css",
       jsFile: "studentScript.js",
       error: "Failed to book appointment.",
-      user: req.session.user || { role: "student" },
+      user: req.session.user,
       availableShifts: [],
       bookedAppointments: [],
     });
@@ -75,6 +99,30 @@ exports.bookAppointment = async (req, res) => {
 // GET: display the student's booked appointments
 exports.getBookedAppointments = async (req, res) => {
   try {
+    // if not an auth user, send to login page
+    if (!req.session.user) {
+      return res.render('login', 
+      {
+        title: 'Login Page',
+        cssStylesheet: 'login.css',
+        jsFile: null,
+        error: "User not logged in.",
+        user: null,
+      });
+    }
+
+    // if auth user but not a student, send to login page
+    if (req.session.user.role !== "student") {
+      return res.render('login', 
+      {
+        title: 'Login Page',
+        cssStylesheet: 'login.css',
+        jsFile: null,
+        error: "Access denied. Only students can view this page.",
+        user: req.session.user,
+      });
+    }
+
     // get any booked appointments
     const bookedAppointments = await Appointment.find({ studentId: req.session.user._id });
 
@@ -84,8 +132,7 @@ exports.getBookedAppointments = async (req, res) => {
       cssStylesheet: "studentStyle.css",
       jsFile: "studentScript.js",
       error: null,
-      user: req.session.user || { role: "student" }, // TEMPORARY PLACE HOLDER
-      // eventually we will replace this with a real user, like: req.session.user
+      user: req.session.user,
       bookedAppointments,
     });
   } catch (err) {
@@ -95,7 +142,7 @@ exports.getBookedAppointments = async (req, res) => {
       cssStylesheet: "studentStyle.css",
       jsFile: "studentScript.js",
       error: "Failed to book appointment.",
-      user: req.session.user || { role: "student" },
+      user: req.session.user,
       availableShifts: [],
       bookedAppointments: [],
     });

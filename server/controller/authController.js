@@ -1,4 +1,5 @@
-// add any models needed here
+const bcrypt = require('bcrypt');
+const User = require('../model/userModel');
 
 const { oauth2Client, SCOPES } = require('../config/googleAuth');
 
@@ -32,31 +33,70 @@ exports.getLoginPage = async (req, res) => {
     });
 };
 
-// GET
-exports.getSignupPage = async (req, res) => {
-    res.render('signup', 
-        {
-            error: null,
-            title: 'Signup Page',
-            cssStylesheet: 'signup.css',
-            jsFile: 'signup.js',
+// Functionality for Login
+exports.loginUser = async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        const user = await User.findOne({ email });
+
+        // checks to see if this user exists
+        if (!user) {
+            return res.render('login', {
+                error: 'Invalid email or password.',
+                title: 'Login',
+                cssStylesheet: 'login.css',
+                jsFile: null,
+                user: null
+            });
+        }
+    
+
+        // checking for a password match
+        const passwordMatch = await bcrypt.compare(password, user.passwordHash);
+        if (!passwordMatch) {
+            return res.render('login', {
+                error: 'Invalid email or password.',
+                title: 'Login',
+                cssStylesheet: 'login.css',
+                jsFile: null,
+                user: null
+            });
+        }
+
+        // stores user in session
+        req.session.user = user;
+
+        // checks user's role, redirects them to their corresponding index page
+        if (user.role === "admin") {
+            res.redirect('/adminIndex');
+        }
+        else if (user.role === "tutor") {
+            res.redirect('/tutorIndex');
+        }
+        else {
+            res.redirect('/studentIndex');
+        }
+    }
+    catch (err) {
+        console.error(err);
+        res.render('login', {
+            error: 'Something went wrong. Please try again.',
+            title: 'Login',
+            cssStylesheet: 'login.css',
+            jsFile: null,
             user: null
+        });
+    }
+}
+
+// Functionality for Logout
+exports.logout = async (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            console.error(err);
+        }
+        res.redirect('/');
     });
 };
 
-// POST
-// MARK: Functionality for login
-exports.useLoginInfo = async (req, res) => {
-    // console.log(req.body);
-    res.sendStatus(202); // accepted
-};
-
-// POST
-// MARK: Functionality for signup
-exports.useSignupInfo = async (req, res) => {
-    // console.log(req.body);
-    res.sendStatus(202); // accepted
-};
-
-// POST
-// MARK: Functionality for logout

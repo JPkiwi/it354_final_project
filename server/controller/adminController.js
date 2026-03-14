@@ -32,7 +32,7 @@ const appointments = await Appointment.find()
       title: "Admin Page",
       cssStylesheet: "adminIndex.css",
       jsFile: "adminIndex.js",
-      user: { role: "admin" },
+      user: req.session.user,
       // sending appointments and courses to EJS view
       appointments: appointments,
       courses: courses,
@@ -58,7 +58,7 @@ const appointments = await Appointment.find()
       title: "Admin Page",
       cssStylesheet: "adminIndex.css",
       jsFile: "adminIndex.js",
-      user: { role: "admin" },
+      user: req.session.user,
       appointments: [],
       courses: [],
       // default form values
@@ -80,8 +80,7 @@ exports.getAdminAvailabilityIndex = (req, res) => {
             title: 'Admin Availability',
             cssStylesheet: 'availabilityIndex.css',
             jsFile: 'adminAvailability.js', // will have js for this page at some point
-            user: { role: 'admin' } // TEMPORARY PLACE HOLDER
-            // eventually we will replace this with a real user, like: req.session.user
+            user: req.session.user
     });
 };
 
@@ -100,7 +99,7 @@ const courses = await Course.find();
       title: "Admin Manage Tutors",
       cssStylesheet: "tutorIndex.css",
       jsFile: "tutorIndex.js",
-      user: { role: "admin" },
+      user: req.session.user,
       // passing list of tutors into view
       tutors: tutors,
       // passing courses into view 
@@ -115,7 +114,7 @@ const courses = await Course.find();
       title: "Admin Manage Tutors",
       cssStylesheet: "tutorIndex.css",
       jsFile: "tutorIndex.js",
-      user: { role: "admin" },
+      user: req.session.user,
       // passing empty array instead of tutor data for error
       tutors: []
     });

@@ -3,7 +3,7 @@ const route = express.Router();
 
 const controller = require('../controller/defaultController');
 
-// default directory, go to index/home page
+// default directory, go to index/landing page
 route.get('/', controller.getLandingPage);
 
 module.exports = route;
