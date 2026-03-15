@@ -2,9 +2,10 @@ const express = require("express");
 const dotenv = require("dotenv");
 const morgan = require("morgan");
 const connectMongo = require("./server/database/connect");
-const session = require('express-session'); // allows us to store session tokens
+const session = require('express-session'); // allows us to store session tokens (logging into Google Calendar)
+// 
 const seedOpenCenter = require("./server/seed/seedOpenCenter");
-
+const seedTutorShiftsAndStudent = require("./server/seed/seedTutorShifts");
 
 dotenv.config();
 
@@ -62,6 +63,8 @@ app.use("/", tutorRoute);
 const studentRoute = require("./server/routes/studentRoute");
 app.use("/", studentRoute);
 
+
+
 // MARK: Remove evenutally: Models and temporary test data
 // instances of User and TutorShift
 // imports the Mongoose models, validates data, and inserts into MongoDB collection
@@ -85,6 +88,10 @@ app.get("/seed", async (req, res) => {
     const bcrypt = require("bcrypt");
     const adminHash = await bcrypt.hash("admin123", 10);
 
+    // create courses
+    const course179 = await Course.create({ courseName: "IT179" });
+    const course168 = await Course.create({ courseName: "IT168" });
+
     // create a test admin
     // use email admin@ilstu.edu and password admin123 to login
     const admin = await User.create({
@@ -96,9 +103,27 @@ app.get("/seed", async (req, res) => {
     });
 
 
-    // create courses
-    const course179 = await Course.create({ courseName: "IT179" });
-    const course168 = await Course.create({ courseName: "IT168" });
+    const hashedPassword2 = await bcrypt.hash('tutorHashPass1234', 10);
+    // tutor with a hashed password
+      const tutorHash = await User.create({
+      role: "tutor",
+      fname: "Tutor",
+      lname: "Hashed",
+      email: "tutorHash@ilstu.edu",
+      passwordHash: hashedPassword2,
+      tutorCourses: [course179._id, course168._id],
+    });
+
+    const hashedPassword3 = await bcrypt.hash('studentHashPass1234', 10);
+    // student with a hashed password
+      const studentHash = await User.create({
+      role: "student",
+      fname: "Student",
+      lname: "Hashed",
+      email: "studentHash@ilstu.edu",
+      passwordHash: hashedPassword3,
+    });
+
 
     // create a test tutor
     const tutor = await User.create({
@@ -197,12 +222,12 @@ app.get("/seed", async (req, res) => {
     //     fname: student.fname,
     //     lname: student.lname
     // };
-    req.session.user = {
-      _id: tutor._id,
-      role: tutor.role,
-      fname: tutor.fname,
-      lname: tutor.lname,
-    };
+    // req.session.user = {
+    //   _id: tutor._id,
+    //   role: tutor.role,
+    //   fname: tutor.fname,
+    //   lname: tutor.lname,
+    // };
 
     req.session.save(() => {
       res.send("Test data seeded successfully!");

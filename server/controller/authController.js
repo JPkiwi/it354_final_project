@@ -33,18 +33,6 @@ exports.getLoginPage = async (req, res) => {
     });
 };
 
-// GET
-exports.getSignupPage = async (req, res) => {
-    res.render('signup', 
-        {
-            error: null,
-            title: 'Signup Page',
-            cssStylesheet: 'signup.css',
-            jsFile: 'signup.js',
-            user: null
-    });
-};
-
 // Functionality for Login
 exports.loginUser = async (req, res) => {
     const { email, password } = req.body;
