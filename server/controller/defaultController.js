@@ -25,19 +25,17 @@ exports.getLandingPage = async (req, res) => {
       cssStylesheet: "index.css",
       jsFile: "index.js",
       user: req.session.user,
-      weekdays,
-      courses
+      weekdays
     });
   } catch (err) {
     console.log("Landing page error:", err);
     res.render("index", {
-      error: "Could not load center hours or courses accurately.",
+      error: "Could not load center hours accurately.",
       title: "ISU Learning Center",
       cssStylesheet: "index.css",
       jsFile: "index.js",
       user: req.session.user,
-      weekdays: DEFAULT_WEEK_HOURS,
-      courses: DEFAULT_COURSES
+      weekdays: DEFAULT_WEEK_HOURS
     });
   }
 };
