@@ -1120,9 +1120,9 @@ exports.changeHours = async (req, res) => {
 
     // if center hours set to less than one-hour difference, then close the day
     if (((closeHour * 60 + closeMinute)-(openHour * 60 + openMinute)) < 60) {
-      await centerOpen.findOneAndUpdate({weekday: weekday}, { openTime: centerOpenTime, closeTime: centerCloseTime, isClosed: true });
+      await centerOpen.findOneAndUpdate({weekday: weekday}, { $set: { openTime: centerOpenTime, closeTime: centerCloseTime, isClosed: true } }, {upsert: true, returnDocument: "after"});
     } else { // otherwise, update the weekday open and close hours, open the day
-      await centerOpen.findOneAndUpdate({weekday: weekday}, { openTime: centerOpenTime, closeTime: centerCloseTime, isClosed: false });
+      await centerOpen.findOneAndUpdate({weekday: weekday}, { $set: { openTime: centerOpenTime, closeTime: centerCloseTime, isClosed: false } }, {upsert: true, returnDocument: "after"});
     }
 
     // re-render page once update completes

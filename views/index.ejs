@@ -84,7 +84,7 @@
         let openHour, closeHour, openMinute, closeMinute;
 
         // only split/store open and close times if the center is not closed that day
-        if (!currWeekday.isClosed) {
+        if (currWeekday && !currWeekday.isClosed) {
             // get open hour as an integer
             openHour = Number(currWeekday.openTime.split(":")[0]);
 
@@ -99,7 +99,7 @@
         }
     %>
 
-    <% if (currWeekday.isClosed) { %>
+    <% if (currWeekday && currWeekday.isClosed) { %>
         <h2>We are currently closed!</h2>
     <% } else if (openHour > currHour || (openHour === currHour && openMinute > currMinute) || closeHour < currHour || (closeHour === currHour && closeMinute <= currMinute)) { %>
         <h2>We are currently closed!</h2>
