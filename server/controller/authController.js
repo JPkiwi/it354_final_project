@@ -1,5 +1,8 @@
 const bcrypt = require('bcrypt');
 const User = require('../model/userModel');
+const CenterOpen = require("../model/centerOpenSchedule");
+const Course = require("../model/courseModel");
+const { DEFAULT_WEEK_HOURS, DEFAULT_COURSES } = require("../config/defaultData");
 
 const { oauth2Client, SCOPES } = require('../config/googleAuth');
 
@@ -23,14 +26,39 @@ exports.googleCallback = async (req, res) => {
 
 // GET
 exports.getLoginPage = async (req, res) => {
-    res.render('login', 
+    try {
+        let weekdays = await CenterOpen.find();
+        let courses = await Course.find();
+        
+        // if there are no weekdays in MongoDB, then insert all the default week hours
+        if (weekdays.length === 0) {
+            weekdays = await CenterOpen.insertMany(DEFAULT_WEEK_HOURS);
+        }
+
+        // if there are no courses in MongoDB, then insert all the default courses
+        // this assumes no tutors have been added yet and therefore no courses have been assigned. 
+        if (courses.length === 0){
+            courses = await Course.insertMany(DEFAULT_COURSES); 
+        }
+
+        res.render('login', 
         {
             error: null,
             title: 'Login Page',
             cssStylesheet: 'login.css',
             jsFile: null,
             user: null
-    });
+        });
+    } catch (err) {
+        res.render('login', 
+        {
+            error: "Unable to load login details.",
+            title: 'Login Page',
+            cssStylesheet: 'login.css',
+            jsFile: null,
+            user: null
+        });
+    }
 };
 
 // Functionality for Login
