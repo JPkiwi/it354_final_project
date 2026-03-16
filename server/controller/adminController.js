@@ -5,6 +5,7 @@ const Course = require("../model/courseModel");
 const tutorShift = require("../model/tutorShiftModel")
 const centerOpen = require("../model/centerOpenSchedule");
 const centerClosedSchedule = require("../model/centerClosedSchedule");
+const bcrypt = require('bcrypt');
 
 // -------------------------------------------------------------------------------------------
 
@@ -959,7 +960,7 @@ exports.toggleStudentStatus = async (req, res) => {
 // -------------------------------------------------------------------------------------------
 
 
-// ADDING NEW USER (student/tutor)from admnin
+// ADDING NEW USER (student/tutor)from admin
 exports.addUser = async (req, res) => {
   try {
     // if not an auth user, send to login page
@@ -1029,12 +1030,16 @@ exports.addUser = async (req, res) => {
       tutorCourses = [];
     }
 
-    // when all above is passed/checked, create the new user 
+    // hashing the passwords
+    const saltRounds = 10;
+    const passwordHash = await bcrypt.hash(password, saltRounds);
+
+    // when all above is passed/checked, create the new user                                                                 !!
     await User.create({
       fname: fname,
       lname: lname,
       email: email,
-      passwordHash: password,
+      passwordHash: passwordHash,
       role: role,
       isActive: true,
       tutorCourses: tutorCourses
