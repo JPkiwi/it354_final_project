@@ -38,4 +38,6 @@ console.log("controller keys:", Object.keys(controller));
 // Handles form submission to assign tutor hours
 route.post("/assignTutorHours/add", controller.assignTutorHours);
 
+route.post("/clearTutorHours/remove", controller.clearTutorHours);
+
 module.exports = route;

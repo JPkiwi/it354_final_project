@@ -60,3 +60,31 @@ window.addEventListener("click", function (event) {
     assignTutorModal.style.display = "none";
   }
 });
+
+
+
+
+// CLEAR Tutor Hours modal elements
+const clearTutorModal = document.getElementById("clearTutorModal");
+const openClearTutorModal = document.getElementById("openClearTutorModal");
+const closeClearTutorModal = document.getElementById("closeClearTutorModal");
+
+// open Assign Tutor Hours modal
+openClearTutorModal.addEventListener("click", function () {
+  clearTutorModal.style.display = "block";
+});
+
+// close Assign Tutor Hours modal when X is clicked
+closeClearTutorModal.addEventListener("click", function () {
+ clearTutorModal.style.display = "none";
+});
+
+// close Assign Tutor Hours modal if user clicks outside modal content
+window.addEventListener("click", function (event) {
+  if (event.target === clearTutorModal) {
+    clearTutorModal.style.display = "none";
+  }
+});
+
+
+

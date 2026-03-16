@@ -23,6 +23,9 @@
 
   <button type="button" id= "openAssignTutorModal">Assign Tutor Hours </button>
 
+  <button type="button" id= "openClearTutorModal">Clear Tutor Hours </button>
+
+
   <br><br>
 
   <table border="1" cellpadding="6" cellspacing="0">
@@ -38,7 +41,7 @@
     <tbody id="tutorRows">
       <% tutors.forEach(tutor => { %>
          <tr class="<%= tutor.isActive ? '' : 'inactive-row' %>">
-
+          <!-- loading tutors in table-->
           <td>
             <input type="radio" name="selectedTutor" value="<%= tutor._id %>">
           </td>
@@ -167,6 +170,52 @@
 
 
 
+
+
+
+
+  <!-- "CLEAR TUTOR" Modal -> FORM TO CLEAR TUTOR HOURS & pop-up container-->
+<div id="clearTutorModal" class="modal">
+  <!-- content box (temp white)-->
+  <div class="clear-modal-content">
+    <!-- x to close modal-->
+    <span class="clear-close-btn" id="closeClearTutorModal">&times;</span>
+
+    <h2>Clear Tutor Hours</h2>
+<!-- connected to route, sends data to /adminUsers/add, POST req for submission-->
+    <form action="/clearTutorHours/remove" method="POST">
+      <!-- data to be sent (first name, last name, email, password (We can just have it as a 
+       temporary password set by admin for students to use to login and then student can change password after
+       / be sent a link to change password? ) )-->
+      <input type="hidden" name="role" value="tutor">
+      
+<!-- looping through tutors in dropdown menu -->
+<select name="tutorId" required>
+  <option value="">-- Select Tutor --</option>
+
+      <% activeTutors.forEach(function(tutor) { %>
+      <option value="<%= tutor._id %>">
+      <%= tutor.fname %> <%= tutor.lname %>
+    </option>
+  <% }); %>
+</select>
+
+<br><br>
+
+<!-- Date (input type = date) with minimum of "today" : admin has to choose a date 
+ for assign tutor shift from today and onward only-->
+<input type="date" name="shiftDate" min="<%= today %>"  required>
+
+      <br><br>
+
+
+      <br><br>
+      <button type="submit">Clear Tutor Hours</button>
+      <br><br>
+    </form>
+
+  </div>
+</div>
 
 
 

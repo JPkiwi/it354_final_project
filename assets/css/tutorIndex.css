@@ -82,3 +82,21 @@ row is greyed out to indicate inactivity*/
   font-size: 20px;
   cursor: pointer;
 }
+
+
+
+
+
+.clear-modal-content {
+  background-color: white;
+  margin: 10% auto;
+  padding: 20px;
+  width: 400px;
+  border-radius: 8px;
+}
+
+.clear-close-btn {
+  float: right;
+  font-size: 20px;
+  cursor: pointer;
+}
