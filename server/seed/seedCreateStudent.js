@@ -20,8 +20,8 @@ async function seedStudent() {
     }
 
   } catch (err) {
-    console.error("Error seeding tutor shifts and student:", err.message);
+    console.error("Error seeding student:", err.message);
   }
 }
 
-module.exports = seedTutorShiftsAndStudent;
+module.exports = seedStudent;
