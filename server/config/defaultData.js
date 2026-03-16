@@ -7,5 +7,6 @@ const DEFAULT_WEEK_HOURS = [
     { weekday: "Saturday", isClosed: true },
     { weekday: "Sunday", isClosed: true }
 ];
+const DEFAULT_COURSES = [{courseName: "IT168"}, {courseName: "IT179"}];
 
-module.exports = DEFAULT_WEEK_HOURS;
+module.exports = { DEFAULT_WEEK_HOURS, DEFAULT_COURSES };
