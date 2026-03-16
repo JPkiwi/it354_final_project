@@ -4,7 +4,8 @@ const morgan = require("morgan");
 const connectMongo = require("./server/database/connect");
 const session = require('express-session'); // allows us to store session tokens (logging into Google Calendar)
 // 
-const seedOpenCenter = require("./server/seed/seedOpenCenter");
+// const seedOpenCenter = require("./server/seed/seedOpenCenter");
+const seedTutorShiftsAndStudent = require("./server/seed/seedTutorShifts");
 
 dotenv.config();
 
@@ -90,14 +91,6 @@ app.get("/seed", async (req, res) => {
     const course179 = await Course.create({ courseName: "IT179" });
     const course168 = await Course.create({ courseName: "IT168" });
 
-    // create a test admin
-    const admin = await User.create({
-      role: "admin",
-      fname: "Admin",
-      lname: "User",
-      email: "admin@ilstu.edu",
-      passwordHash: "hashedpassword123",
-    });
 
     // FOR TESTING PASSWORD HASHING with the "adminHash" admin below:
     const hashedPassword1 = await bcrypt.hash('adminHashPass1234', 10);
@@ -109,6 +102,7 @@ app.get("/seed", async (req, res) => {
       email: "adminHash@ilstu.edu",
       passwordHash: hashedPassword1,
     });
+
 
     const hashedPassword2 = await bcrypt.hash('tutorHashPass1234', 10);
     // tutor with a hashed password
@@ -253,15 +247,15 @@ app.get("/seed", async (req, res) => {
 // On later visits → should log "Center hours already exist", check terminal for "Center hours already exist" message!!
 // I used mongosh to double-check, all weekdays correctly inserted from seedOpenCenter.js, terminal 
 // showed "Center hours already exit" after visiting url 2+ times, used db.centeropens.countDocuments() = 7 
-app.get('/seedCenter', async (req, res) => {
-    try {
-        await seedOpenCenter();
-        res.send('Center hours seeded successfully!');
-    } catch (err) {
-        console.error(err);
-        res.send('Seeding failed: ' + err.message);
-    }
-});
+// app.get('/seedCenter', async (req, res) => {
+//     try {
+//         await seedOpenCenter();
+//         res.send('Center hours seeded successfully!');
+//     } catch (err) {
+//         console.error(err);
+//         res.send('Seeding failed: ' + err.message);
+//     }
+// });
 
 
 // connect to the database
