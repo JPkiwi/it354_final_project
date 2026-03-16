@@ -133,7 +133,7 @@ exports.getAdminAvailabilityIndex = (req, res) => {
       error: null,
       title: 'Admin Availability',
       cssStylesheet: 'availabilityIndex.css',
-      jsFile: null, // will have js for this page at some point
+      jsFile: 'adminAvailability.js', // will have js for this page at some point
       user: req.session.user
     });
 } catch(err){
@@ -202,7 +202,7 @@ exports.getAdminTutorIndex = async (req, res) => {
     });
   } catch (err) {
 
-    // prints erroe to console
+    // prints error to console
     console.error(err);
     const today = new Date().toISOString().split("T")[0];
 
@@ -930,7 +930,7 @@ exports.toggleStudentStatus = async (req, res) => {
       });
     }
 
-    // findin gthe selected user (student) by their id and role
+    // finding the selected user (student) by their id and role
     const student = await User.findOne({
       _id: studentId,
       role: "student"
@@ -1068,5 +1068,81 @@ exports.addUser = async (req, res) => {
   catch (err) {
     console.error(err);
     res.status(500).send("Could not add user.");
+  }
+};
+
+// -----------------------------------------
+
+
+// POST: Handles form submission to change weekday hours
+exports.changeHours = async (req, res) => {
+  try {
+    // if not an auth user, send to login page
+      if (!req.session.user) {
+        return res.render('login',
+          {
+            title: 'Login Page',
+            cssStylesheet: 'login.css',
+            jsFile: null,
+            error: "User not logged in.",
+            user: null
+        });
+      }
+ 
+      // if auth user but not a admin, send to login page
+      if (req.session.user.role !== "admin") {
+        return res.render('login',
+          {
+            title: 'Login Page',
+            cssStylesheet: 'login.css',
+            jsFile: null,
+            error: "Access denied. Only admins can view this page.",
+            user: null
+        });
+      }
+      
+    const { weekday, centerOpenTime, centerCloseTime } = req.body;
+
+    // make sure all fields were filled out
+    if (!weekday || !centerOpenTime || !centerCloseTime) {
+      return res.status(400).send("All fields are required.");
+    }
+
+    const openHour = Number(centerOpenTime.split(":")[0]); // Get open hour as an integer
+    const closeHour = Number(centerCloseTime.split(":")[0]); // Get close hour as an integer
+    const openMinute = Number(centerOpenTime.split(":")[1]); // Get open minute as an integer
+    const closeMinute = Number(centerCloseTime.split(":")[1]); // Get close minute as an integer
+    
+    // make sure entered start time is less than entered end time
+    if (openHour > closeHour) {
+      return res.status(400).send("Open Time must be earlier than Close Time.");
+    }
+
+    // if center hours set to less than one-hour difference, then close the day
+    if (((closeHour * 60 + closeMinute)-(openHour * 60 + openMinute)) < 60) {
+      await centerOpen.findOneAndUpdate({weekday: weekday}, { openTime: centerOpenTime, closeTime: centerCloseTime, isClosed: true });
+    } else { // otherwise, update the weekday open and close hours, open the day
+      await centerOpen.findOneAndUpdate({weekday: weekday}, { openTime: centerOpenTime, closeTime: centerCloseTime, isClosed: false });
+    }
+
+    // re-render page once update completes
+    res.render('adminAvailabilityIndex', 
+    {
+      error: null,
+      title: 'Admin Availability',
+      cssStylesheet: 'availabilityIndex.css',
+      jsFile: 'adminAvailability.js', // will have js for this page at some point
+      user: req.session.user
+    });
+  } catch (err) {
+    console.log("Change hours failed:", err);
+    res.render('adminAvailabilityIndex', 
+    {
+      error: 'Failed to change hours.',
+      title: 'Admin Availability',
+      cssStylesheet: 'availabilityIndex.css',
+      jsFile: 'adminAvailability.js', // will have js for this page at some point
+      user: req.session.user
+    });
   }
 };

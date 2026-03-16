@@ -25,12 +25,9 @@ route.post("/adminStudentIndex/toggle", controller.toggleStudentStatus);
 // Handles form submission to create a new user (student or tutor)
 route.post("/adminUsers/add", controller.addUser);
 
-// delete later?
-// Commented out because controller.changeHours was undefined,
-// which caused "argument handler must be a function" server crash
-// route.post("/changeHours", controller.changeHours);
-// // Handles form submission to change weekday hours
-// route.post("/changeHours", controller.changeHours);
+
+// Handles form submission to change weekday hours
+route.post("/changeHours", controller.changeHours);
 
 
 console.log("assignTutorHours type:", typeof controller.assignTutorHours);
