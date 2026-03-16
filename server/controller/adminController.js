@@ -581,29 +581,19 @@ exports.assignTutorHours = async (req, res) => {
     // comparing the start/end time to existing tutor shift 
 
 
-
-    console.log("START", startTime);
-
     const earlierShifts = await tutorShift.find({
       tutorId: tutorId,
       shiftDate: new Date(shiftDate),
       startTime: { $lt: startTime }
     });
 
-    console.log(earlierShifts);
 
     if (earlierShifts.length > 0) {
-
       // removing the earlier shifts 
       for (let i = 0; i < earlierShifts.length; i++) {
-        // await tutorShift.deleteOne({earlierShifts[i]});
         await tutorShift.deleteOne({ _id: earlierShifts[i]._id });
-        // console.log(earlierShifts[i]);
       }
-
     }
-
-
 
     const laterShifts = await tutorShift.find({
       tutorId: tutorId,
@@ -611,15 +601,11 @@ exports.assignTutorHours = async (req, res) => {
       endTime: { $gte: endTime }
     });
 
-    console.log(laterShifts);
-
     if (laterShifts.length > 0) {
       // removing the later shifts 
       for (let i = 0; i < laterShifts.length; i++) {
         await tutorShift.deleteOne({ _id: laterShifts[i]._id });
-
       }
-
     }
 
 
@@ -668,9 +654,9 @@ exports.assignTutorHours = async (req, res) => {
 
     // logging how many shifts were added and if there were any skipped (already-exisitng) shifts 
     // not necessary, just so we can test
-    console.log(`Shifts added: ${addedShifts}`);
-    console.log(`Shifts skipped (duplicates): ${skippedShifts}`);
-    console.log(outsideCenterHoursMessage);
+    // console.log(`Shifts added: ${addedShifts}`);
+    // console.log(`Shifts skipped (duplicates): ${skippedShifts}`);
+    // console.log(outsideCenterHoursMessage);
 
 
     // if shiftsToCreate is empty (ALL shift blocks have already been added)
@@ -1120,9 +1106,9 @@ exports.changeHours = async (req, res) => {
 
     // if center hours set to less than one-hour difference, then close the day
     if (((closeHour * 60 + closeMinute)-(openHour * 60 + openMinute)) < 60) {
-      await centerOpen.findOneAndUpdate({weekday: weekday}, { $set: { openTime: centerOpenTime, closeTime: centerCloseTime, isClosed: true } }, {upsert: true, returnDocument: "after"});
+      await centerOpen.findOneAndUpdate({weekday: weekday}, { $set: { openTime: centerOpenTime, closeTime: centerCloseTime, isClosed: true } });
     } else { // otherwise, update the weekday open and close hours, open the day
-      await centerOpen.findOneAndUpdate({weekday: weekday}, { $set: { openTime: centerOpenTime, closeTime: centerCloseTime, isClosed: false } }, {upsert: true, returnDocument: "after"});
+      await centerOpen.findOneAndUpdate({weekday: weekday}, { $set: { openTime: centerOpenTime, closeTime: centerCloseTime, isClosed: false } });
     }
 
     // re-render page once update completes

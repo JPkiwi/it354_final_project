@@ -7,9 +7,8 @@ exports.getLandingPage = async (req, res) => {
     let weekdays = await CenterOpen.find();
 
     // if there are no weekdays in MongoDB, then insert all the default week hours
-    if (weekdays.length < 7) {
-      weekdays = await CenterOpen.insertMany(DEFAULT_WEEK_HOURS, { ordered: false });
-      weekdays = await CenterOpen.find();
+    if (weekdays.length === 0) {
+      weekdays = await CenterOpen.insertMany(DEFAULT_WEEK_HOURS);
     }
 
     res.render("index", {

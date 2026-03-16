@@ -142,7 +142,7 @@ exports.viewAvailableAppointments = async (req, res) => {
                 { $sort: { shiftDate: 1, startTime: 1 } }
             ]);
 
-            console.log("Available shifts:", availableShifts.length);
+            // console.log("Available shifts:", availableShifts.length);
 
             if (availableShifts.length === 0) {
                 return res.render("studentIndex", {
