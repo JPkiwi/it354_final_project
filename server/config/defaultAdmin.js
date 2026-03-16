@@ -9,7 +9,7 @@ exports.createAdminAccount = async () => {
     role: "admin",
     fname: "Admin",
     lname: "Control",
-    email: process.env.EMAIL_USER,
+    email: process.env.GMAIL_EMAIL,
   });
 
   if (!adminAccount) {
@@ -21,7 +21,7 @@ exports.createAdminAccount = async () => {
       role: "admin",
       fname: "Admin",
       lname: "Control",
-      email: process.env.EMAIL_USER,
+      email: process.env.GMAIL_EMAIL,
       passwordHash: hashedPassword,
     });
   }
