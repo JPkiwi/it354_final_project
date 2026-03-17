@@ -8,26 +8,26 @@ exports.getStudentIndex = async (req, res) => {
     try {
         // if not an auth user, send to login page
         if (!req.session.user) {
-            return res.render('login', 
-            {
-                title: 'Login Page',
-                cssStylesheet: 'login.css',
-                jsFile: null,
-                error: "User not logged in.",
-                user: null,
-            });
+            return res.render('login',
+                {
+                    title: 'Login Page',
+                    cssStylesheet: 'login.css',
+                    jsFile: null,
+                    error: "User not logged in.",
+                    user: null,
+                });
         }
 
         // if auth user but not a student, send to login page
         if (req.session.user.role !== "student") {
-            return res.render('login', 
-            {
-                title: 'Login Page',
-                cssStylesheet: 'login.css',
-                jsFile: null,
-                error: "Access denied. Only students can view this page.",
-                user: req.session.user,
-            });
+            return res.render('login',
+                {
+                    title: 'Login Page',
+                    cssStylesheet: 'login.css',
+                    jsFile: null,
+                    error: "Access denied. Only students can view this page.",
+                    user: req.session.user,
+                });
         }
 
         // get all courses for the dropdown
@@ -63,37 +63,37 @@ exports.viewAvailableAppointments = async (req, res) => {
     try {
         // if not an auth user, send to login page
         if (!req.session.user) {
-            return res.render('login', 
-            {
-                title: 'Login Page',
-                cssStylesheet: 'login.css',
-                jsFile: null,
-                error: "User not logged in.",
-                user: null,
-            });
+            return res.render('login',
+                {
+                    title: 'Login Page',
+                    cssStylesheet: 'login.css',
+                    jsFile: null,
+                    error: "User not logged in.",
+                    user: null,
+                });
         }
 
         // if auth user but not a student, send to login page
         if (req.session.user.role !== "student") {
-            return res.render('login', 
-            {
-                title: 'Login Page',
-                cssStylesheet: 'login.css',
-                jsFile: null,
-                error: "Access denied. Only students can view this page.",
-                user: req.session.user,
-            });
+            return res.render('login',
+                {
+                    title: 'Login Page',
+                    cssStylesheet: 'login.css',
+                    jsFile: null,
+                    error: "Access denied. Only students can view this page.",
+                    user: req.session.user,
+                });
         }
 
         const { course, selectDay } = req.body;
         const courses = await Course.find().sort({ courseName: 1 });
 
         // convert courseId string to ObjectId to use in availableShifts query
-        const courseId = new mongoose.Types.ObjectId(course); 
+        const courseId = new mongoose.Types.ObjectId(course);
 
         //get the current date to compare to shift dates and only show future appointments
         const currentDate = new Date();
-        
+
         // create a date range for the whole day (using UTC to avoid timezone issues)
         const startOfDay = new Date(selectDay);
         const endOfDay = new Date(selectDay);
@@ -116,32 +116,35 @@ exports.viewAvailableAppointments = async (req, res) => {
         else {
             // pull shifts that are not booked and on the date and course the user selected
             let availableShifts = await TutorShift.aggregate([
-                { $match: {isBooked: false, shiftDate: { $gte: startOfDay, $lte: endOfDay }} },
-                { $lookup: {from: "users", localField: "tutorId", foreignField: "_id", as: "tutor"} },
+                { $match: { isBooked: false, shiftDate: { $gte: startOfDay, $lte: endOfDay } } },
+                { $lookup: { from: "users", localField: "tutorId", foreignField: "_id", as: "tutor" } },
                 { $unwind: "$tutor" },
-                { $match: {"tutor.tutorCourses": courseId } },
-                { $lookup: {from: "courses", localField: "tutor.tutorCourses", foreignField: "_id", as: "courses"} },
-                { $project: {shiftDate: 1, startTime: 1, endTime: 1, tutorId: "$tutor._id", fname: "$tutor.fname", lname: "$tutor.lname",
-                    courseName: { 
-                        $arrayElemAt: [{
-                            $map: {
-                                input: {
-                                    $filter: {
-                                        input: "$courses", 
-                                        as: "course", 
-                                        cond: { $eq: ["$$course._id", courseId] }
-                                    } 
-                                },
-                                as: "course",
-                                in: "$$course.courseName"
-                            }
-                        }, 0]
+                { $match: { "tutor.tutorCourses": courseId } },
+                { $lookup: { from: "courses", localField: "tutor.tutorCourses", foreignField: "_id", as: "courses" } },
+                {
+                    $project: {
+                        shiftDate: 1, startTime: 1, endTime: 1, tutorId: "$tutor._id", fname: "$tutor.fname", lname: "$tutor.lname",
+                        courseName: {
+                            $arrayElemAt: [{
+                                $map: {
+                                    input: {
+                                        $filter: {
+                                            input: "$courses",
+                                            as: "course",
+                                            cond: { $eq: ["$$course._id", courseId] }
+                                        }
+                                    },
+                                    as: "course",
+                                    in: "$$course.courseName"
+                                }
+                            }, 0]
 
-                    }}
+                        }
+                    }
                 },
                 { $sort: { shiftDate: 1, startTime: 1 } }
             ]);
-
+            
             // console.log("Available shifts:", availableShifts.length);
 
             if (availableShifts.length === 0) {
