@@ -25,7 +25,7 @@
                     <p><%= appointment.course %></p>
                     <!--used toUTCString() instead of .toDateString() to get the proper date and slice to look nice-->
                     <p><%= appointment.appointmentDate.toUTCString().slice(0, 16) %></p>
-                    <p><%= appointment.startTime %> - <%= appointment.endTime %></p>
+                    <p><b><%= appointment.startTime %> - <%= appointment.endTime %></b></p>
                 </div>
             <% }) %>
         <% } %>
