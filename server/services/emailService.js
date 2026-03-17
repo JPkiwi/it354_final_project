@@ -5,9 +5,6 @@ const transporter = nodemailer.createTransport({
   auth: {
     user: process.env.GMAIL_EMAIL,
     pass: process.env.GMAIL_APP_PASSWORD
-  },
-  tls: {
-    rejectUnauthorized: false // needs to be changed later, but allows self-signed certs for development/testing
   }
 });
 
@@ -19,6 +16,11 @@ async function sendEmail({ to, cc, subject, html }) {
     subject,
     html
   });
+  console.log(`Email sent to ${to} with subject "${subject}"`);
 }
+// ,
+//   tls: {
+//     rejectUnauthorized: false // needs to be changed later, but allows self-signed certs for development/testing
+//   }
 
 module.exports = { sendEmail };
