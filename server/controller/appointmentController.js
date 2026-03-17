@@ -70,7 +70,7 @@ exports.bookAppointment = async (req, res) => {
     // send confirmation email to student and CC admin
     await sendEmail({
       to: req.session.user.email,
-      cc: process.env.GMAIL_EMAIL, // CC admin
+      cc: process.env.GMAIL_ADMIN, // CC admin
       subject: "Appointment Confirmation",
       html: confirmationTemplate({
         studentName: req.session.user.fname,
