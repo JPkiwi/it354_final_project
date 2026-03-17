@@ -1,8 +1,7 @@
-// const User = require("../model/userModel"); // will need eventually
 const Appointment = require("../model/appointmentModel");
 const User = require("../model/userModel");
 const Course = require("../model/courseModel");
-const tutorShift = require("../model/tutorShiftModel")
+const tutorShift = require("../model/tutorShiftModel");
 const centerOpen = require("../model/centerOpenSchedule");
 const centerClosedSchedule = require("../model/centerClosedSchedule");
 const bcrypt = require('bcrypt');
@@ -13,28 +12,28 @@ const bcrypt = require('bcrypt');
 exports.getAdminIndex = async (req, res) => {
   try {
     // if not an auth user, send to login page
-      if (!req.session.user) {
-        return res.render('login',
-          {
-            title: 'Login Page',
-            cssStylesheet: 'login.css',
-            jsFile: null,
-            error: "User not logged in.",
-            user: null
+    if (!req.session.user) {
+      return res.render('login',
+        {
+          title: 'Login Page',
+          cssStylesheet: 'login.css',
+          jsFile: null,
+          error: "User not logged in.",
+          user: null
         });
-      }
- 
-      // if auth user but not a admin, send to login page
-      if (req.session.user.role !== "admin") {
-        return res.render('login',
-          {
-            title: 'Login Page',
-            cssStylesheet: 'login.css',
-            jsFile: null,
-            error: "Access denied. Only admins can view this page.",
-            user: null
+    }
+
+    // if auth user but not a admin, send to login page
+    if (req.session.user.role !== "admin") {
+      return res.render('login',
+        {
+          title: 'Login Page',
+          cssStylesheet: 'login.css',
+          jsFile: null,
+          error: "Access denied. Only admins can view this page.",
+          user: null
         });
-      }
+    }
     // finding all appointments in db
     const appointments = await Appointment.find()
       // replace studentId ref with full student doc
@@ -61,8 +60,8 @@ exports.getAdminIndex = async (req, res) => {
       jsFile: "adminIndex.js",
       user: req.session.user,
       // sending appointments and courses to EJS view
-      appointments: appointments,
-      courses: courses,
+      appointments,
+      courses,
 
       // default values for form fields
       // so a crash does not occur -> form fields always 
@@ -104,50 +103,50 @@ exports.getAdminIndex = async (req, res) => {
 
 // renders ADMIN AVAILABILITY INDEX
 exports.getAdminAvailabilityIndex = (req, res) => {
-  try{
+  try {
 
-  // if not an auth user, send to login page
-      if (!req.session.user) {
-        return res.render('login',
-          {
-            title: 'Login Page',
-            cssStylesheet: 'login.css',
-            jsFile: null,
-            error: "User not logged in.",
-            user: null
+    // if not an auth user, send to login page
+    if (!req.session.user) {
+      return res.render('login',
+        {
+          title: 'Login Page',
+          cssStylesheet: 'login.css',
+          jsFile: null,
+          error: "User not logged in.",
+          user: null
         });
-      }
- 
-      // if auth user but not a admin, send to login page
-      if (req.session.user.role !== "admin") {
-        return res.render('login',
-          {
-            title: 'Login Page',
-            cssStylesheet: 'login.css',
-            jsFile: null,
-            error: "Access denied. Only admins can view this page.",
-            user: null
+    }
+
+    // if auth user but not a admin, send to login page
+    if (req.session.user.role !== "admin") {
+      return res.render('login',
+        {
+          title: 'Login Page',
+          cssStylesheet: 'login.css',
+          jsFile: null,
+          error: "Access denied. Only admins can view this page.",
+          user: null
         });
-      }
-  res.render('adminAvailabilityIndex',
-    {
-      error: null,
-      title: 'Admin Availability',
-      cssStylesheet: 'availabilityIndex.css',
-      jsFile: 'adminAvailability.js', // will have js for this page at some point
-      user: req.session.user
-    });
-} catch(err){
-   res.render('adminAvailabilityIndex',
-    {
-      error: "Could not load page",
-      title: 'Admin Availability',
-      cssStylesheet: 'availabilityIndex.css',
-      jsFile: null, // will have js for this page at some point
-      user: req.session.user
-    });
-}
+    }
+    res.render('adminAvailabilityIndex',
+      {
+        error: null,
+        title: 'Admin Availability',
+        cssStylesheet: 'availabilityIndex.css',
+        jsFile: 'adminAvailability.js',
+        user: req.session.user
+      });
+  } catch (err) {
+    res.render('adminAvailabilityIndex',
+      {
+        error: "Could not load page",
+        title: 'Admin Availability',
+        cssStylesheet: 'availabilityIndex.css',
+        jsFile: 'adminAvailability.js',
+        user: req.session.user
+      });
   }
+};
 
 // -------------------------------------------------------------------------------------------
 
@@ -155,35 +154,35 @@ exports.getAdminAvailabilityIndex = (req, res) => {
 exports.getAdminTutorIndex = async (req, res) => {
   try {
     // if not an auth user, send to login page
-      if (!req.session.user) {
-        return res.render('login',
-          {
-            title: 'Login Page',
-            cssStylesheet: 'login.css',
-            jsFile: null,
-            error: "User not logged in.",
-            user: null
+    if (!req.session.user) {
+      return res.render('login',
+        {
+          title: 'Login Page',
+          cssStylesheet: 'login.css',
+          jsFile: null,
+          error: "User not logged in.",
+          user: null
         });
-      }
- 
-      // if auth user but not a admin, send to login page
-      if (req.session.user.role !== "admin") {
-        return res.render('login',
-          {
-            title: 'Login Page',
-            cssStylesheet: 'login.css',
-            jsFile: null,
-            error: "Access denied. Only admins can view this page.",
-            user: null
+    }
+
+    // if auth user but not a admin, send to login page
+    if (req.session.user.role !== "admin") {
+      return res.render('login',
+        {
+          title: 'Login Page',
+          cssStylesheet: 'login.css',
+          jsFile: null,
+          error: "Access denied. Only admins can view this page.",
+          user: null
         });
-      }
+    }
     // finding tutors in user collection
     const tutors = await User.find({ role: "tutor" });
     const activeTutors = await User.find({ role: "tutor", isActive: true });
 
     // retrieving courses (for when admin adds a tutor, they need to select the course(s) tutor will teach)
     const courses = await Course.find();
-    const today = new Date().toISOString().split("T")[0];
+    const today = new Date().toLocaleDateString("en-CA");
 
 
 
@@ -194,9 +193,8 @@ exports.getAdminTutorIndex = async (req, res) => {
       cssStylesheet: "tutorIndex.css",
       jsFile: "tutorIndex.js",
       user: req.session.user,
-      // passing list of tutors into view
+      // passing data into view
       tutors,
-      // passing courses into view 
       activeTutors,
       courses,
       today
@@ -205,7 +203,7 @@ exports.getAdminTutorIndex = async (req, res) => {
 
     // prints error to console
     console.error(err);
-    const today = new Date().toISOString().split("T")[0];
+    const today = new Date().toLocaleDateString("en-CA");
 
     // even w/ error, page will still render
     res.render("adminTutorIndex", {
@@ -229,39 +227,37 @@ exports.getAdminTutorIndex = async (req, res) => {
 exports.toggleTutorStatus = async (req, res) => {
   try {
     // if not an auth user, send to login page
-      if (!req.session.user) {
-        return res.render('login',
-          {
-            title: 'Login Page',
-            cssStylesheet: 'login.css',
-            jsFile: null,
-            error: "User not logged in.",
-            user: null
+    if (!req.session.user) {
+      return res.render('login',
+        {
+          title: 'Login Page',
+          cssStylesheet: 'login.css',
+          jsFile: null,
+          error: "User not logged in.",
+          user: null
         });
-      }
- 
-      // if auth user but not a admin, send to login page
-      if (req.session.user.role !== "admin") {
-        return res.render('login',
-          {
-            title: 'Login Page',
-            cssStylesheet: 'login.css',
-            jsFile: null,
-            error: "Access denied. Only admins can view this page.",
-            user: null
+    }
+
+    // if auth user but not a admin, send to login page
+    if (req.session.user.role !== "admin") {
+      return res.render('login',
+        {
+          title: 'Login Page',
+          cssStylesheet: 'login.css',
+          jsFile: null,
+          error: "Access denied. Only admins can view this page.",
+          user: null
         });
-      }
+    }
     // retrieving selected tutor ID from submitted form (selected Tutor)
     const tutorId = req.body.selectedTutor;
-
-    const today = new Date().toISOString().split("T")[0];
 
     // checks if tutor was selected -> security measure, if missing,
     // re-renders page and stops function
     if (!tutorId) {
       const tutors = await User.find({ role: "tutor" });
       const activeTutors = await User.find({ role: "tutor", isActive: true });
-      const today = new Date().toISOString().split("T")[0];
+      const today = new Date().toLocaleDateString("en-CA");
       const courses = await Course.find();
 
       return res.render("adminTutorIndex", {
@@ -294,16 +290,19 @@ exports.toggleTutorStatus = async (req, res) => {
     );
 
     // reloads page/show's updated active status
-    res.redirect("/adminTutorIndex");
+    return res.redirect("/adminTutorIndex");
   } catch (err) {
+    // logging error for debugging
+    console.error(err);
+
     const tutors = await User.find({ role: "tutor" });
     const courses = await Course.find();
     const activeTutors = await User.find({ role: "tutor", isActive: true });
-    const today = new Date().toISOString().split("T")[0];
+    const today = new Date().toLocaleDateString("en-CA");
 
 
     res.render("adminTutorIndex", {
-      error: "Please select a tutor first.",
+      error: "Could not update tutor status.",
       title: "Admin Manage Tutors",
       cssStylesheet: "tutorIndex.css",
       jsFile: "tutorIndex.js",
@@ -324,39 +323,40 @@ exports.toggleTutorStatus = async (req, res) => {
 exports.assignTutorHours = async (req, res) => {
   try {
     // if not an auth user, send to login page
-      if (!req.session.user) {
-        return res.render('login',
-          {
-            title: 'Login Page',
-            cssStylesheet: 'login.css',
-            jsFile: null,
-            error: "User not logged in.",
-            user: null
+    if (!req.session.user) {
+      return res.render('login',
+        {
+          title: 'Login Page',
+          cssStylesheet: 'login.css',
+          jsFile: null,
+          error: "User not logged in.",
+          user: null
         });
-      }
- 
-      // if auth user but not a admin, send to login page
-      if (req.session.user.role !== "admin") {
-        return res.render('login',
-          {
-            title: 'Login Page',
-            cssStylesheet: 'login.css',
-            jsFile: null,
-            error: "Access denied. Only admins can view this page.",
-            user: null
+    }
+
+    // if auth user but not a admin, send to login page
+    if (req.session.user.role !== "admin") {
+      return res.render('login',
+        {
+          title: 'Login Page',
+          cssStylesheet: 'login.css',
+          jsFile: null,
+          error: "Access denied. Only admins can view this page.",
+          user: null
         });
-      }
+    }
+
     // retrieve hours entered into form 
     const { tutorId, shiftDate, startTime, endTime } = req.body;
-    let today = new Date();
+    let today = new Date().toLocaleDateString("en-CA");
 
-    // ensure all fields in form are filled out -> if all fields in modal are NOT filled out, then :
+    // ensure all required form fields were submitted
     if (!tutorId || !shiftDate || !startTime || !endTime) {
       // reload tutors for page/dropdown 
       const tutors = await User.find({ role: "tutor" });
       const activeTutors = await User.find({ role: "tutor", isActive: true });
       const courses = await Course.find();
-      today = new Date().toISOString().split("T")[0];
+      today = new Date().toLocaleDateString("en-CA");
 
       //re-render the page 
       return res.render("adminTutorIndex", {
@@ -372,16 +372,16 @@ exports.assignTutorHours = async (req, res) => {
       });
     } // end of if(!tutorId || !shiftDate etc...)
 
-    // make sure selected tutor exists in db/role is a tutor
+    // make sure selected tutor exists in db & has tutor role
     const tutor = await User.findOne({ _id: tutorId, role: "tutor" });
 
-    // if a match is NOT found 
+    // if tutor was not found
     if (!tutor) {
-      // (reloading data page needs again)
+      // reload page data needed for re-rendering
       const tutors = await User.find({ role: "tutor" });
       const courses = await Course.find();
       const activeTutors = await User.find({ role: "tutor", isActive: true });
-      today = new Date().toISOString().split("T")[0];
+      today = new Date().toLocaleDateString("en-CA");
 
       // re-render page to show message that the selected tutor was not found
       return res.render("adminTutorIndex", {
@@ -401,20 +401,20 @@ exports.assignTutorHours = async (req, res) => {
 
     // now work with the times (startTime & endTime)
 
-    // splitting start time (should only need the 0 index (hour index) if we're not going to worry about minutes?)
-    // I can still check minutes just in case??
+    // split the submitted start time and end time into hour & minute pieces
     const startHr = parseInt(startTime.split(":")[0], 10);
     const startMin = parseInt(startTime.split(":")[1], 10);
-    // now for the submitted endTime from form 
+
     const endHr = parseInt(endTime.split(":")[0], 10);
     const endMin = parseInt(endTime.split(":")[1], 10);
 
 
     // ensure the endTime is later than startTime
+    // prevent zero-length shift range 
     if (endHr < startHr || (endHr === startHr && endMin <= startMin)) {
       const tutors = await User.find({ role: "tutor" });
       const courses = await Course.find();
-      today = new Date().toISOString().split("T")[0];
+      today = new Date().toLocaleDateString("en-CA");
       const activeTutors = await User.find({ role: "tutor", isActive: true });
 
 
@@ -433,10 +433,11 @@ exports.assignTutorHours = async (req, res) => {
     }
 
 
-    // shifts are stored in 1-hr blocks, verification 
+    // shift validation: Shifts must start & end exactly on the hour because 
+    // they are stored in 1-hour blocks
     if (startMin !== 0 || endMin !== 0) {
       const tutors = await User.find({ role: "tutor" });
-      today = new Date().toISOString().split("T")[0];
+      today = new Date().toLocaleDateString("en-CA");
       const courses = await Course.find();
       const activeTutors = await User.find({ role: "tutor", isActive: true });
 
@@ -456,8 +457,12 @@ exports.assignTutorHours = async (req, res) => {
 
     }
 
-    // creating js date object (formatting)
+    // convert submitted shift date string into js date object
+    // map(Number) to convert each item in array to number
     const [year, month, day] = shiftDate.split("-").map(Number);
+
+    // "month - 1" --> subtract 1 because JavaScript months are 0-indexed (0 = January)
+    // form gives 03 (March), need to pass 2 in new date for finding weekday
     const selectedDate = new Date(year, month - 1, day);
 
     // determine weekday name from selected date
@@ -471,7 +476,8 @@ exports.assignTutorHours = async (req, res) => {
       "Saturday"
     ];
 
-    // retrieving what weekday admin selected 
+    // getDay() returns day of WEEK
+    // determine weekday name for selected shift date
     const weekday = weekdayNames[selectedDate.getDay()];
 
     // find normal center open hours for that weekday
@@ -482,11 +488,11 @@ exports.assignTutorHours = async (req, res) => {
       const tutors = await User.find({ role: "tutor" });
       const activeTutors = await User.find({ role: "tutor", isActive: true });
       const courses = await Course.find();
-      today = new Date().toISOString().split("T")[0];
+      today = new Date().toLocaleDateString("en-CA");
 
       return res.render("adminTutorIndex", {
-        // returning in error that the center is closed that day/shifts can't be scheduled 
-        error: `Center is closed on ${weekday}`,
+        // returning an error that the center is closed that day/shifts can't be scheduled 
+        error: `Center is closed on ${weekday}; shifts cannot be scheduled`,
         title: "Admin Manage Tutors",
         cssStylesheet: "tutorIndex.css",
         jsFile: "tutorIndex.js",
@@ -504,7 +510,7 @@ exports.assignTutorHours = async (req, res) => {
     const centerOpenMin = parseInt(centerOpenDay.openTime.split(":")[1], 10);
     // same for close hour
     const centerCloseHr = parseInt(centerOpenDay.closeTime.split(":")[0], 10);
-    const centerCloseMin = parseInt(centerOpenDay.closeTime.split(":")[1], 10);
+
 
     // determine the first FULL-hour block the center can use
     // ex: if center opens at 12:35, can't schedule a shift block from 12:00 - 14:00 --> need to schedule 
@@ -518,23 +524,25 @@ exports.assignTutorHours = async (req, res) => {
     }
 
     // determine last hour the center can use for shift scheduling
-    let validEndHr = centerCloseHr; 
+    let validEndHr = centerCloseHr;
 
-    // compare submitted range against valid center-open block range
-    // is center is open 3-5, admin requests 2-6, 
-    // Max.max moves adjusted start hour to 3 (3>2)
-    // Max.min moves adjusted end hour to 5 (5<6)
-    // prevents starting before center opens and ending after center closes
+
+
+    // adjust the requested shift range so it stays within valid center hours 
+    // example: if center is open 3-5pm & admin requests 2-6pm, 
+    // adjustedStartHr becomes 3, adjusted enderHr becomes 5
+
+    // comparing hour admin requested (startHr) and validStartHr -> prevents starting before center opens & ending after it closes
     const adjustedStartHr = Math.max(startHr, validStartHr);
     const adjustedEndHr = Math.min(endHr, validEndHr);
 
-    // if admin's requested shift does NOT overlap at all with center open hours, reject shift request
-    // ex: if shift (of adjusted hours) opens 3, ends 3 (off-chance center is open 2:45 - 3:30), shift rejected
+    // if the requested shift does NOT overlap with any full valid center-hour block, reject it
+    // ex: center open 2:45 - 3:15 --> will be replaced later with center closure check(?)
     if (adjustedStartHr >= adjustedEndHr) {
       const tutors = await User.find({ role: "tutor" });
       const activeTutors = await User.find({ role: "tutor", isActive: true });
       const courses = await Course.find();
-      today = new Date().toISOString().split("T")[0];
+      today = new Date().toLocaleDateString("en-CA");
 
       return res.render("adminTutorIndex", {
         error: "Center is closed during the selected time block",
@@ -549,45 +557,60 @@ exports.assignTutorHours = async (req, res) => {
       });
     }
 
+
+    // formatting error message when a shift is selected outside of center hours 
+    // (ex: "22:00" as "10:00 PM")
+    function formatHour(hour) {
+      const ampm = hour >= 12 ? "PM" : "AM";
+      let displayHour = hour % 12;
+
+      if (displayHour === 0) {
+        displayHour = 12;
+      }
+
+      return `${displayHour}:00 ${ampm}`;
+    }
+
+
     // keep track of whether some requested hours were outside center hours
     let outsideCenterHoursMessage = "";
 
-    // ex: if admin requested start hour 1pm, end hour 7pm, 
-    // but center only open 2pm - 5pm, show's which blocks were unavailable to schedule 
-    // (would show 1-2 block unavailable and 5-6, 6-7)
+    // example: if admin requests 1 PM - 7 PM but center is only open 2 PM - 5 PM,
+    // message explains which requested time blocks were outside valid center hours
 
     // (*if admin request was too early AND too late)
     if (startHr < adjustedStartHr && endHr > adjustedEndHr) {
       outsideCenterHoursMessage =
-      // adding padding ( zero's to front if 3pm was chosen for example to make 3:00 pm 03:00 )
-        `Some requested shift blocks were unavailable before ${String(adjustedStartHr).padStart(2, "0")}:00 and after ${String(adjustedEndHr).padStart(2, "0")}:00.`;
+        `Some requested shift blocks were unavailable before ${formatHour(adjustedStartHr)} and after ${formatHour(adjustedEndHr)}.`;
     } else if (startHr < adjustedStartHr) {
       outsideCenterHoursMessage =
-        `Shift block unavailable before ${String(adjustedStartHr).padStart(2, "0")}:00.`;
+        `Shift block unavailable before ${formatHour(adjustedStartHr)}.`;
     } else if (endHr > adjustedEndHr) {
       outsideCenterHoursMessage =
-        `Shift block unavailable after ${String(adjustedEndHr).padStart(2, "0")}:00.`;
+        `Shift block unavailable after ${formatHour(adjustedEndHr)}.`;
     }
-
 
 
 
     // initialize array (to store shift blocks) 
     const shiftsToCreate = [];
 
-    // counters for log
+    // counters for optional debugging/logging
     let addedShifts = 0;
     let skippedShifts = 0;
 
-    // comparing the start/end time to existing tutor shift 
 
 
+
+    // comparing requested time range to existing tutor shifts 
+
+    // Find all shift records for tutor on selected date 
+    // where the shift starts earlier than the newly requested start time
     const earlierShifts = await tutorShift.find({
       tutorId: tutorId,
       shiftDate: new Date(shiftDate),
       startTime: { $lt: startTime }
     });
-
 
     if (earlierShifts.length > 0) {
       // removing the earlier shifts 
@@ -596,6 +619,8 @@ exports.assignTutorHours = async (req, res) => {
       }
     }
 
+    // Find all shifts for tutor on selected date, 
+    // where the shift ends at or after the newly requested end time.
     const laterShifts = await tutorShift.find({
       tutorId: tutorId,
       shiftDate: new Date(shiftDate),
@@ -610,12 +635,11 @@ exports.assignTutorHours = async (req, res) => {
     }
 
 
-
-    // taking each hr #, making sure it's always two-digits when storing (example -> get 9 hour, store as 09: )
-    // adding "00" at end to make it full time string storing in db 
-    // loop through the hours in selected range 
+    // loop through each hour in the valid adjusted range
+    // build full HH:MM time strings for each 1-hour shift block
+    // padding time strings --> 9 hr = 09, min always 00 
     for (let hour = adjustedStartHr; hour < adjustedEndHr; hour++) {
-      const blockStart = `${String(hour).padStart(2, "0")}:00`
+      const blockStart = `${String(hour).padStart(2, "0")}:00`;
       const blockEnd = `${String(hour + 1).padStart(2, "0")}:00`;
 
       // check if the shift block exists 
@@ -626,16 +650,13 @@ exports.assignTutorHours = async (req, res) => {
         endTime: blockEnd
       });
 
-
-
-      // if the shift exists, ignore it/skip (using continue; )
+      // if this shift block already exists, skip it and continue to the next hour block
       // "continue;" stops current iteration, re-processes to next iteration
       if (existingShift) {
         skippedShifts++;
         continue;
 
       }
-
 
       // if shift block does not exist, add to the shiftsToCreate array 
       shiftsToCreate.push({
@@ -649,7 +670,7 @@ exports.assignTutorHours = async (req, res) => {
 
       addedShifts++;
 
-    }// END OF FOR  
+    }// END OF FOR LOOP 
 
 
 
@@ -663,7 +684,7 @@ exports.assignTutorHours = async (req, res) => {
     // if shiftsToCreate is empty (ALL shift blocks have already been added)
     if (shiftsToCreate.length === 0) {
       const tutors = await User.find({ role: "tutor" });
-      today = new Date().toISOString().split("T")[0];
+      today = new Date().toLocaleDateString("en-CA");
       const courses = await Course.find();
       const activeTutors = await User.find({ role: "tutor", isActive: true });
 
@@ -684,9 +705,33 @@ exports.assignTutorHours = async (req, res) => {
     }
 
 
-    // inserting the shifts to database :) 
+    // inserting all new shift blocks into database
     await tutorShift.insertMany(shiftsToCreate);
-    res.redirect("/adminTutorIndex");
+
+
+    // if some requested hours were outside center hours,
+    // re-render page to show warning message
+    if (outsideCenterHoursMessage) {
+      const tutors = await User.find({ role: "tutor" });
+      const activeTutors = await User.find({ role: "tutor", isActive: true });
+      const courses = await Course.find();
+      today = new Date().toLocaleDateString("en-CA");
+
+      return res.render("adminTutorIndex", {
+        error: outsideCenterHoursMessage,
+        title: "Admin Manage Tutors",
+        cssStylesheet: "tutorIndex.css",
+        jsFile: "tutorIndex.js",
+        user: req.session.user,
+        tutors,
+        activeTutors,
+        courses,
+        today
+      });
+    }
+
+    // else, successful redirect
+    return res.redirect("/adminTutorIndex");
 
   } //end of try
   catch (err) {
@@ -694,10 +739,10 @@ exports.assignTutorHours = async (req, res) => {
 
     const tutors = await User.find({ role: "tutor" });
     const courses = await Course.find();
-    const today = new Date().toISOString().split("T")[0];
+    const today = new Date().toLocaleDateString("en-CA");
     const activeTutors = await User.find({ role: "tutor", isActive: true });
 
-    // general error message
+    // render page with general error message
     res.render("adminTutorIndex", {
       error: "Could not assign tutor shifts.",
       title: "Admin Manage Tutors",
@@ -718,38 +763,38 @@ exports.assignTutorHours = async (req, res) => {
 
 // REMOVING ALL TUTOR SHIFTS from specified day (/clearing tutor hours) 
 exports.clearTutorHours = async (req, res) => {
-  try{
+  try {
     // if not an auth user, send to login page
-      if (!req.session.user) {
-        return res.render('login',
-          {
-            title: 'Login Page',
-            cssStylesheet: 'login.css',
-            jsFile: null,
-            error: "User not logged in.",
-            user: null
+    if (!req.session.user) {
+      return res.render('login',
+        {
+          title: 'Login Page',
+          cssStylesheet: 'login.css',
+          jsFile: null,
+          error: "User not logged in.",
+          user: null
         });
-      }
- 
-      // if auth user but not a admin, send to login page
-      if (req.session.user.role !== "admin") {
-        return res.render('login',
-          {
-            title: 'Login Page',
-            cssStylesheet: 'login.css',
-            jsFile: null,
-            error: "Access denied. Only admins can view this page.",
-            user: null
+    }
+
+    // if auth user but not a admin, send to login page
+    if (req.session.user.role !== "admin") {
+      return res.render('login',
+        {
+          title: 'Login Page',
+          cssStylesheet: 'login.css',
+          jsFile: null,
+          error: "Access denied. Only admins can view this page.",
+          user: null
         });
-      }
+    }
     // retrieving tutorId and shiftDate chosen by admin
-    const {tutorId, shiftDate} = req.body;
-    
-    if ( !tutorId || !shiftDate){
+    const { tutorId, shiftDate } = req.body;
+
+    if (!tutorId || !shiftDate) {
       const tutors = await User.find({ role: "tutor" });
       const activeTutors = await User.find({ role: "tutor", isActive: true });
       const courses = await Course.find();
-      const today = new Date().toISOString().split("T")[0];
+      const today = new Date().toLocaleDateString("en-CA");
 
       return res.render("adminTutorIndex", {
         error: "Please select a tutor and date first.",
@@ -765,16 +810,16 @@ exports.clearTutorHours = async (req, res) => {
     }
     // deleting the specified shifts from chosen date/storing in deletedShifts
     const deletedShifts = await tutorShift.deleteMany({
-      tutorId, 
+      tutorId,
       shiftDate: new Date(shiftDate)
     })
 
     // if no shifts were deleted, return that no shifts were assigned for the tutor
-    if(deletedShifts.deletedCount ===0){
-     const tutors = await User.find({ role: "tutor" });
+    if (deletedShifts.deletedCount === 0) {
+      const tutors = await User.find({ role: "tutor" });
       const activeTutors = await User.find({ role: "tutor", isActive: true });
       const courses = await Course.find();
-      const today = new Date().toISOString().split("T")[0];
+      const today = new Date().toLocaleDateString("en-CA");
 
       return res.render("adminTutorIndex", {
         error: `No shift was assigned for this tutor on ${shiftDate}; no shifts were removed.`,
@@ -791,24 +836,24 @@ exports.clearTutorHours = async (req, res) => {
     // redirect to page
     res.redirect("/adminTutorIndex");
 
-  } catch(err){
+  } catch (err) {
     console.error("Error clearing tutor hours:", err);
-      const tutors = await User.find({ role: "tutor" });
-      const activeTutors = await User.find({ role: "tutor", isActive: true });
-      const courses = await Course.find();
-      const today = new Date().toISOString().split("T")[0];
+    const tutors = await User.find({ role: "tutor" });
+    const activeTutors = await User.find({ role: "tutor", isActive: true });
+    const courses = await Course.find();
+    const today = new Date().toLocaleDateString("en-CA");
 
-      return res.render("adminTutorIndex", {
-        error: "Could not clear tutor hours",
-        title: "Admin Manage Tutors",
-        cssStylesheet: "tutorIndex.css",
-        jsFile: "tutorIndex.js",
-        user: req.session.user,
-        tutors,
-        activeTutors,
-        courses,
-        today
-      });
+    return res.render("adminTutorIndex", {
+      error: "Could not clear tutor hours",
+      title: "Admin Manage Tutors",
+      cssStylesheet: "tutorIndex.css",
+      jsFile: "tutorIndex.js",
+      user: req.session.user,
+      tutors,
+      activeTutors,
+      courses,
+      today
+    });
   }
 };
 
@@ -821,28 +866,28 @@ exports.getAdminStudentIndex = async (req, res) => {
 
   try {
     // if not an auth user, send to login page
-      if (!req.session.user) {
-        return res.render('login',
-          {
-            title: 'Login Page',
-            cssStylesheet: 'login.css',
-            jsFile: null,
-            error: "User not logged in.",
-            user: null
+    if (!req.session.user) {
+      return res.render('login',
+        {
+          title: 'Login Page',
+          cssStylesheet: 'login.css',
+          jsFile: null,
+          error: "User not logged in.",
+          user: null
         });
-      }
- 
-      // if auth user but not a admin, send to login page
-      if (req.session.user.role !== "admin") {
-        return res.render('login',
-          {
-            title: 'Login Page',
-            cssStylesheet: 'login.css',
-            jsFile: null,
-            error: "Access denied. Only admins can view this page.",
-            user: null
+    }
+
+    // if auth user but not a admin, send to login page
+    if (req.session.user.role !== "admin") {
+      return res.render('login',
+        {
+          title: 'Login Page',
+          cssStylesheet: 'login.css',
+          jsFile: null,
+          error: "Access denied. Only admins can view this page.",
+          user: null
         });
-      }
+    }
     // retrieving students from user collection
     const students = await User.find({ role: "student" });
     res.render("adminStudentIndex",
@@ -878,28 +923,28 @@ exports.getAdminStudentIndex = async (req, res) => {
 exports.toggleStudentStatus = async (req, res) => {
   try {
     // if not an auth user, send to login page
-      if (!req.session.user) {
-        return res.render('login',
-          {
-            title: 'Login Page',
-            cssStylesheet: 'login.css',
-            jsFile: null,
-            error: "User not logged in.",
-            user: null
+    if (!req.session.user) {
+      return res.render('login',
+        {
+          title: 'Login Page',
+          cssStylesheet: 'login.css',
+          jsFile: null,
+          error: "User not logged in.",
+          user: null
         });
-      }
- 
-      // if auth user but not a admin, send to login page
-      if (req.session.user.role !== "admin") {
-        return res.render('login',
-          {
-            title: 'Login Page',
-            cssStylesheet: 'login.css',
-            jsFile: null,
-            error: "Access denied. Only admins can view this page.",
-            user: null
+    }
+
+    // if auth user but not a admin, send to login page
+    if (req.session.user.role !== "admin") {
+      return res.render('login',
+        {
+          title: 'Login Page',
+          cssStylesheet: 'login.css',
+          jsFile: null,
+          error: "Access denied. Only admins can view this page.",
+          user: null
         });
-      }
+    }
     // retrieving selected student ID from submitted form (this is from the radio button "SelectedStudent")
     const studentId = req.body.selectedStudent;
 
@@ -964,28 +1009,28 @@ exports.toggleStudentStatus = async (req, res) => {
 exports.addUser = async (req, res) => {
   try {
     // if not an auth user, send to login page
-      if (!req.session.user) {
-        return res.render('login',
-          {
-            title: 'Login Page',
-            cssStylesheet: 'login.css',
-            jsFile: null,
-            error: "User not logged in.",
-            user: null
+    if (!req.session.user) {
+      return res.render('login',
+        {
+          title: 'Login Page',
+          cssStylesheet: 'login.css',
+          jsFile: null,
+          error: "User not logged in.",
+          user: null
         });
-      }
- 
-      // if auth user but not a admin, send to login page
-      if (req.session.user.role !== "admin") {
-        return res.render('login',
-          {
-            title: 'Login Page',
-            cssStylesheet: 'login.css',
-            jsFile: null,
-            error: "Access denied. Only admins can view this page.",
-            user: null
+    }
+
+    // if auth user but not a admin, send to login page
+    if (req.session.user.role !== "admin") {
+      return res.render('login',
+        {
+          title: 'Login Page',
+          cssStylesheet: 'login.css',
+          jsFile: null,
+          error: "Access denied. Only admins can view this page.",
+          user: null
         });
-      }
+    }
     // get data from what was entered in the modal
     const { fname, lname, email, password, role } = req.body;
     // 
@@ -1069,29 +1114,29 @@ exports.addUser = async (req, res) => {
 exports.changeHours = async (req, res) => {
   try {
     // if not an auth user, send to login page
-      if (!req.session.user) {
-        return res.render('login',
-          {
-            title: 'Login Page',
-            cssStylesheet: 'login.css',
-            jsFile: null,
-            error: "User not logged in.",
-            user: null
+    if (!req.session.user) {
+      return res.render('login',
+        {
+          title: 'Login Page',
+          cssStylesheet: 'login.css',
+          jsFile: null,
+          error: "User not logged in.",
+          user: null
         });
-      }
- 
-      // if auth user but not a admin, send to login page
-      if (req.session.user.role !== "admin") {
-        return res.render('login',
-          {
-            title: 'Login Page',
-            cssStylesheet: 'login.css',
-            jsFile: null,
-            error: "Access denied. Only admins can view this page.",
-            user: null
+    }
+
+    // if auth user but not a admin, send to login page
+    if (req.session.user.role !== "admin") {
+      return res.render('login',
+        {
+          title: 'Login Page',
+          cssStylesheet: 'login.css',
+          jsFile: null,
+          error: "Access denied. Only admins can view this page.",
+          user: null
         });
-      }
-      
+    }
+
     const { weekday, centerOpenTime, centerCloseTime } = req.body;
 
     // make sure all fields were filled out
@@ -1103,37 +1148,37 @@ exports.changeHours = async (req, res) => {
     const closeHour = Number(centerCloseTime.split(":")[0]); // Get close hour as an integer
     const openMinute = Number(centerOpenTime.split(":")[1]); // Get open minute as an integer
     const closeMinute = Number(centerCloseTime.split(":")[1]); // Get close minute as an integer
-    
+
     // make sure entered start time is less than entered end time
     if (openHour > closeHour) {
       return res.status(400).send("Open Time must be earlier than Close Time.");
     }
 
     // if center hours set to less than one-hour difference, then close the day
-    if (((closeHour * 60 + closeMinute)-(openHour * 60 + openMinute)) < 60) {
-      await centerOpen.findOneAndUpdate({weekday: weekday}, { $set: { openTime: centerOpenTime, closeTime: centerCloseTime, isClosed: true } });
+    if (((closeHour * 60 + closeMinute) - (openHour * 60 + openMinute)) < 60) {
+      await centerOpen.findOneAndUpdate({ weekday: weekday }, { $set: { openTime: centerOpenTime, closeTime: centerCloseTime, isClosed: true } });
     } else { // otherwise, update the weekday open and close hours, open the day
-      await centerOpen.findOneAndUpdate({weekday: weekday}, { $set: { openTime: centerOpenTime, closeTime: centerCloseTime, isClosed: false } });
+      await centerOpen.findOneAndUpdate({ weekday: weekday }, { $set: { openTime: centerOpenTime, closeTime: centerCloseTime, isClosed: false } });
     }
 
     // re-render page once update completes
-    res.render('adminAvailabilityIndex', 
-    {
-      error: null,
-      title: 'Admin Availability',
-      cssStylesheet: 'availabilityIndex.css',
-      jsFile: 'adminAvailability.js', // will have js for this page at some point
-      user: req.session.user
-    });
+    res.render('adminAvailabilityIndex',
+      {
+        error: null,
+        title: 'Admin Availability',
+        cssStylesheet: 'availabilityIndex.css',
+        jsFile: 'adminAvailability.js', // will have js for this page at some point
+        user: req.session.user
+      });
   } catch (err) {
     console.log("Change hours failed:", err);
-    res.render('adminAvailabilityIndex', 
-    {
-      error: 'Failed to change hours.',
-      title: 'Admin Availability',
-      cssStylesheet: 'availabilityIndex.css',
-      jsFile: 'adminAvailability.js', // will have js for this page at some point
-      user: req.session.user
-    });
+    res.render('adminAvailabilityIndex',
+      {
+        error: 'Failed to change hours.',
+        title: 'Admin Availability',
+        cssStylesheet: 'availabilityIndex.css',
+        jsFile: 'adminAvailability.js', // will have js for this page at some point
+        user: req.session.user
+      });
   }
 };
