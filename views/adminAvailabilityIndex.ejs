@@ -44,14 +44,18 @@
       <br />
       
       <label id="center-open-label" for="centerOpenTime">Open Time:</label>
-      <input type="time" id="centerOpenTime" name="centerOpenTime" />
+      <input type="time" id="centerOpenTime" name="centerOpenTime" step="3600" />
       <label id="center-close-label" for="centerCloseTime">Close Time:</label>
-      <input type="time" id="centerCloseTime" name="centerCloseTime" />
+      <input type="time" id="centerCloseTime" name="centerCloseTime" step="3600" />
       <br />
-      <strong>Note:</strong> If Open Time and Close Time are set to less than
+      <strong>Note:</strong> On the hour is required to change center hours.
       <br />
-      one hour apart, then the weekday will be set to closed.
-
+      <br />
+      <label id="close-weekday-label" for="closeWeekdayDropdown">Close this day? </label>
+      <select name="closeWeekdayDropdown" id="closeWeekdayDropdown" required >
+        <option value="No">No</option>
+        <option value="Yes">Yes</option>
+      </select>
       <br />
       <br />
 

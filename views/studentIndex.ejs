@@ -23,7 +23,7 @@
                             <% }) %>
                         </select><br/><br/>
                         <label for="selectDay">Select a Day:</label>
-                        <input type="date" id="selectDay" name="selectDay" value="<%= form ? form.selectDay : '' %>" required><br/><br/>
+                        <input type="date" id="selectDay" name="selectDay" value="<%= form ? form.selectDay : '' %>" min = "<%= new Date().toISOString().split('T')[0] %>" required><br/><br/>
                         <button id="viewAppointments" type="submit">View Available Appointments</button>
                         <% if (error) { %>
                             <br/><br/>
@@ -44,11 +44,10 @@
                                     <input type="hidden" name="tutorShiftId" value="<%= shift._id %>">
                                     <input type="hidden" name="course" value="<%= shift.courseName %>">
 
-                                    <p><strong><%= shift.fname %> <%= shift.lname %></strong></p>
                                     <p><%= shift.courseName %></p>
                                     <!--used toUTCString() instead of .toDateString() to get the proper date and slice to look nice-->
                                     <p><%= shift.shiftDate.toUTCString().slice(0, 16) %></p>
-                                    <p><%= shift.startTime %> - <%= shift.endTime %></p>
+                                    <p><b><%= shift.startTime %> - <%= shift.endTime %></b></p>
                                     <button type="submit">Book</button>
                                 </form>
                             </div>

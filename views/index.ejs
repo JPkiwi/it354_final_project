@@ -63,8 +63,6 @@
     </div>
 </section>
 
-<!-- Server crashed because HTML comments were used inside <% %> blocks.
-     use // for comments inside ejs js. -->
      <div class = "hoursAndLocation">
     <% 
         // retrieve current date/time to determine if center is currently open or closed
@@ -73,15 +71,18 @@
         // get weekday index from current date (0 = Sunday, 6 = Saturday)
         const weekdayIndex = today.getDay();
 
-        // get current hour and minute
+        // since getDay indexes 0 = Sunday, 6 = Saturday, move the indices around to match the weekdays in application
+        // (this was why open/closed wasn't working originally)
+        const weekdayIndices = [6, 0, 1, 2, 3, 4, 5];
+
+        // get current hour
         const currHour = today.getHours();
-        const currMinute = today.getMinutes();
 
-        // get the matching weekday object from the weekdays array
-        const currWeekday = weekdays[weekdayIndex];
+        // get the matching weekday object from the weekdays array using the proper index for our application weekday order
+        const currWeekday = weekdays[weekdayIndices[weekdayIndex]];
 
-        // declare these first so they can be used outside the if block below
-        let openHour, closeHour, openMinute, closeMinute;
+        // declare open and close hour so they can be used outside the if block below
+        let openHour, closeHour;
 
         // only split/store open and close times if the center is not closed that day
         if (currWeekday && !currWeekday.isClosed) {
@@ -90,18 +91,12 @@
 
             // get close hour as an integer
             closeHour = Number(currWeekday.closeTime.split(":")[0]);
-
-            // get open minute as an integer
-            openMinute = Number(currWeekday.openTime.split(":")[1]);
-
-            // get close minute as an integer
-            closeMinute = Number(currWeekday.closeTime.split(":")[1]);
         }
     %>
 
     <% if (currWeekday && currWeekday.isClosed) { %>
         <h2>We are currently closed!</h2>
-    <% } else if (openHour > currHour || (openHour === currHour && openMinute > currMinute) || closeHour < currHour || (closeHour === currHour && closeMinute <= currMinute)) { %>
+    <% } else if (openHour > currHour || closeHour <= currHour) { %>
         <h2>We are currently closed!</h2>
     <% } else { %>
         <h2>We are currently open!</h2>
