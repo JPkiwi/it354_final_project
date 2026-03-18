@@ -36,7 +36,23 @@ window.addEventListener("click", (event) => {
   }
 });
 
+const viewScheduleForm = document.getElementById("viewScheduleForm");
+const selectedTutorInput = document.getElementById("selectedTutorInput");
 
+if (viewScheduleForm) {
+  viewScheduleForm.addEventListener("submit", (event) => {
+    const selectedRadio = document.querySelector('input[name="selectedTutor"]:checked');
+    if (!selectedRadio) {
+      event.preventDefault();
+      alert("Please select a tutor first.");
+      return;
+    }
+
+    if (selectedTutorInput) {
+      selectedTutorInput.value = selectedRadio.value;
+    }
+  });
+}
 
 
 // Assign Tutor Hours modal elements
