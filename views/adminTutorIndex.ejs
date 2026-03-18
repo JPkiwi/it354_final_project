@@ -11,50 +11,76 @@
 
   <br>
  
+<div class="adminTutorContainer">
+  <div class="adminTutorContent">
+    <div class="leftAdminTutorPanel">
+      
+      <form action="/adminTutorIndex/toggle" method="POST" id="tutorTableForm">
+        <input type="text" id="search" placeholder="Search tutors..." />
+        <button type="submit">Toggle Active</button>
 
-  <form action="/adminTutorIndex/toggle" method="POST">
+        <!-- Add tutor button -> opens Modal-->
+        <button type="button" id="openAddTutorModal">Add Tutor</button>
+        <button type="button" id="openAssignTutorModal">Assign Tutor Hours</button>
+        <button type="button" id="openClearTutorModal">Clear Tutor Hours</button>
 
-  <input type="text" id="search" placeholder="Search tutors..." />
+        <br><br>
 
-  <button type="submit">Toggle Active</button>
+        <table border="1" cellpadding="6" cellspacing="0">
+          <thead>
+            <tr>
+              <th>Select</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Active</th>
+            </tr>
+          </thead>
 
-  <!-- Add tutor button -> opens Modal-->
-  <button type="button" id="openAddTutorModal">Add Tutor</button>
+          <tbody id="tutorRows">
+            <% tutors.forEach(tutor => { %>
+              <tr class="<%= tutor.isActive ? '' : 'inactive-row' %>">
+                <td>
+                  <input type="radio" name="selectedTutor" value="<%= tutor._id %>">
+                </td>
+                <td><%= tutor.fname %> <%= tutor.lname %></td>
+                <td><%= tutor.email %></td>
+                <td><%= tutor.isActive ? "Yes" : "No" %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </form>
 
-  <button type="button" id= "openAssignTutorModal">Assign Tutor Hours </button>
+      
+    </div>
+    <div class="rightAdminTutorSchedulePanel" id="viewTutorScheduleDiv">
+      <div class="scheduleContent">
 
-  <button type="button" id= "openClearTutorModal">Clear Tutor Hours </button>
-
-
-  <br><br>
-
-  <table border="1" cellpadding="6" cellspacing="0">
-    <thead>
-      <tr>
-        <th>Select</th>
-        <th>Name</th>
-        <th>Email</th>
-        <th>Active</th>
-      </tr>
-    </thead>
-
-    <tbody id="tutorRows">
-      <% tutors.forEach(tutor => { %>
-         <tr class="<%= tutor.isActive ? '' : 'inactive-row' %>">
-          <!-- loading tutors in table-->
-          <td>
-            <input type="radio" name="selectedTutor" value="<%= tutor._id %>">
-          </td>
-          <td><%= tutor.fname %> <%= tutor.lname %></td>
-          <td><%= tutor.email %></td>
-          <td><%= tutor.isActive ? "Yes" : "No" %></td>
-        </tr>
-      <% }) %>
-    </tbody>
-  </table>
-
-</form>
-
+        <form action="/adminTutorIndex/viewSchedule" method="POST" id="viewScheduleForm">
+          <input type="hidden" name="tutorId" id="selectedTutorInput">
+          <button type="submit" id="viewTutorScheduleBtn">View Tutor Schedule</button>
+        </form>
+    
+        <div class="scheduleResults">
+        <% if (error) { %>
+          <br/><br/>
+          <div class="alert"><%= error %></div>
+        <% } else if (shifts && shifts.length > 0) { %>
+          <h3>Scheduled Shifts for <%= shifts[0].tutorId.fname %> <%= shifts[0].tutorId.lname %></h3>
+          <% shifts.forEach(shift => { %>
+            <div class="tutorShiftInfo">
+              <p><%= shift.shiftDate.toUTCString().slice(0, 16) %></p>
+              <p><b><%= shift.startTime %> - <%= shift.endTime %></b></p>
+            </div>
+          <% }) %>
+        <% } else { %>
+          <p>No shifts found.</p>
+        <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 
   <!-- "Add Tutor" Modal -> form to create/Add new tutor to db  -->

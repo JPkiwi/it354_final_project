@@ -204,7 +204,8 @@ exports.getAdminTutorIndex = async (req, res) => {
       // passing courses into view 
       activeTutors,
       courses,
-      today
+      today,
+      shifts: []
     });
   } catch (err) {
 
@@ -223,7 +224,8 @@ exports.getAdminTutorIndex = async (req, res) => {
       tutors: [],
       activeTutors: [],
       courses: [],
-      today
+      today,
+      shifts: []
     });
   }
 };
@@ -720,6 +722,81 @@ exports.assignTutorHours = async (req, res) => {
 };
 // -------------------------------------------------------------------------------------------
 
+//POST: show tutor's scheduled shifts after admin selects tutor 
+exports.adminViewTutorShedule = async (req, res) => {
+  try {
+    // if not an auth user, send to login page
+      if (!req.session.user) {
+        return res.render('login',
+          {
+            title: 'Login Page',
+            cssStylesheet: 'login.css',
+            jsFile: null,
+            error: "User not logged in.",
+            user: null
+        });
+      }
+ 
+      // if auth user but not a admin, send to login page
+      if (req.session.user.role !== "admin") {
+        return res.render('login',
+          {
+            title: 'Login Page',
+            cssStylesheet: 'login.css',
+            jsFile: null,
+            error: "Access denied. Only admins can view this page.",
+            user: null
+        });
+      }
+    
+    const tutorId = req.body.tutorId || req.body.selectedTutor;
+
+    //if the user did not select a tutor first, return an error message
+    if (!tutorId) {
+      return res.status(400).send("Tutor ID is required.");
+    }
+
+    //get the shifts for the selected tutor, populate tutor info, sort by date and time
+    const shifts = await tutorShift.find({ tutorId: tutorId }).populate('tutorId', 'fname lname').sort({ shiftDate: 1, startTime: 1 });
+
+    // Load data needed to render the main tutor management page with the selected tutor's shifts
+    const tutors = await User.find({ role: "tutor" });
+    const activeTutors = await User.find({ role: "tutor", isActive: true });
+    const courses = await Course.find();
+    const today = new Date().toISOString().split("T")[0];
+
+    res.render("adminTutorIndex", {
+      error: null,
+      title: "Admin Manage Tutors",
+      cssStylesheet: "tutorIndex.css",
+      jsFile: "tutorIndex.js",
+      user: req.session.user,
+      tutors,
+      activeTutors,
+      courses,
+      today,
+      shifts
+    });
+
+
+  } catch (err) {
+    console.error(err);
+    res.render("adminTutorIndex", {
+      error: "Could not load tutor shifts.",
+      title: "Admin Manage Tutors",
+      cssStylesheet: "tutorIndex.css",
+      jsFile: "tutorIndex.js",
+      user: req.session.user,
+      tutors: [],
+      activeTutors: [],
+      courses: [],
+      today: new Date().toISOString().split("T")[0],
+      shifts: []
+    });
+  }
+};
+
+// -------------------------------------------------------------------------------------------
 
 // REMOVING ALL TUTOR SHIFTS from specified day (/clearing tutor hours) 
 exports.clearTutorHours = async (req, res) => {
