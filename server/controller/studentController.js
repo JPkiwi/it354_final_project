@@ -116,16 +116,16 @@ exports.viewAvailableAppointments = async (req, res) => {
         else {
             // pull shifts that are not booked and on the date and course the user selected
             let availableShifts = await TutorShift.aggregate([
-                { $match: { isBooked: false, shiftDate: { $gte: startOfDay, $lte: endOfDay } } },
-                { $lookup: { from: "users", localField: "tutorId", foreignField: "_id", as: "tutor" } },
+                { $match: { isBooked: false, shiftDate: { $gte: startOfDay, $lte: endOfDay } } }, // filter for unbooked shifts on the selected day
+                { $lookup: { from: "users", localField: "tutorId", foreignField: "_id", as: "tutor" } }, // join with user collection to get tutor details for filtering tutors by course
                 { $unwind: "$tutor" },
-                { $match: { "tutor.tutorCourses": courseId } },
+                { $match: { "tutor.tutorCourses": courseId } }, // filter for tutors that have the user selected course in their tutorCourses array
                 { $lookup: { from: "courses", localField: "tutor.tutorCourses", foreignField: "_id", as: "courses" } },
                 {
-                    $project: {
-                        shiftDate: 1, startTime: 1, endTime: 1, tutorId: "$tutor._id", fname: "$tutor.fname", lname: "$tutor.lname",
+                    $project: { // format result with only necessary details for displaying available shifts - date, start/end time, course name
+                        shiftDate: 1, startTime: 1, endTime: 1,
                         courseName: {
-                            $arrayElemAt: [{
+                            $arrayElemAt: [{ // used to get the courseName from the tutorCourses array that belong to a tutor that matches the courseId selected by the user
                                 $map: {
                                     input: {
                                         $filter: {
@@ -144,9 +144,9 @@ exports.viewAvailableAppointments = async (req, res) => {
                 },
                 { $sort: { shiftDate: 1, startTime: 1 } }
             ]);
-            
-            // console.log("Available shifts:", availableShifts.length);
 
+            // if there are no available shifts for the selected course and day, send an error message and keep the form filled. 
+            // Otherwise, render the page with the available shifts and keep the form filled.
             if (availableShifts.length === 0) {
                 return res.render("studentIndex", {
                     title: "Book an Appointment",
