@@ -103,7 +103,7 @@ exports.getAdminIndex = async (req, res) => {
 // -------------------------------------------------------------------------------------------
 
 // renders ADMIN AVAILABILITY INDEX
-exports.getAdminAvailabilityIndex = (req, res) => {
+exports.getAdminAvailabilityIndex = async (req, res) => {
   try{
 
   // if not an auth user, send to login page
@@ -129,25 +129,30 @@ exports.getAdminAvailabilityIndex = (req, res) => {
             user: null
         });
       }
-  res.render('adminAvailabilityIndex',
-    {
-      error: null,
-      title: 'Admin Availability',
-      cssStylesheet: 'availabilityIndex.css',
-      jsFile: 'adminAvailability.js', // will have js for this page at some point
-      user: req.session.user
-    });
-} catch(err){
-   res.render('adminAvailabilityIndex',
-    {
-      error: "Could not load page",
-      title: 'Admin Availability',
-      cssStylesheet: 'availabilityIndex.css',
-      jsFile: null, // will have js for this page at some point
-      user: req.session.user
-    });
+
+      const weekdays = await centerOpen.find();
+
+      res.render('adminAvailabilityIndex',
+      {
+        error: null,
+        title: 'Admin Availability',
+        cssStylesheet: 'availabilityIndex.css',
+        jsFile: 'adminAvailability.js',
+        user: req.session.user,
+        weekdays
+      });
+    } catch(err){
+      res.render('adminAvailabilityIndex',
+      {
+        error: "Could not load page",
+        title: 'Admin Availability',
+        cssStylesheet: 'availabilityIndex.css',
+        jsFile: 'adminAvailability.js',
+        user: req.session.user,
+        weekdays
+      });
+    }
 }
-  }
 
 // -------------------------------------------------------------------------------------------
 
@@ -1034,7 +1039,7 @@ exports.addUser = async (req, res) => {
     const saltRounds = 10;
     const passwordHash = await bcrypt.hash(password, saltRounds);
 
-    // when all above is passed/checked, create the new user                                                                 !!
+    // when all above is passed/checked, create the new user
     await User.create({
       fname: fname,
       lname: lname,
@@ -1092,38 +1097,83 @@ exports.changeHours = async (req, res) => {
         });
       }
       
-    const { weekday, centerOpenTime, centerCloseTime } = req.body;
+    const { weekday, centerOpenTime, centerCloseTime, closeWeekdayDropdown } = req.body;
 
-    // make sure all fields were filled out
-    if (!weekday || !centerOpenTime || !centerCloseTime) {
-      return res.status(400).send("All fields are required.");
+    let weekdays = await centerOpen.find();
+
+    // make sure all required fields were filled out if weekday is set to open
+    if ((!weekday || !centerOpenTime || !centerCloseTime) && closeWeekdayDropdown === "No") {
+      return res.render('adminAvailabilityIndex', {
+        error: "All fields are required.",
+        title: 'Admin Availability',
+        cssStylesheet: 'availabilityIndex.css',
+        jsFile: 'adminAvailability.js',
+        user: req.session.user,
+        weekdays
+      });
     }
 
-    const openHour = Number(centerOpenTime.split(":")[0]); // Get open hour as an integer
-    const closeHour = Number(centerCloseTime.split(":")[0]); // Get close hour as an integer
-    const openMinute = Number(centerOpenTime.split(":")[1]); // Get open minute as an integer
-    const closeMinute = Number(centerCloseTime.split(":")[1]); // Get close minute as an integer
+    // if closeWeekdayDropdown is set to "Yes", then set the specified weekday to closed
+    if (closeWeekdayDropdown === "Yes") {
+      await centerOpen.findOneAndUpdate({ weekday: weekday }, { $set: { isClosed: true } });
+    } else { // otherwise, set hours for specified weekday and set isClosed to false
+      const openHour = Number(centerOpenTime.split(":")[0]); // Get open hour as an integer
+      const closeHour = Number(centerCloseTime.split(":")[0]); // Get close hour as an integer
+      const openMinute = Number(centerOpenTime.split(":")[1]); // Get open minute as an integer
+      const closeMinute = Number(centerCloseTime.split(":")[1]); // Get close minute as an integer
     
-    // make sure entered start time is less than entered end time
-    if (openHour > closeHour) {
-      return res.status(400).send("Open Time must be earlier than Close Time.");
+      // make sure minutes are set to 00
+      if (openMinute !== 0 || closeMinute !== 0) {
+        return res.render('adminAvailabilityIndex', {
+          error: "Minutes must be 00. Please enter on the hour mark only.",
+          title: 'Admin Availability',
+          cssStylesheet: 'availabilityIndex.css',
+          jsFile: 'adminAvailability.js',
+          user: req.session.user,
+          weekdays
+        });
+      }
+
+      // make sure entered start time is less than entered end time
+      if (openHour > closeHour) {
+        return res.render('adminAvailabilityIndex', {
+          error: "Open Time must be earlier than Close Time.",
+          title: 'Admin Availability',
+          cssStylesheet: 'availabilityIndex.css',
+          jsFile: 'adminAvailability.js',
+          user: req.session.user,
+          weekdays
+        });
+      }
+
+      // make sure center hours cannot be set to the same time
+      if (openHour === closeHour) {
+        return res.render('adminAvailabilityIndex', {
+          error: "Cannot set equal open time and close time.",
+          title: 'Admin Availability',
+          cssStylesheet: 'availabilityIndex.css',
+          jsFile: 'adminAvailability.js',
+          user: req.session.user,
+          weekdays
+        });
+      }
+
+      // update MongoDB with new times and set isClosed to false
+      await centerOpen.findOneAndUpdate({ weekday: weekday }, { $set: { isClosed: false ,openTime: centerOpenTime, closeTime: centerCloseTime} });
     }
 
-    // if center hours set to less than one-hour difference, then close the day
-    if (((closeHour * 60 + closeMinute)-(openHour * 60 + openMinute)) < 60) {
-      await centerOpen.findOneAndUpdate({weekday: weekday}, { $set: { openTime: centerOpenTime, closeTime: centerCloseTime, isClosed: true } });
-    } else { // otherwise, update the weekday open and close hours, open the day
-      await centerOpen.findOneAndUpdate({weekday: weekday}, { $set: { openTime: centerOpenTime, closeTime: centerCloseTime, isClosed: false } });
-    }
-
+    // get newly updated weekdays
+    weekdays = await centerOpen.find();
+    
     // re-render page once update completes
     res.render('adminAvailabilityIndex', 
     {
       error: null,
       title: 'Admin Availability',
       cssStylesheet: 'availabilityIndex.css',
-      jsFile: 'adminAvailability.js', // will have js for this page at some point
-      user: req.session.user
+      jsFile: 'adminAvailability.js',
+      user: req.session.user,
+      weekdays
     });
   } catch (err) {
     console.log("Change hours failed:", err);
@@ -1132,8 +1182,9 @@ exports.changeHours = async (req, res) => {
       error: 'Failed to change hours.',
       title: 'Admin Availability',
       cssStylesheet: 'availabilityIndex.css',
-      jsFile: 'adminAvailability.js', // will have js for this page at some point
-      user: req.session.user
+      jsFile: 'adminAvailability.js',
+      user: req.session.user,
+      weekdays
     });
   }
 };
