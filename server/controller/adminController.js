@@ -1037,27 +1037,56 @@ exports.addUser = async (req, res) => {
         });
     }
     // get data from what was entered in the modal
-    const { fname, lname, email, password, role } = req.body;
+    const { fname, lname, email, password, role, sourcePage } = req.body;
+    const tutors = await User.find({ role: "tutor" });
+    const users = await User.find();
+    const courses = await Course.find();
+    const activeTutors = await User.find({role: "tutor", isActive: true});
+    const today = new Date().toLocaleDateString("en-CA");
     // 
     let { tutorCourses } = req.body;
 
     // make sure all fields were filled out
     if (!fname || !lname || !email || !password || !role) {
-      return res.status(400).send("All fields are required.");
-    }
+  return res.status(400).render('adminAddUser', {
+    title: 'Add User',
+    error: "All fields are required.",
+    formData: req.body,
+    user: req.session.user
+  });
+}
 
-    // Admin can only assign students and students, 
+    // Admin can only assign students and tutors, 
     // if we need to change to add another admin this is just temporary for now
     if (role !== "student" && role !== "tutor") {
-      return res.status(400).send("Invalid role.");
-    }
+      return res.status(400).render('adminAddUser', {
+    title: 'Add User',
+    error: "Invalid role.",
+    formData: req.body,
+    user: req.session.user
+  });
+}
 
+
+// FIX LATER, ADD FOR STUDENT?? SOURCEPAGE ERROR
     // Security check to make sure that emails will not be dupliated 
     // (if a diff user already has email, return the 400/cannot process req)
     const existingUser = await User.findOne({ email: email });
     if (existingUser) {
-      return res.status(400).send("A user with that email already exists.");
-    }
+      return res.status(400).render("adminTutorIndex", {
+    title: 'Add User',
+    cssStylesheet: 'tutorIndex.css',
+    jsFile: "studentIndex.js",
+    error: "A user with that email already exists.",
+    formData: req.body,
+    user: req.session.user,
+    tutors,
+    users,
+    courses,
+    activeTutors,
+    today
+  });
+}
 
 
 
@@ -1101,11 +1130,11 @@ exports.addUser = async (req, res) => {
     }
     // I only have the "Add User" for students right now, adding tutor very soon
     else {
-      return res.redirect("/adminTutorIndex");
+      return res.redirect(`/${sourcePage}`);
     }
 
   }
-  // in case of any erros, can log them and 500 for unfulfilled req 
+  // in case of any errors, can log them and 500 for unfulfilled req 
   catch (err) {
     console.error(err);
     res.status(500).send("Could not add user.");
