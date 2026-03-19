@@ -24,3 +24,30 @@
   .navbar a.active {
     color: #4a148c;            
   }
+
+  .adminAvailabilityLayout {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+  
+  .availabilityFunctionality {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .adminAvailabilityButtons {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    gap: 5px;
+    width: 160px;
+  }
+
+  .generalCenterHours {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px;
+  }
