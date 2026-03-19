@@ -34,4 +34,7 @@ route.post("/assignTutorHours", controller.assignTutorHours);
 // Handles the deletion of tutor shifts under specific tutor on specific day
 route.post("/clearTutorHours/remove", controller.clearTutorHours);
 
+// Handles admin viewing a specific tutor's schedule
+route.post("/adminTutorIndex/viewSchedule", controller.adminViewTutorShedule);
+
 module.exports = route;
