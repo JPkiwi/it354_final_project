@@ -68,8 +68,8 @@ exports.loginUser = async (req, res) => {
     try {
         const user = await User.findOne({ email });
 
-        // checks to see if this user exists
-        if (!user) {
+        // checks to see if this user exists or if password doesn't match
+        if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
             return res.render('login', {
                 error: 'Invalid email or password.',
                 title: 'Login',
@@ -78,13 +78,11 @@ exports.loginUser = async (req, res) => {
                 user: null
             });
         }
-    
 
-        // checking for a password match
-        const passwordMatch = await bcrypt.compare(password, user.passwordHash);
-        if (!passwordMatch) {
+        // checks to see if user is active
+        if (!user.isActive) {
             return res.render('login', {
-                error: 'Invalid email or password.',
+                error: 'Account is no longer active.',
                 title: 'Login',
                 cssStylesheet: 'login.css',
                 jsFile: null,
