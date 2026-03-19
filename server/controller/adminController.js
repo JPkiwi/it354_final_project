@@ -326,6 +326,120 @@ exports.toggleTutorStatus = async (req, res) => {
 
 // -------------------------------------------------------------------------------------------
 
+// -------------------------------------------------------------------------------------------
+
+
+// EDITING USER from admin
+exports.editUser = async (req, res) => {
+  try {
+    // if not an auth user, send to login page
+      if (!req.session.user) {
+        return res.render('login',
+          {
+            title: 'Login Page',
+            cssStylesheet: 'login.css',
+            jsFile: null,
+            error: "User not logged in.",
+            user: null
+        });
+      }
+ 
+      // if auth user but not a admin, send to login page
+      if (req.session.user.role !== "admin") {
+        return res.render('login',
+          {
+            title: 'Login Page',
+            cssStylesheet: 'login.css',
+            jsFile: null,
+            error: "Access denied. Only admins can view this page.",
+            user: null
+        });
+      }
+
+    // get data from what was entered in the modal
+    const { fname, lname, email, password, role, tutorId, isActive} = req.body;
+    let tutorCourses = [];
+
+    // error checking
+    console.log(req.body.fname);
+    console.log(req.body.lname);
+    console.log(req.body.email);
+    console.log(req.body.password);
+    console.log(req.body.role);
+    console.log(req.body.tutorId);
+
+    // make sure all fields were filled out
+    if (!fname || !lname || !email || !role) {
+      return res.status(400).send("All fields are required.");
+    }
+
+    // Security check to make sure that emails will not be dupliated 
+    // Checks all emails EXCEPT the current user email
+    const existingUser = await User.findOne({ email: email, _id: { $ne: tutorId} });
+    if (existingUser) {
+      return res.status(400).send("A user with that email already exists.");
+    }
+
+    // if there is no tutor course selected when filling out "Add Tutor", 
+    // then 400/cannot process req is sent and that at least one course must be selected
+    if (role === "tutor") {
+      tutorCourses = req.body.tutorCourses;
+
+      // making sure selected course(s) is turned into an array bc model expects 
+      // tutorCourses to be an array
+      if (!Array.isArray(tutorCourses)) {
+        tutorCourses = [tutorCourses];
+      }
+
+        if (tutorCourses.length === 0) {
+        return res.status(400).send("Course(s) must be selected to add a tutor")
+      }
+
+    }
+
+    // CHECKS to see if password field is empty
+    // IF the password field is NOT empty, hash new password
+    // ELSE, keep the existing password by fetching it from the database
+    let passwordHash;
+    if (password && password.trim() !== "") {
+        const saltRounds = 10;
+        passwordHash = await bcrypt.hash(password, saltRounds);
+    } 
+    else {
+        const existingUser = await User.findById(tutorId);
+        passwordHash = existingUser.passwordHash;
+}
+
+    // when all above is passed/checked, edit user
+    await User.findByIdAndUpdate(tutorId, {
+      fname: fname,
+      lname: lname,
+      email: email,
+      passwordHash: passwordHash,
+      role: role,
+      isActive: isActive === "true", // converts string "true"/"false" to boolean
+      tutorCourses: tutorCourses
+    });
+
+    // redirect back to the correct page after editing the user
+    if (role === "student") {
+      return res.redirect("/adminStudentIndex");
+    }
+    else {
+      return res.redirect("/adminTutorIndex");
+    }
+
+  }
+
+  // in case of any errors, can log them and 500 for unfulfilled req 
+  catch (err) {
+    console.error(err);
+    res.status(500).send("Could not edit user.");
+  }
+};
+
+// -----------------------------------------
+
 
 // handling submitted form data for ASSIGNING TUTOR HOURS
 exports.assignTutorHours = async (req, res) => {

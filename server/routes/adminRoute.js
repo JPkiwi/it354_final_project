@@ -25,6 +25,9 @@ route.post("/adminStudentIndex/toggle", controller.toggleStudentStatus);
 // Handles form submission to create a new user (student or tutor)
 route.post("/addUser", controller.addUser);
 
+// Handles form submission to edit an existing user (or tutor)
+route.post('/editUser', controller.editUser)
+
 // Handles form submission to change weekday hours
 route.post("/changeHours", controller.changeHours);
 
