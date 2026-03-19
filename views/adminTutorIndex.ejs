@@ -21,6 +21,7 @@
 
         <!-- Add tutor button -> opens Modal-->
         <button type="button" id="openAddTutorModal">Add Tutor</button>
+        <button type="button" id="openEditTutorModal">Edit Tutor</button>
         <button type="button" id="openAssignTutorModal">Assign Tutor Hours</button>
         <button type="button" id="openClearTutorModal">Clear Tutor Hours</button>
 
@@ -38,7 +39,13 @@
 
           <tbody id="tutorRows">
             <% tutors.forEach(tutor => { %>
-              <tr class="<%= tutor.isActive ? '' : 'inactive-row' %>">
+              <tr class="<%= tutor.isActive ? '' : 'inactive-row' %>"
+                    data-fname="<%= tutor.fname %>"
+                    data-lname="<%= tutor.lname %>"
+                    data-email="<%= tutor.email %>"
+                    data-id="<%= tutor._id %>"
+                    data-isactive="<%= tutor.isActive %>"
+                    data-courses="<%= JSON.stringify(tutor.tutorCourses) %>">
                 <td>
                   <input type="radio" name="selectedTutor" value="<%= tutor._id %>">
                 </td>
@@ -118,7 +125,7 @@
  
  so this is a checkbox functionality where admin can select which courses the tutor will 
  be tutoring students for-->
-<label>Courses:</label><br>
+<br><br><label>Courses:</label><br>
       <% courses.forEach(course => { %>
         <label>
           <input type="checkbox" name="tutorCourses" value="<%= course._id %>">
@@ -135,6 +142,47 @@
     </form>
   </div>
 </div>
+
+
+<!-- EDIT TUTOR MODAL -->
+<div id="editTutorModal" class="modal">
+  <div class="edit-modal-content">
+    <span class="edit-close-btn" id="closeEditTutorModal">&times;</span>
+
+      <h2>Edit Tutor</h2>
+      <form action="/editUser" method="POST">
+      <input type="hidden" name="role" value="tutor">
+      <input type="hidden" name="userId" id="editTutorId">
+      <input type="hidden" name="isActive">
+      <label>First Name:</label>
+      <input type="text" name="fname">
+      <br><br>
+
+      <label>Last Name:</label>
+     <input type="text" name="lname">
+      <br><br>
+
+      <label>Email:</label>
+      <input type="email" name="email">
+    <br><br>
+      <label>Password:</label>
+      <input type="password" name="password">
+      <p style="color: rgb(88, 73, 73); font-style: italic;">Keep password field blank unless changing password.</p>
+      <label>Courses:</label><br>
+      <% courses.forEach(course => { %>
+        <label>
+          <input type="checkbox" name="tutorCourses" value="<%= course._id %>">
+         <%= course.courseName %>
+        </label>
+        <br>
+      <% }) %>
+      <button type="submit">Submit Changes</button>
+      </form>
+  </div>
+</div>
+
+
+
 
 
 

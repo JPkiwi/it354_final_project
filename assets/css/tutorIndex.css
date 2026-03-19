@@ -35,7 +35,6 @@ row is greyed out to indicate inactivity*/
 }
 
 
-
 /* Copied from student Modal code, same styling */
 /* will be updated/changed later */
 
@@ -69,7 +68,7 @@ row is greyed out to indicate inactivity*/
 
 
 
-.assign-modal-content {
+.assign-modal-content, .edit-modal-content {
   background-color: white;
   margin: 10% auto;
   padding: 20px;
@@ -77,7 +76,7 @@ row is greyed out to indicate inactivity*/
   border-radius: 8px;
 }
 
-.assign-close-btn {
+.assign-close-btn, .edit-close-btn {
   float: right;
   font-size: 20px;
   cursor: pointer;
