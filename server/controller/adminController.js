@@ -326,9 +326,6 @@ exports.toggleTutorStatus = async (req, res) => {
 
 // -------------------------------------------------------------------------------------------
 
-// -------------------------------------------------------------------------------------------
-
-
 // EDITING USER from admin
 exports.editUser = async (req, res) => {
   try {
@@ -357,31 +354,23 @@ exports.editUser = async (req, res) => {
       }
 
     // get data from what was entered in the modal
-    const { fname, lname, email, password, role, tutorId, isActive} = req.body;
+    const { fname, lname, email, password, role, userId, isActive} = req.body;
     let tutorCourses = [];
 
-    // error checking
-    console.log(req.body.fname);
-    console.log(req.body.lname);
-    console.log(req.body.email);
-    console.log(req.body.password);
-    console.log(req.body.role);
-    console.log(req.body.tutorId);
-
-    // make sure all fields were filled out
+    // make sure all necessary fields were filled out
     if (!fname || !lname || !email || !role) {
       return res.status(400).send("All fields are required.");
     }
 
     // Security check to make sure that emails will not be dupliated 
     // Checks all emails EXCEPT the current user email
-    const existingUser = await User.findOne({ email: email, _id: { $ne: tutorId} });
+    const existingUser = await User.findOne({ email: email, _id: { $ne: userId} });
     if (existingUser) {
       return res.status(400).send("A user with that email already exists.");
     }
 
-    // if there is no tutor course selected when filling out "Add Tutor", 
-    // then 400/cannot process req is sent and that at least one course must be selected
+    // checks to see if role is a tutor
+    // if so, it populates the tutorCourses array with the courses that tutor teaches
     if (role === "tutor") {
       tutorCourses = req.body.tutorCourses;
 
@@ -392,12 +381,12 @@ exports.editUser = async (req, res) => {
       }
 
         if (tutorCourses.length === 0) {
-        return res.status(400).send("Course(s) must be selected to add a tutor")
+        return res.status(400).send("Course(s) must be selected to edit a tutor.")
       }
 
     }
 
-    // CHECKS to see if password field is empty
+    // checks to see if password field is empty
     // IF the password field is NOT empty, hash new password
     // ELSE, keep the existing password by fetching it from the database
     let passwordHash;
@@ -406,12 +395,12 @@ exports.editUser = async (req, res) => {
         passwordHash = await bcrypt.hash(password, saltRounds);
     } 
     else {
-        const existingUser = await User.findById(tutorId);
+        const existingUser = await User.findById(userId);
         passwordHash = existingUser.passwordHash;
 }
 
     // when all above is passed/checked, edit user
-    await User.findByIdAndUpdate(tutorId, {
+    await User.findByIdAndUpdate(userId, {
       fname: fname,
       lname: lname,
       email: email,

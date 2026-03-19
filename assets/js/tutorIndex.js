@@ -54,12 +54,12 @@ if (viewScheduleForm) {
   });
 }
 
-// EDIT Tutor Hours modal elements
+// EDIT Tutor modal elements
 const editTutorModal = document.getElementById("editTutorModal");
 const openEditTutorModal = document.getElementById("openEditTutorModal");
 const closeEditTutorModal = document.getElementById("closeEditTutorModal");
 
-// open Edit Tutor Hours modal
+// open Edit Tutor modal
 openEditTutorModal.addEventListener("click", function () {
     const selectedRadio = document.querySelector('input[name="selectedTutor"]:checked');
     if (!selectedRadio) {
@@ -75,8 +75,8 @@ openEditTutorModal.addEventListener("click", function () {
     document.querySelector('#editTutorModal input[name="fname"]').value = row.dataset.fname;
     document.querySelector('#editTutorModal input[name="lname"]').value = row.dataset.lname;
     document.querySelector('#editTutorModal input[name="email"]').value = row.dataset.email;
-    document.querySelector('#editTutorModal input[name="tutorId"]').value = row.dataset.id;
-    document.querySelector('#editTutorModal input[name="isActive"]').value = row.dataset.isActive;
+    document.querySelector('#editTutorModal input[name="userId"]').value = row.dataset.id;
+    document.querySelector('#editTutorModal input[name="isActive"]').value = row.dataset.isactive;
 
     // checks the boxes for the courses the tutor is currently assigned to
     document.querySelectorAll('#editTutorModal input[name="tutorCourses"]').forEach(checkbox => {
@@ -86,12 +86,12 @@ openEditTutorModal.addEventListener("click", function () {
   editTutorModal.style.display = "block";
 });
 
-// close Edit Tutor Hours modal when X is clicked
+// close Edit Tutor modal when X is clicked
 closeEditTutorModal.addEventListener("click", function () {
   editTutorModal.style.display = "none";
 });
 
-// close Edit Tutor Hours modal if user clicks outside modal content
+// close Edit Tutor modal if user clicks outside modal content
 window.addEventListener("click", function (event) {
   if (event.target === editTutorModal) {
     editTutorModal.style.display = "none";
