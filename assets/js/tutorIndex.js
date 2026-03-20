@@ -146,6 +146,38 @@ window.addEventListener("click", function (event) {
   }
 });
 
+// log 
+
+// attach flatpickr cal to the input
+flatpickr("#shiftDate", {
+  // date format to be sent to backend
+  dateFormat: "Y-m-d",
+  // admin can't choose past days for assigning hours
+  minDate: "today",
+  altInput: true,
+  altFormat: "F j, Y",
+  // disable closed weekdays 
+  // (disable date if weekday is in closed list)
+  disable: [
+    function(date) {
+      return window.closedWeekdays.includes(date.getDay());
+    }
+  ],
+  // setting placeholder for select date box (would not work inside ejs file))
+  onReady: function(selectedDates, dateStr, instance){
+    instance.altInput.placeholder = "-- Select Date -- "
+  }
+});
+
+
+// log
+// reopen modal after rendering
+window.addEventListener("DOMContentLoaded", () => {
+  // based on controller/checking is the modal should be open or closed (true v. fals)
+  if(window.openAssignTutorModal){
+    document.getElementById("assignTutorModal").style.display = "block";
+  }
+})
 
 // EMAIL REGEX
 // email must be an ilstu.edu address
