@@ -31,6 +31,10 @@ route.post("/changeHours", controller.changeHours);
 // Handles form submission to assign tutor hours
 route.post("/assignTutorHours", controller.assignTutorHours);
 
+
+// View Available Tutor Shifts 
+// route.post("/viewAvailableTutorShifts", controller.viewAvailableTutorShifts);
+
 // Handles the deletion of tutor shifts under specific tutor on specific day
 route.post("/clearTutorHours/remove", controller.clearTutorHours);
 

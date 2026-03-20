@@ -135,9 +135,6 @@
         <br>
       <% }) %>
 
-
-
-
       <br><br>
       
       <button type="submit">Create Tutor</button>
@@ -147,7 +144,10 @@
 
 
 
-  <!-- "Assign Tutor Hours" Modal -> FORM TO ASSIGN TUTOR HOURS  -->
+
+
+
+  <!-- "ASSIGN TUTOR HOURS" Modal -->
    <!-- pop-up container-->
 <div id="assignTutorModal" class="modal">
   <!-- content box (temp white)-->
@@ -156,19 +156,19 @@
     <span class="assign-close-btn" id="closeAssignTutorModal">&times;</span>
 
     <h2>Assign Tutor Hours</h2>
+
 <!-- connected to route, sends data to /addUser, POST req for submission-->
+ <!-- <form action="/viewAvailableTutorShifts" method="POST"></form> -->
     <form action="/assignTutorHours" method="POST">
-      <!-- data to be sent (first name, last name, email, password (We can just have it as a 
-       temporary password set by admin for students to use to login and then student can change password after
-       / be sent a link to change password? ) )-->
+      
       <input type="hidden" name="role" value="tutor">
       
-<!-- looping through tutors in dropdown menu -->
+<!-- looping through ACTIVE tutors in dropdown menu -->
 <select name="tutorId" required>
   <option value="">-- Select Tutor --</option>
 
-      <% activeTutors.forEach(function(tutor) { %>
-      <option value="<%= tutor._id %>">
+  <% activeTutors.forEach(function(tutor) { %>
+    <option value="<%= tutor._id %>" <%= selectedTutorId && selectedTutorId.toString() === tutor._id.toString() ? "selected" : "" %>>
       <%= tutor.fname %> <%= tutor.lname %>
     </option>
   <% }); %>
@@ -176,32 +176,46 @@
 
 <br><br>
 
-<!-- Date (input type = date) with minimum of "today" : admin has to choose a date 
- for assign tutor shift from today and onward only-->
-<input type="date" name="shiftDate" min="<%= today %>"  required>
+<!-- choosing day from calendar (flatpickr) -->
+<input type="text" id="shiftDate" name="shiftDate" value = "<%= selectedShiftDate || '' %>" required>
 
-<br><br>
+<button type="submit" name="action" value="view">View Available Shifts</button>
 
-<!-- step = "3600" ensures time picker only allows hour increments to choose from-->
-<Label>Start Time: </Label>
-<input type = "time" name = "startTime" step = "3600" required> 
+ <% if (openAssignTutorModal && availableShiftBlocks && availableShiftBlocks.length > 0){%>
+  <h3>Available Shifts</h3>
 
-<br><br>
+  
+  <div class="shift-checkbox-container">
+    <% availableShiftBlocks.forEach(function(block) { %>
+      <label>
+        <input 
+          type="checkbox" 
+          name="shiftBlocks"
+          value="<%= block.value %>">
+        <%= block.label %>
+      </label>
+      <br>
+    <% }); %>
+  </div>
 
-<Label>End Time: </Label>
-<input type = "time" name = "endTime" step = "3600" required> 
+  <br>
+
+  <button type = "submit" name ="action" value ="assign">Assign Hours</button>
+
+  <% } else if (openAssignTutorModal && availableShiftBlocks && availableShiftBlocks.length === 0) { %>
+  <p>No available shifts for date.</p>
+<% } %>
 
 
-      <br><br>
-      <button type="submit">Assign Hours</button>
-      <br><br>
+
+
+
+ <!-- <button type="submit">Assign Hours</button> -->
+ 
     </form>
-
-
-
-
   </div>
 </div>
+<!-- end of assignTutorModal -->
 
 
 
@@ -237,12 +251,8 @@
 
 <br><br>
 
-<!-- Date (input type = date) with minimum of "today" : admin has to choose a date 
- for assign tutor shift from today and onward only-->
-<input type="date" name="shiftDate" min="<%= today %>"  required>
-
-      <br><br>
-
+ <!-- input type changed to "text" for flatpickr-->
+<input type="text" name="shiftDate" id = "ShiftDate" placeholder="-- Select Date --" required>
 
       <br><br>
       <button type="submit">Clear Tutor Hours</button>
@@ -252,6 +262,17 @@
   </div>
 </div>
 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+<script>
+  window.closedWeekdays = <%- JSON.stringify(closedWeekdays || []) %>;
+</script>
+<!-- Flatpickr CDN -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script>
+  window.openAssignTutorModal = <%= openAssignTutorModal ? 'true' : 'false' %>;
+  </script>
 
 </body>
 
