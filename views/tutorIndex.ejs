@@ -9,28 +9,91 @@
   <%- include("includes/_navbar") %>
 </header>
 
-    <h1 style="text-align: center; padding: 10px">Appointments</h1>
-
     <!--Tutor container for appointment functionality-->
     <div class="tutor-container">
-      <div class="tutor-calendar-options">
+      <div class="tutor-columns">
+        <!-- Tutor's schedule -->
+        <div class="tutor-column">
+          <h1>Schedule</h1>
+            <div id="tutor-calendar-container" class="tutor-calendar-container">
+            
+              <% if (shiftError) { %>
+                <div class="alert"><strong>Error:</strong> <%= shiftError %></div>
+              <% } %>
+              <% if (!tutorShifts || tutorShifts.length === 0) { %>
+                <p>You have no upcoming shifts scheduled.</p>
+              <% } else { %>
+                <% tutorShifts.forEach(shift => { %>
+                    <div class="tutorShiftInfo">
+                        <!--used toUTCString() instead of .toDateString() to get the proper date and slice to look nice-->
+                        <p><%= shift.shiftDate.toUTCString().slice(0, 16) %></p>
+                      <% 
+                        const [startHour, startMinute] = shift.shiftStart.split(":");
+                        const [endHour, endMinute] = shift.shiftEnd.split(":");
+                        let startHourNum = parseInt(startHour);
+                        let endHourNum = parseInt(endHour);
+                        const startAMPM = startHourNum >= 12 ? "PM" : "AM";
+                        const endAMPM = endHourNum >= 12 ? "PM" : "AM";
+                        startHourNum = startHourNum % 12 || 12;
+                        endHourNum = endHourNum % 12 || 12;
+                      %>
+                      <p><b><%= startHourNum + ":" + startMinute + " " + startAMPM + " - " + endHourNum + ":" + endMinute + " " + endAMPM %></b></p>
+                        <br />
+                    </div>
+                  <% }) %>
+              <% } %>
 
-        <div id="tutor-calendar-container" class="tutor-calendar-container">
-            <label for="selectDay">Select a Day:</label>
-            <input type="date" id="shift-date" name="shift-date" />
+            </div>
+
+          </div>
+
+        
+
+        <!--Tutor view appointments column-->
+        <div class="tutor-column">
+          <h1>Appointments</h1>
+          <div id="tutor-view-appointments" class="tutor-view-appointments">
+          <form action="/tutorIndex/tutorAppointment" method="get">
+            <button id="viewTutorAppointments" type="submit">View Tutor Appointments</button>
+          </form>
+          <br />
+          <% if (!appointmentsLoaded) { %>
+            <p>Click button above to view your upcoming tutoring appointments.</p>
+          <% } else if (!bookedAppointments || bookedAppointments.length === 0) { %>
+            <p>You have no upcoming appointments.</p>
+          <% } else { %>
+            <% bookedAppointments.forEach(appointment => { %>
+                <div class="tutorShiftInfo">
+                    <p><%= appointment.course %></p>
+                    <!--used toUTCString() instead of .toDateString() to get the proper date and slice to look nice-->
+                    <p><%= appointment.appointmentDate.toUTCString().slice(0, 16) %></p>
+                    <p><b><%= appointment.startTime %> - <%= appointment.endTime %></b></p>
+                    <p><%= appointment.appointmentStatus %></p>
+                    <br />
+                </div>
+            <% }) %>
+          <% } %>
         </div>
+      </div>
+    </div>
+  </div>
 
-        <!--Tutor feature options-->
-        <div id="tutor-button-options" class="tutor-button-options">
+<%- include("includes/_footer") %>
+
+<!-- This used to be part of the page but is functionality that will be added in the future. This will stay commented out for the time being. -->
+ <!-- <label for="selectDay">Select a Day:</label>
+            <input type="date" id="shift-date" name="shift-date" /> -->
+<!--Tutor feature options-->
+        <!-- <div id="tutor-button-options" class="tutor-button-options">
           <button id="comment-button">Edit / View Comments</button>
           <br />
           <button id="time-button">Add Start / End Time</button>
           <br />
           <button id="show-button">Show / No-Show</button>
-        </div>
+        </div> -->
 
         <!--Tutor feature selections and submit buttons-->
-        <div id="tutor-edit-features" class="tutor-edit-features">
+        <!-- <div id="tutor-edit-features" class="tutor-edit-features">
           <textarea
             id="comments-textarea"
             name="comments-textarea"
@@ -61,33 +124,4 @@
           </button>
           <button id="time-submit-button" type="button">Submit Time</button>
           <button id="show-submit-button" type="button">Submit Show / No-Show</button>
-        </div>
-
-        <!--Tutor view appointments-->
-        <div id="tutor-view-appointments" class="tutor-view-appointments">
-          <form action="/tutorAppointment" method="get">
-            <button id="viewTutorAppointments" type="submit">View Tutor Appointments</button>
-          </form>
-          <br />
-          <% if (!appointmentsLoaded) { %>
-            <p>Click button above to view your upcoming tutoring appointments.</p>
-          <% } else if (!bookedAppointments || bookedAppointments.length === 0) { %>
-            <p>You have no upcoming appointments.</p>
-          <% } else { %>
-            <% bookedAppointments.forEach(appointment => { %>
-                <div class="tutorShiftInfo">
-                    <p><%= appointment.course %></p>
-                    <!--used toUTCString() instead of .toDateString() to get the proper date and slice to look nice-->
-                    <p><%= appointment.appointmentDate.toUTCString().slice(0, 16) %></p>
-                    <p><b><%= appointment.startTime %> - <%= appointment.endTime %></b></p>
-                    <p><%= appointment.appointmentStatus %></p>
-                    <br />
-                </div>
-            <% }) %>
-          <% } %>
-        </div>
-
-      </div>
-    </div>
-
-<%- include("includes/_footer") %>
+        </div> -->
