@@ -6,4 +6,7 @@ const controller = require('../controller/tutorController');
 // renders tutorIndex
 route.get('/tutorIndex', controller.getTutorIndex);
 
+// display the tutor's booked appointments
+route.get('/tutorIndex/tutorAppointment', controller.getTutorAppointments);
+
 module.exports = route;

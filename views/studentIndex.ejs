@@ -47,7 +47,17 @@
                                     <p><%= shift.courseName %></p>
                                     <!--used toUTCString() instead of .toDateString() to get the proper date and slice to look nice-->
                                     <p><%= shift.shiftDate.toUTCString().slice(0, 16) %></p>
-                                    <p><b><%= shift.startTime %> - <%= shift.endTime %></b></p>
+                                    <% 
+                                        const [startHour, startMinute] = shift.startTime.split(":");
+                                        const [endHour, endMinute] = shift.endTime.split(":");
+                                        let startHourNum = parseInt(startHour);
+                                        let endHourNum = parseInt(endHour);
+                                        const startAMPM = startHourNum >= 12 ? "PM" : "AM";
+                                        const endAMPM = endHourNum >= 12 ? "PM" : "AM";
+                                        startHourNum = startHourNum % 12 || 12;
+                                        endHourNum = endHourNum % 12 || 12;
+                                    %>
+                                    <p><b><%= startHourNum + ":" + startMinute + " " + startAMPM + " - " + endHourNum + ":" + endMinute + " " + endAMPM %></b></p>
                                     <button type="submit">Book</button>
                                 </form>
                             </div>
