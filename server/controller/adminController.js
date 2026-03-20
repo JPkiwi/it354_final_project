@@ -894,7 +894,7 @@ exports.assignTutorHours = async (req, res) => {
     }
 
     return res.render("adminTutorIndex", {
-      error: message,
+      error: null,
       title: "Admin Manage Tutors", 
       cssStylesheet: "tutorIndex.css",
       jsFile: "tutorIndex.js",
