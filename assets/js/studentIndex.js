@@ -72,3 +72,23 @@ window.addEventListener("click", function (event) {
     editTutorModal.style.display = "none";
   }
 });
+
+
+// EMAIL REGEX
+// email must be an ilstu.edu address
+const emailRegex = /^[^\s@]+@ilstu\.edu$/;
+
+// Validates email is @ilstu.edu email
+function validateForm(emailId) {
+    const email = document.getElementById(emailId).value;
+    const errorSpan = document.getElementById(emailId + "Error"); 
+    let valid = true;
+
+    if (!emailRegex.test(email)) {
+        errorSpan.innerText = "Please enter a valid @ilstu.edu email address.";
+        valid = false;
+    } else {
+        errorSpan.innerText = "";
+    }
+    return valid;
+}

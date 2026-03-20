@@ -147,4 +147,34 @@ window.addEventListener("click", function (event) {
 });
 
 
+// EMAIL REGEX
+// email must be an ilstu.edu address
+const emailRegex = /^[^\s@]+@ilstu\.edu$/;
+
+// Validates email is @ilstu.edu email AND validates there's atleast one course chosen for tutor
+function validateForm(emailId, modalId, courseErrorId) {
+    const email = document.getElementById(emailId).value;
+    const errorSpan = document.getElementById(emailId + "Error"); 
+    let valid = true;
+
+    if (!emailRegex.test(email)) {
+        errorSpan.innerText = "Please enter a valid @ilstu.edu email address.";
+        valid = false;
+    } else {
+        errorSpan.innerText = "";
+    }
+
+    // check courses if a modalId was passed in
+    if (modalId) {
+        const checkedCourses = document.querySelectorAll(`#${modalId} input[name="tutorCourses"]:checked`);
+        if (checkedCourses.length === 0) {
+            document.getElementById(courseErrorId).innerText = "Please select at least one course.";
+            valid = false;
+        } else {
+            document.getElementById(courseErrorId).innerText = "";
+        }
+      }
+
+    return valid;
+}
 
