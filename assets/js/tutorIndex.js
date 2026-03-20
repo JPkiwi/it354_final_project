@@ -54,6 +54,50 @@ if (viewScheduleForm) {
   });
 }
 
+// EDIT Tutor modal elements
+const editTutorModal = document.getElementById("editTutorModal");
+const openEditTutorModal = document.getElementById("openEditTutorModal");
+const closeEditTutorModal = document.getElementById("closeEditTutorModal");
+
+// open Edit Tutor modal
+openEditTutorModal.addEventListener("click", function () {
+    const selectedRadio = document.querySelector('input[name="selectedTutor"]:checked');
+    if (!selectedRadio) {
+        alert("Please select a tutor first.");
+        return;
+    }
+    const row = selectedRadio.closest('tr');
+
+    // parses the tutor's active courses they're teaching
+    const tutorCourses = JSON.parse(row.dataset.courses);
+    
+    // selects the attribute fields and populates them with the current data
+    document.querySelector('#editTutorModal input[name="fname"]').value = row.dataset.fname;
+    document.querySelector('#editTutorModal input[name="lname"]').value = row.dataset.lname;
+    document.querySelector('#editTutorModal input[name="email"]').value = row.dataset.email;
+    document.querySelector('#editTutorModal input[name="userId"]').value = row.dataset.id;
+    document.querySelector('#editTutorModal input[name="isActive"]').value = row.dataset.isactive;
+
+    // checks the boxes for the courses the tutor is currently assigned to
+    document.querySelectorAll('#editTutorModal input[name="tutorCourses"]').forEach(checkbox => {
+      checkbox.checked = tutorCourses.includes(checkbox.value);
+    });
+
+  editTutorModal.style.display = "block";
+});
+
+// close Edit Tutor modal when X is clicked
+closeEditTutorModal.addEventListener("click", function () {
+  editTutorModal.style.display = "none";
+});
+
+// close Edit Tutor modal if user clicks outside modal content
+window.addEventListener("click", function (event) {
+  if (event.target === editTutorModal) {
+    editTutorModal.style.display = "none";
+  }
+});
+
 
 // Assign Tutor Hours modal elements
 const assignTutorModal = document.getElementById("assignTutorModal");
@@ -135,4 +179,34 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 })
 
+// EMAIL REGEX
+// email must be an ilstu.edu address
+const emailRegex = /^[^\s@]+@ilstu\.edu$/;
+
+// Validates email is @ilstu.edu email AND validates there's atleast one course chosen for tutor
+function validateForm(emailId, modalId, courseErrorId) {
+    const email = document.getElementById(emailId).value;
+    const errorSpan = document.getElementById(emailId + "Error"); 
+    let valid = true;
+
+    if (!emailRegex.test(email)) {
+        errorSpan.innerText = "Please enter a valid @ilstu.edu email address.";
+        valid = false;
+    } else {
+        errorSpan.innerText = "";
+    }
+
+    // check courses if a modalId was passed in
+    if (modalId) {
+        const checkedCourses = document.querySelectorAll(`#${modalId} input[name="tutorCourses"]:checked`);
+        if (checkedCourses.length === 0) {
+            document.getElementById(courseErrorId).innerText = "Please select at least one course.";
+            valid = false;
+        } else {
+            document.getElementById(courseErrorId).innerText = "";
+        }
+      }
+
+    return valid;
+}
 

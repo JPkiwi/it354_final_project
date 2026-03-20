@@ -19,6 +19,8 @@
   <button type="submit" id="toggleActiveBtn">Toggle Active</button>
 <!-- Add user (student) button -> opens Modal-->
   <button type="button" id="openAddStudentModal">Add Student</button>
+<!--Edit Student Button-->
+  <button type="button" id="openEditStudentModal">Edit Student</button>
 
 <br><br>
 
@@ -41,7 +43,12 @@
     <tbody id="studentRows">
        <% students.forEach(student => { %>
         <!-- use no class (' ') if student is active, use 'inactive-row' styling if student is not active-->
-         <tr class="<%= student.isActive ? '' : 'inactive-row' %>">
+         <tr class="<%= student.isActive ? '' : 'inactive-row' %>"
+            data-fname="<%= student.fname %>"
+            data-lname="<%= student.lname %>"
+            data-email="<%= student.email %>"
+            data-id="<%= student._id %>"
+            data-isactive="<%= student.isActive %>">
 <!-- creates a radio button per student for selection (to edit student status as inactive/actvie)-->
           <td>
             <input type="radio" name="selectedStudent" value="<%= student._id %>">
@@ -69,7 +76,7 @@
 
     <h2>Add Student</h2>
 <!-- connected to route, sends data to /addUser, POST req for submission-->
-    <form action="/addUser" method="POST">
+    <form action="/addUser" method="POST" onsubmit="return validateForm('addEmail')">
       <!-- data to be sent (first name, last name, email, password (We can just have it as a 
        temporary password set by admin for students to use to login and then student can change password after
        / be sent a link to change password? ) )-->
@@ -83,14 +90,46 @@
       <br><br>
 
       <label>Email:</label>
-      <input type="email" name="email" required>
-    <br><br>
+      <input type="email" name="email" id="addEmail" required>
+      <span id="addEmailError" style="color: red; font-size: 0.8em; display: block; margin-top: 1px;"></span>
+      <br><br>
       <label>Password:</label>
       <input type="password" name="password" required>
 
       <br><br>
       <button type="submit">Create Student</button>
     </form>
+  </div>
+</div>
+
+
+<!-- EDIT STUDENT MODAL -->
+<div id="editStudentModal" class="modal">
+  <div class="modal-content">
+    <span class="close-btn" id="closeEditStudentModal">&times;</span>
+
+      <h2>Edit Tutor</h2>
+      <form action="/editUser" method="POST" onsubmit="return validateForm('editEmail')">
+      <input type="hidden" name="role" value="student">
+      <input type="hidden" name="isActive">
+      <input type="hidden" name="userId" id="editStudentId">
+      <label>First Name:</label>
+      <input type="text" name="fname" required>
+      <br><br>
+
+      <label>Last Name:</label>
+     <input type="text" name="lname" required>
+      <br><br>
+
+      <label>Email:</label>
+      <input type="email" name="email" id="editEmail" required>
+      <span id="editEmailError" style="color: red; font-size: 0.8em; display: block; margin-top: 1px;"></span>
+      <br><br>
+      <label>Password:</label>
+      <input type="password" name="password">
+      <p style="color: rgb(88, 73, 73); font-style: italic;">Keep password field blank unless changing password.</p>
+      <button type="submit">Submit Changes</button>
+      </form>
   </div>
 </div>
 
