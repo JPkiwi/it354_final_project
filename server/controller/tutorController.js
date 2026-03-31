@@ -49,7 +49,9 @@ exports.getTutorIndex = async (req, res) => {
             user: req.session.user,
             bookedAppointments: [],
             appointmentsLoaded: false,
-            tutorShifts
+            tutorShifts,
+            pastBookedAppointments: [],
+            pastAppointmentsLoaded: false
         });
 
     } catch (err) {
@@ -63,7 +65,9 @@ exports.getTutorIndex = async (req, res) => {
             user: req.session.user,
             bookedAppointments: [],
             appointmentsLoaded: false,
-            tutorShifts: []
+            tutorShifts: [],
+            pastBookedAppointments: [],
+            pastAppointmentsLoaded: false
         });
     }
 
@@ -110,7 +114,6 @@ exports.getTutorAppointments = async (req, res) => {
             shiftError = "Failed to load tutor shifts.";
         }
 
-
         // get any booked appointments under current tutor user
         const bookedAppointments = await Appointment.aggregate([
             { $lookup: { from: "tutorshifts", localField: "tutorShiftId", foreignField: "_id", as: "tutorShift" } },
@@ -120,7 +123,33 @@ exports.getTutorAppointments = async (req, res) => {
             { $sort: { appointmentDate: 1, startTime: 1 } }
         ]);
 
-        // render tutorIndex page with bookedAppointments under tutor
+        // get any past booked appointments under current tutor user
+        let pastBookedAppointments = await Appointment.aggregate([
+            { $lookup: { from: "tutorshifts", localField: "tutorShiftId", foreignField: "_id", as: "tutorShift" } },
+            { $unwind: "$tutorShift" },
+            { $match: { "tutorShift.tutorId": tutorId, "tutorShift.isBooked": true, appointmentDate: { $lt: new Date(new Date().setUTCHours(0, 0, 0, 0)) } } }, // shows appointments for today and past (not based on time)
+            { $project: { course: 1, appointmentDate: 1, startTime: 1, endTime: 1, appointmentStatus: 1 } },
+            { $sort: { appointmentDate: 1, startTime: 1 } }
+        ]);
+
+        // update appointment status to completed if past the current date and time (past appointments only checks date)
+        for (let i = 0; i < pastBookedAppointments.length; i++) {
+            const currAppointment = pastBookedAppointments[i];
+            const currAppointmentDate = new Date(currAppointment.appointmentDate);
+            // set the hours for the date of the current appointment to the end time using the stored hours
+            currAppointmentDate.setHours(
+                parseInt(currAppointment.endTime.split(":")[0]),
+                parseInt(currAppointment.endTime.split(":")[1])
+            );
+
+            // update status to completed if current appointment is set to scheduled and past the current time
+            if (currAppointment.appointmentStatus === "scheduled" && currAppointmentDate < new Date()) {
+                await Appointment.findByIdAndUpdate(currAppointment._id, { appointmentStatus: "completed" });
+                bookedAppointments[i].appointmentStatus = "completed";
+            }
+        }
+
+        // render tutorIndex page with bookedAppointments and pastBookedAppointments under tutor
         res.render("tutorIndex", {
             title: "Tutor Appointments",
             cssStylesheet: "tutorStyle.css",
@@ -130,7 +159,9 @@ exports.getTutorAppointments = async (req, res) => {
             user: req.session.user,
             bookedAppointments,
             appointmentsLoaded: true,
-            tutorShifts
+            tutorShifts,
+            pastBookedAppointments,
+            pastAppointmentsLoaded: true
         });
     } catch (err) {
         console.error("Tutor appointment error:", err);
@@ -143,7 +174,9 @@ exports.getTutorAppointments = async (req, res) => {
             user: req.session.user,
             bookedAppointments: [],
             appointmentsLoaded: true,
-            tutorShifts: []
+            tutorShifts: [],
+            pastBookedAppointments: [],
+            pastAppointmentsLoaded: true
         });
     }
 }
