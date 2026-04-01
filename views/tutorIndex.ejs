@@ -9,8 +9,8 @@
   <%- include("includes/_navbar") %>
 </header>
 
-    <!--Tutor container for appointment functionality-->
-    <div class="tutor-container">
+  <!--Tutor container for appointment functionality-->
+  <div class="tutor-container">
       <div class="tutor-columns">
         <!-- Tutor's schedule -->
         <div class="tutor-column">
@@ -27,6 +27,8 @@
                     <div class="tutorShiftInfo">
                         <!--used toUTCString() instead of .toDateString() to get the proper date and slice to look nice-->
                         <p><%= shift.shiftDate.toUTCString().slice(0, 16) %></p>
+
+                      <!--Display in standard time-->
                       <% 
                         const [startHour, startMinute] = shift.shiftStart.split(":");
                         const [endHour, endMinute] = shift.shiftEnd.split(":");
@@ -38,7 +40,7 @@
                         endHourNum = endHourNum % 12 || 12;
                       %>
                       <p><b><%= startHourNum + ":" + startMinute + " " + startAMPM + " - " + endHourNum + ":" + endMinute + " " + endAMPM %></b></p>
-                        <br />
+                      <br />
                     </div>
                   <% }) %>
               <% } %>
@@ -49,62 +51,80 @@
 
         
 
-        <!--Tutor view appointments column-->
+        <!--Tutor view appointments (upcoming and past) and tutor button features-->
         <div class="tutor-column">
           <h1>Appointments</h1>
           <div id="tutor-view-appointments" class="tutor-view-appointments">
-          <form action="/tutorIndex/tutorAppointment" method="get">
-            <button id="viewTutorAppointments" type="submit">View Tutor Appointments</button>
-          </form>
-          <br />
-          <% if (!appointmentsLoaded) { %>
-            <p>Click button above to view your upcoming tutoring appointments.</p>
-          <% } else if (!bookedAppointments || bookedAppointments.length === 0) { %>
-            <p>You have no upcoming appointments.</p>
-          <% } else { %>
-            <% bookedAppointments.forEach(appointment => { %>
+            <br />
+            <% if (!appointmentsLoaded) { %>
+              <p>Click below to view your upcoming tutoring appointments.</p>
+            <% } else if (!bookedAppointments || bookedAppointments.length === 0) { %>
+              <p>You have no upcoming appointments.</p>
+            <% } else { %>
+              <% bookedAppointments.forEach(appointment => { %>
                 <div class="tutorShiftInfo">
                     <p><%= appointment.course %></p>
                     <!--used toUTCString() instead of .toDateString() to get the proper date and slice to look nice-->
                     <p><%= appointment.appointmentDate.toUTCString().slice(0, 16) %></p>
-                    <p><b><%= appointment.startTime %> - <%= appointment.endTime %></b></p>
+
+                    <!--Display in standard time-->
+                    <% 
+                      const [startHour, startMinute] = appointment.startTime.split(":");
+                      const [endHour, endMinute] = appointment.endTime.split(":");
+
+                      let startHourNum = parseInt(startHour);
+                      let endHourNum = parseInt(endHour);
+
+                      const startAMPM = startHourNum >= 12 ? "PM" : "AM";
+                      const endAMPM = endHourNum >= 12 ? "PM" : "AM";
+
+                      startHourNum = startHourNum % 12 || 12;
+                      endHourNum = endHourNum % 12 || 12;
+                    %> 
+                    <p><b>
+                      <%= startHourNum + ":" + startMinute + " " + startAMPM %> - <%= endHourNum + ":" + endMinute + " " + endAMPM %>
+                    </b></p>
+
                     <p><%= appointment.appointmentStatus %></p>
                     <br />
+
+                    <input type="radio" name="selectedAppointment" value="<%= appointment._id %>" form="comment-form" />
+
                 </div>
-            <% }) %>
-          <% } %>
+              <% }) %>
+            <% } %>
         </div>
-      </div>
-    </div>
-  </div>
 
-<%- include("includes/_footer") %>
+        <br />
+        <!--Generate upcoming and past appointments-->
+        <form action="/tutorIndex/tutorAppointment" method="get">
+              <button id="viewTutorAppointments" type="submit">View Upcoming and Past Appointments</button>
+        </form>
+        <br />
+        <br />
+        <br />
 
-<!-- This used to be part of the page but is functionality that will be added in the future. This will stay commented out for the time being. -->
- <!-- <label for="selectDay">Select a Day:</label>
-            <input type="date" id="shift-date" name="shift-date" /> -->
-<!--Tutor feature options-->
-        <!-- <div id="tutor-button-options" class="tutor-button-options">
+        <!--Tutor feature options-->
+        <div id="tutor-button-options" class="tutor-button-options">
           <button id="comment-button">Edit / View Comments</button>
           <br />
           <button id="time-button">Add Start / End Time</button>
           <br />
           <button id="show-button">Show / No-Show</button>
-        </div> -->
+        </div>
 
         <!--Tutor feature selections and submit buttons-->
-        <!-- <div id="tutor-edit-features" class="tutor-edit-features">
+        <div id="tutor-edit-features" class="tutor-edit-features">
           <textarea
             id="comments-textarea"
             name="comments-textarea"
             placeholder="Enter tutoring session comments here..."
             rows="10"
             cols="50"
+            form="comment-form"
           ></textarea>
           <br />
-          <label id="start-time-label" for="session-start-time"
-            >Start Time:</label
-          >
+          <label id="start-time-label" for="session-start-time">Start Time:</label>
           <input
             type="time"
             id="session-start-time"
@@ -119,9 +139,64 @@
             <option value="no-show">No-Show</option>
           </select>
           <br />
-          <button id="comment-submit-button" type="button">
-            Submit Comment
-          </button>
-          <button id="time-submit-button" type="button">Submit Time</button>
-          <button id="show-submit-button" type="button">Submit Show / No-Show</button>
-        </div> -->
+          <!--Update comment in backend when submit-->
+          <form id="comment-form" action="/tutorIndex/submitComment" method="post">
+            <button id="comment-submit-button" type="submit">
+              Submit Comment
+            </button>
+          </form>
+
+          <button id="time-submit-button" type="submit">Submit Time</button>
+          <button id="show-submit-button" type="submit">Submit Show / No-Show</button>
+        </div>
+
+        <!--Tutor view past appointments column-->
+        <div class="tutor-column">
+          <h1>Past Appointments</h1>
+          <div id="tutor-view-past-appointments" class="tutor-view-appointments">
+            <br />
+              <% if (!pastAppointmentsLoaded) { %>
+                <p>Click above to view your past tutoring appointments.</p>
+              <% } else if (!pastBookedAppointments || pastBookedAppointments.length === 0) { %>
+                <p>You have no past appointments.</p>
+              <% } else { %>
+                <% pastBookedAppointments.forEach(appointment => { %>
+                  <div class="tutorShiftInfo">
+                      <p><%= appointment.course %></p>
+                      <!--used toUTCString() instead of .toDateString() to get the proper date and slice to look nice-->
+                      <p><%= appointment.appointmentDate.toUTCString().slice(0, 16) %></p>
+
+                      <!--Display in standard time-->
+                      <% 
+                        const [startHour, startMinute] = appointment.startTime.split(":");
+                        const [endHour, endMinute] = appointment.endTime.split(":");
+
+                        let startHourNum = parseInt(startHour);
+                        let endHourNum = parseInt(endHour);
+
+                        const startAMPM = startHourNum >= 12 ? "PM" : "AM";
+                        const endAMPM = endHourNum >= 12 ? "PM" : "AM";
+
+                        startHourNum = startHourNum % 12 || 12;
+                        endHourNum = endHourNum % 12 || 12;
+                      %> 
+                      <p><b>
+                        <%= startHourNum + ":" + startMinute + " " + startAMPM %> - <%= endHourNum + ":" + endMinute + " " + endAMPM %>
+                      </b></p>
+
+                      <p><%= appointment.appointmentStatus %></p>
+                      <br />
+
+                      <input type="radio" name="selectedAppointment" value="<%= appointment._id %>" form="comment-form" />
+
+                  </div>
+                <% }) %>
+              <% } %>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div> <!-- end of tutor container -->
+
+<%- include("includes/_footer") %>
