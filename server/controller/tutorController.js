@@ -55,7 +55,6 @@ exports.getTutorIndex = async (req, res) => {
         });
 
     } catch (err) {
-        console.error(err);
         res.render('tutorIndex', {
             error: "Failed to load tutor index page.",
             shiftError: null,
@@ -110,7 +109,6 @@ exports.getTutorAppointments = async (req, res) => {
         try {
             tutorShifts = await getTutorShifts(tutorId);
         } catch (err) {
-            console.error("Shift load error:", err);
             shiftError = "Failed to load tutor shifts.";
         }
 
@@ -164,7 +162,6 @@ exports.getTutorAppointments = async (req, res) => {
             pastAppointmentsLoaded: true
         });
     } catch (err) {
-        console.error("Tutor appointment error:", err);
         res.render("tutorIndex", {
             title: "Tutor Appointments",
             cssStylesheet: "tutorStyle.css",
@@ -213,14 +210,128 @@ async function getTutorShifts(theTutorId) {
 
         // if there are no shifts found for the tutor, return an empty array
         if (!tutorShifts || tutorShifts.length === 0) {
-            console.log("No shifts found for tutor.");
             return [];
         }
 
         return tutorShifts;
 
     } catch (err) {
-        console.error(err);
         throw err;
     }
 }
+
+
+// POST: update submitted comment in MongoDB for specific tutor appointment selected
+exports.submitComment = async (req, res) => {
+    try {
+        // if not an auth user, send to login page
+        if (!req.session.user) {
+            return res.render('login',
+            {
+                title: 'Login Page',
+                cssStylesheet: 'login.css',
+                jsFile: null,
+                error: "User not logged in.",
+                user: null
+            });
+        }
+
+        // if auth user but not a tutor, send to login page
+        if (req.session.user.role !== "tutor") {
+            return res.render('login',
+            {
+                title: 'Login Page',
+                cssStylesheet: 'login.css',
+                jsFile: null,
+                error: "Access denied. Only tutors can view this page.",
+                user: null
+            });
+        }
+
+        const tutorId = new mongoose.Types.ObjectId(req.session.user._id);
+        // function to get all shifts for the tutor and sort by date and time
+        let tutorShifts = [];
+        let shiftError = null;
+        try {
+            tutorShifts = await getTutorShifts(tutorId);
+        } catch (err) {
+            shiftError = "Failed to load tutor shifts.";
+        }
+
+        // get appointment id and comments
+        const appointmentId = req.body.selectedAppointment;
+        const comments = req.body['comments-textarea'];
+
+        // no appointment selected
+        if (!appointmentId) {
+            return res.render('tutorIndex', {
+                error: "No appointment selected.",
+                shiftError,
+                title: 'Tutor Appointments',
+                cssStylesheet: 'tutorStyle.css',
+                jsFile: 'tutorScript.js',
+                user: req.session.user,
+                bookedAppointments: [],
+                appointmentsLoaded: false,
+                tutorShifts,
+                pastBookedAppointments: [],
+                pastAppointmentsLoaded: false
+            });
+        }
+
+        // update the comments for specific appointment
+        const appointmentExist = await Appointment.findOneAndUpdate({ _id: appointmentId }, { $set: { tutorComments: comments } });
+
+        // no appointment found
+        if (!appointmentExist) {
+            return res.render('tutorIndex', {
+                error: "Appointment not found.",
+                shiftError,
+                title: 'Tutor Appointments',
+                cssStylesheet: 'tutorStyle.css',
+                jsFile: 'tutorScript.js',
+                user: req.session.user,
+                bookedAppointments: [],
+                appointmentsLoaded: false,
+                tutorShifts,
+                pastBookedAppointments: [],
+                pastAppointmentsLoaded: false
+            });
+        }
+
+        // re-render tutor page
+        res.render('tutorIndex', {
+            error: null,
+            shiftError,
+            title: 'Tutor Appointments',
+            cssStylesheet: 'tutorStyle.css',
+            jsFile: 'tutorScript.js',
+            user: req.session.user,
+            bookedAppointments: [],
+            appointmentsLoaded: false,
+            tutorShifts,
+            pastBookedAppointments: [],
+            pastAppointmentsLoaded: false
+        });
+    } catch (err) {
+        res.render('tutorIndex', {
+            error: "Failed to load tutor index page.",
+            shiftError: null,
+            title: 'Tutor Appointments',
+            cssStylesheet: 'tutorStyle.css',
+            jsFile: 'tutorScript.js',
+            user: req.session.user,
+            bookedAppointments: [],
+            appointmentsLoaded: false,
+            tutorShifts: [],
+            pastBookedAppointments: [],
+            pastAppointmentsLoaded: false
+        });
+    }   
+}
+
+
+// GET: display specific tutor comments in comments text area if any for appointment selected
+// exports.viewComment = async (req, res) => {
+
+// }

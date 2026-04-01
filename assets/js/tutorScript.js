@@ -14,19 +14,15 @@ const showButton = document.getElementById("show-button");
 const showSubmitButton = document.getElementById("show-submit-button");
 const showLabel = document.getElementById("show-label");
 const selectShow = document.getElementById("select-show");
+const appointmentRadios = document.querySelectorAll('input[name="selectedAppointment"]');
 
 
-/*
-When select a date on the calendar, the tutor button options for entering data appear.
-These button options do not disappear until you select one of the button options and click submit.
-*/
-shiftDate.addEventListener("change", () => {
-    const selectedDate = shiftDate.value;
-    if (selectedDate) {
-        buttonOptions.style.visibility = "visible";
-    }
+/*Add event listener for each radio button, when change a radio button it makes button options visible*/
+appointmentRadios.forEach(appointmentRadio => {
+  appointmentRadio.addEventListener("change", () => {
+    buttonOptions.style.visibility = "visible";
+  });
 });
-
 
 /*When select Edit / View Comment button on the screen, the comment textarea and submit button appear*/
 addCommentButton.addEventListener("click", ()=> {
