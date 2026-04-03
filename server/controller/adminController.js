@@ -5,6 +5,7 @@ const tutorShift = require("../model/tutorShiftModel");
 const centerOpen = require("../model/centerOpenSchedule");
 const centerClosedSchedule = require("../model/centerClosedSchedule");
 const bcrypt = require('bcrypt');
+const { trusted } = require("mongoose");
 
 //-----------------------------------------------
 
@@ -245,7 +246,8 @@ exports.getAdminTutorIndex = async (req, res) => {
       selectedTutorId: null,
       selectedShiftDate: "",
       availableShiftBlocks: [],
-      openAssignTutorModal: false
+      openAssignTutorModal: false,
+      openClearTutorModal: false
     });
   } catch (err) {
 
@@ -270,7 +272,8 @@ exports.getAdminTutorIndex = async (req, res) => {
       selectedTutorId: null,
       selectedShiftDate: "",
       availableShiftBlocks: [],
-      openAssignTutorModal: false
+      openAssignTutorModal: false,
+      openClearTutorModal: false
     });
   }
 };
@@ -348,7 +351,9 @@ exports.toggleTutorStatus = async (req, res) => {
         selectedTutorId: req.body.tutorId || null,
         selectedShiftDate: req.body?.shiftDate || "",
         availableShiftBlocks: [],
-        openAssignTutorModal: false
+        openAssignTutorModal: false,
+        shifts: [],
+        openClearTutorModal: false
       });
     }
 
@@ -394,7 +399,8 @@ exports.toggleTutorStatus = async (req, res) => {
       selectedTutorId: req.body.tutorId || null,
       selectedShiftDate: req.body?.shiftDate || "",
       availableShiftBlocks: [],
-      openAssignTutorModal: false
+      openAssignTutorModal: false,
+      openClearTutorModal: false,
     });
 
   }
@@ -781,7 +787,8 @@ exports.assignTutorHours = async (req, res) => {
         selectedShiftDate: shiftDate, 
         availableShiftBlocks, 
         openAssignTutorModal: true,
-        shifts: []
+        shifts: [],
+        openClearTutorModal: false
       })
     }
     // assign button 
@@ -803,7 +810,8 @@ exports.assignTutorHours = async (req, res) => {
           selectedShiftDate: shiftDate,
           availableShiftBlocks, 
           openAssignTutorModal: true,
-          shifts: []
+          shifts: [],
+          openClearTutorModal: false
         })
       }
 
@@ -908,7 +916,8 @@ exports.assignTutorHours = async (req, res) => {
       selectedShiftDate: shiftDate, 
       availableShiftBlocks,
       openAssignTutorModal: false,
-      shifts: []
+      shifts: [],
+      openClearTutorModal: false
         });
 
         // add fallback(?)
@@ -942,6 +951,8 @@ exports.assignTutorHours = async (req, res) => {
       selectedTutorId: req.body.tutorId || null,
       selectedShiftDate: req.body?.shiftDate || "",
       availableShiftBlocks: [],
+      openClearTutorModal: false
+
     });
 
   }// end of catch 
@@ -1031,7 +1042,9 @@ exports.adminViewTutorShedule = async (req, res) => {
       selectedTutorId: req.body.tutorId || null,
       selectedShiftDate: req.body?.shiftDate || "",
       availableShiftBlocks: [],
-      openAssignTutorModal: false
+      openAssignTutorModal: false,
+      openClearTutorModal: false
+
     });
 
 
@@ -1052,7 +1065,8 @@ exports.adminViewTutorShedule = async (req, res) => {
       selectedTutorId: req.body.tutorId || null,
       selectedShiftDate: req.body?.shiftDate || "",
       availableShiftBlocks: [],
-      openAssignTutorModal: false
+      openAssignTutorModal: false,
+      openClearTutorModal: false
     });
   }
 };
@@ -1086,9 +1100,15 @@ exports.clearTutorHours = async (req, res) => {
         });
     }
     // retrieving tutorId and shiftDate chosen by admin
-    const { tutorId, shiftDate } = req.body;
+    const { tutorId, shiftDate, action } = req.body;
+    let {selectedShiftIds} = req.body;
 
-    const centerSchedule = await centerOpen.find();
+    const tutors = await User.find({role: "tutor"});
+    const activeTutors = await User.find({role: "tutor", isActive: true});
+    const courses = await Course.find();
+    const today = new Date().toLocaleDateString("en-CA");
+    const centerSchedule = await centerOpen.find(); 
+    
 
     const weekdayMap = {
       Sunday: 0,
@@ -1109,11 +1129,6 @@ exports.clearTutorHours = async (req, res) => {
     });
 
     if (!tutorId || !shiftDate) {
-      const tutors = await User.find({ role: "tutor" });
-      const activeTutors = await User.find({ role: "tutor", isActive: true });
-      const courses = await Course.find();
-      const today = new Date().toLocaleDateString("en-CA");
-
       return res.render("adminTutorIndex", {
         error: "Please select a tutor and date first.",
         title: "Admin Manage Tutors",
@@ -1125,27 +1140,53 @@ exports.clearTutorHours = async (req, res) => {
         courses,
         today,
         closedWeekdays,
+        shifts: [],
         selectedTutorId: req.body.tutorId || null,
         selectedShiftDate: req.body?.shiftDate || "",
         availableShiftBlocks: [],
-        openAssignTutorModal: false
+        openAssignTutorModal: false,
+        openClearTutorModal: true
+
       });
     }
-    // deleting the specified shifts from chosen date/storing in deletedShifts
-    const deletedShifts = await tutorShift.deleteMany({
-      tutorId,
-      shiftDate: new Date(shiftDate)
-    })
 
-    // if no shifts were deleted, return that no shifts were assigned for the tutor
-    if (deletedShifts.deletedCount === 0) {
-      const tutors = await User.find({ role: "tutor" });
-      const activeTutors = await User.find({ role: "tutor", isActive: true });
-      const courses = await Course.find();
-      const today = new Date().toLocaleDateString("en-CA");
+    // prase selected date 
+    const [year, month, day] = shiftDate.split("-").map(Number); 
+    const startOfDay = new Date(year, month -1, day, 0, 0, 0, 0);
+    const endOfDay = new Date(year, month -1, day, 23, 59, 59, 999);
+    const nextDay = new Date(year, month - 1, day + 1, 0, 0, 0, 0);
+
+    // viewing the active shifts 
+    if(action === "view"){
+// function for viewing the tutor hours to clear in 12-hr format instead of military time
+      function formatTo12Hour(timeStr) {
+    const [hourStr, minute] = timeStr.split(":");
+    let hour = parseInt(hourStr, 10);
+    const ampm = hour >= 12 ? "PM" : "AM";
+
+    hour = hour % 12;
+      if (hour === 0) hour = 12;
+
+    return `${hour}:${minute} ${ampm}`;
+  }
+
+// retrieving the tutor shifts and formatting them 12-hr format
+// formatting them in controller --> when I tried to format in ejs, it affected the flatpickr/safest way here
+      const shifts = (await tutorShift.find({
+    tutorId,
+    shiftDate: {
+      $gte: startOfDay,
+      $lt: endOfDay
+    }
+  }).sort({ startTime: 1 })).map(shift => ({
+    ...shift.toObject(),
+    startTime: formatTo12Hour(shift.startTime),
+    endTime: formatTo12Hour(shift.endTime)
+  }));
+
 
       return res.render("adminTutorIndex", {
-        error: `No shift was assigned for this tutor on ${shiftDate}; no shifts were removed.`,
+        error: null, 
         title: "Admin Manage Tutors",
         cssStylesheet: "tutorIndex.css",
         jsFile: "tutorIndex.js",
@@ -1155,17 +1196,119 @@ exports.clearTutorHours = async (req, res) => {
         courses,
         today,
         closedWeekdays,
+        shifts,
         selectedTutorId: req.body.tutorId || null,
         selectedShiftDate: req.body?.shiftDate || "",
         availableShiftBlocks: [],
-        openAssignTutorModal: false
+        openAssignTutorModal: false,
+        openClearTutorModal: true
       });
     }
-    // redirect to page
-    res.redirect("/adminTutorIndex");
+
+
+    // remove the checked shifts 
+    if (action === "removeSelected") {
+      if (!selectedShiftIds) {
+        const shifts = await tutorShift.find({
+          tutorId,
+          shiftDate: {
+            $gte: startOfDay,
+            $lte: endOfDay
+          }
+        }).sort({ startTime: 1 });
+
+return res.render("adminTutorIndex", {
+        error: "Select at least one shift to remove", 
+        title: "Admin Manage Tutors",
+        cssStylesheet: "tutorIndex.css",
+        jsFile: "tutorIndex.js",
+        user: req.session.user,
+        tutors,
+        activeTutors,
+        courses,
+        today,
+        closedWeekdays,
+        shifts,
+        selectedTutorId: req.body.tutorId || null,
+        selectedShiftDate: req.body?.shiftDate || "",
+        availableShiftBlocks: [],
+        openAssignTutorModal: false,
+        openClearTutorModal: true
+      });
+    }
+
+    if(!Array.isArray(selectedShiftIds)){
+      selectedShiftIds = [selectedShiftIds];
+    }
+
+    await tutorShift.deleteMany({
+      _id: { $in: selectedShiftIds },
+      tutorId, 
+      shiftDate: {
+        $gte: startOfDay, 
+        $lte: endOfDay
+      }
+    });
+    return res.redirect("/adminTutorIndex");
+  } // end of remove checked shifts
+
+  // clearing full selected day 
+  if (action === "clearAll"){
+    const deletedShifts = await tutorShift.deleteMany({
+      tutorId,
+      shiftDate: {
+        $gte: startOfDay, 
+        $lte: endOfDay
+      }
+    });
+
+    if( deletedShifts.deletedCount === 0){
+      return res.render("adminTutorIndex", {
+        error: "No shift assigned for this tutor on ${shiftDate}; no shifts removed.", 
+        title: "Admin Manage Tutors",
+        cssStylesheet: "tutorIndex.css",
+        jsFile: "tutorIndex.js",
+        user: req.session.user,
+        tutors,
+        activeTutors,
+        courses,
+        today,
+        closedWeekdays,
+        shifts: [],
+        selectedTutorId: req.body.tutorId || null,
+        selectedShiftDate: req.body?.shiftDate || "",
+        availableShiftBlocks: [],
+        openAssignTutorModal: false,
+        openClearTutorModal: true
+      });
+    }
+    return res.redirect("/adminTutorIndex");
+
+  }
+
+  return res.render("adminTutorIndex", {
+        error: "Action was invalid", 
+        title: "Admin Manage Tutors",
+        cssStylesheet: "tutorIndex.css",
+        jsFile: "tutorIndex.js",
+        user: req.session.user,
+        tutors,
+        activeTutors,
+        courses,
+        today,
+        closedWeekdays,
+        shifts: [],
+        selectedTutorId: req.body.tutorId || null,
+        selectedShiftDate: req.body?.shiftDate || "",
+        availableShiftBlocks: [],
+        openAssignTutorModal: false,
+        openClearTutorModal: true
+      });
+
 
   } catch (err) {
     console.error("Error clearing tutor hours:", err);
+    const closedWeekdays = [];
     const tutors = await User.find({ role: "tutor" });
     const activeTutors = await User.find({ role: "tutor", isActive: true });
     const courses = await Course.find();
@@ -1182,10 +1325,13 @@ exports.clearTutorHours = async (req, res) => {
       courses,
       today,
       closedWeekdays,
+      shifts: [],
       selectedTutorId: req.body.tutorId || null,
       selectedShiftDate: req.body?.shiftDate || "",
       availableShiftBlocks: [],
-      openAssignTutorModal: false
+      openAssignTutorModal: false,
+      openClearTutorModal: true
+
     });
   }
 };

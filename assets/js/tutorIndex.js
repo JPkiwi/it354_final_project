@@ -169,15 +169,60 @@ flatpickr("#shiftDate", {
   }
 });
 
-
-// log
-// reopen modal after rendering
-window.addEventListener("DOMContentLoaded", () => {
-  // based on controller/checking is the modal should be open or closed (true v. fals)
-  if(window.openAssignTutorModal){
-    document.getElementById("assignTutorModal").style.display = "block";
+// flatpickr for clearing shifts ("remove tutor shifts")
+flatpickr("#clearShiftDate", {
+  dateFormat: "Y-m-d",
+  minDate: "today",
+  altInput: true,
+  altFormat: "F j, Y",
+  disable: [
+    function(date) {
+      return window.closedWeekdays.includes(date.getDay());
+    }
+  ],
+  onReady: function(selectedDates, dateStr, instance) {
+    instance.altInput.placeholder = "-- Select Date --";
   }
-})
+});
+
+
+
+
+
+
+
+
+
+// // log
+// // reopen modal after rendering
+// window.addEventListener("DOMContentLoaded", () => {
+//   // based on controller/checking is the modal should be open or closed (true v. fals)
+//   if(window.openAssignTutorModal){
+//     document.getElementById("assignTutorModal").style.display = "block";
+//   }
+// })
+
+// // open CLEAR tutor modal after rendering 
+// window.addEventListener("DOMContentLoaded", () => {
+//   if (window.openClearTutorModal) {
+//     document.getElementById("clearTutorModal").style.display = "block";
+//   }
+// });
+
+//log 
+// reopen modal AFTER rendering 
+window.addEventListener("DOMContentLoaded", () => {
+  if (window.shouldOpenAssignTutorModal === true) {
+    assignTutorModal.style.display = "block";
+  }
+
+  if (window.shouldOpenClearTutorModal === true) {
+    clearTutorModal.style.display = "block";
+  }
+});
+
+
+
 
 // EMAIL REGEX
 // email must be an ilstu.edu address
