@@ -44,7 +44,6 @@ exports.getStudentIndex = async (req, res) => {
             availableShifts: []
         });
     } catch (err) {
-        console.error(err);
         res.render("studentIndex", {
             title: "Book an Appointment",
             cssStylesheet: "studentIndex.css",
@@ -174,7 +173,6 @@ exports.viewAvailableAppointments = async (req, res) => {
         }
 
     } catch (err) {
-        console.error(err);
         res.status(500).json({ error: "Failed to load available appointments." });
     }
 
