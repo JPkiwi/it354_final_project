@@ -74,11 +74,22 @@
           <br/><br/>
           <div class="alert"><%= error %></div>
         <% } else if (shifts && shifts.length > 0) { %>
-          <h3>Scheduled Shifts for <%= shifts[0].tutorId.fname %> <%= shifts[0].tutorId.lname %></h3>
+          <h3>Scheduled Shifts for <%= shifts[0].tutorName %></h3>
           <% shifts.forEach(shift => { %>
             <div class="tutorShiftInfo">
               <p><%= shift.shiftDate.toUTCString().slice(0, 16) %></p>
-              <p><b><%= shift.startTime %> - <%= shift.endTime %></b></p>
+                <!--Display in standard time-->
+                <% 
+                  const [startHour, startMinute] = shift.shiftStart.split(":");
+                  const [endHour, endMinute] = shift.shiftEnd.split(":");
+                  let startHourNum = parseInt(startHour);
+                  let endHourNum = parseInt(endHour);
+                  const startAMPM = startHourNum >= 12 ? "PM" : "AM";
+                  const endAMPM = endHourNum >= 12 ? "PM" : "AM";
+                  startHourNum = startHourNum % 12 || 12;
+                  endHourNum = endHourNum % 12 || 12;
+                %>
+                <p><b><%= startHourNum + ":" + startMinute + " " + startAMPM + " - " + endHourNum + ":" + endMinute + " " + endAMPM %></b></p>
             </div>
           <% }) %>
         <% } else { %>

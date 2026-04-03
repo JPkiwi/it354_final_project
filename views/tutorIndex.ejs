@@ -20,29 +20,30 @@
               <% if (shiftError) { %>
                 <div class="alert"><strong>Error:</strong> <%= shiftError %></div>
               <% } %>
-              <% if (!tutorShifts || tutorShifts.length === 0) { %>
+              <% if (!upcomingTutorShifts || upcomingTutorShifts.length === 0) { %>
                 <p>You have no upcoming shifts scheduled.</p>
               <% } else { %>
-                <% tutorShifts.forEach(shift => { %>
-                    <div class="tutorShiftInfo">
-                        <!--used toUTCString() instead of .toDateString() to get the proper date and slice to look nice-->
-                        <p><%= shift.shiftDate.toUTCString().slice(0, 16) %></p>
+                <% upcomingTutorShifts.forEach(shift => { %>
+  <div class="tutorShiftInfo">
+    <p><%= shift.shiftDate.toUTCString().slice(0, 16) %></p>
 
-                      <!--Display in standard time-->
-                      <% 
-                        const [startHour, startMinute] = shift.shiftStart.split(":");
-                        const [endHour, endMinute] = shift.shiftEnd.split(":");
-                        let startHourNum = parseInt(startHour);
-                        let endHourNum = parseInt(endHour);
-                        const startAMPM = startHourNum >= 12 ? "PM" : "AM";
-                        const endAMPM = endHourNum >= 12 ? "PM" : "AM";
-                        startHourNum = startHourNum % 12 || 12;
-                        endHourNum = endHourNum % 12 || 12;
-                      %>
-                      <p><b><%= startHourNum + ":" + startMinute + " " + startAMPM + " - " + endHourNum + ":" + endMinute + " " + endAMPM %></b></p>
-                      <br />
-                    </div>
-                  <% }) %>
+    <% shift.timeRanges.forEach(range => { %>
+      <% 
+        const [startHour, startMinute] = range.shiftStart.split(":");
+        const [endHour, endMinute] = range.shiftEnd.split(":");
+        let startHourNum = parseInt(startHour);
+        let endHourNum = parseInt(endHour);
+        const startAMPM = startHourNum >= 12 ? "PM" : "AM";
+        const endAMPM = endHourNum >= 12 ? "PM" : "AM";
+        startHourNum = startHourNum % 12 || 12;
+        endHourNum = endHourNum % 12 || 12;
+      %>
+      <p><b><%= startHourNum + ":" + startMinute + " " + startAMPM + " - " + endHourNum + ":" + endMinute + " " + endAMPM %></b></p>
+    <% }) %>
+
+    <br />
+  </div>
+<% }) %>
               <% } %>
 
             </div>

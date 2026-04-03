@@ -5,6 +5,7 @@ const tutorShift = require("../model/tutorShiftModel");
 const centerOpen = require("../model/centerOpenSchedule");
 const centerClosedSchedule = require("../model/centerClosedSchedule");
 const bcrypt = require('bcrypt');
+const mongoose = require('mongoose');
 
 //-----------------------------------------------
 
@@ -1008,7 +1009,21 @@ exports.adminViewTutorShedule = async (req, res) => {
     }
 
     //get the shifts for the selected tutor, populate tutor info, sort by date and time
-    const shifts = await tutorShift.find({ tutorId: tutorId }).populate('tutorId', 'fname lname').sort({ shiftDate: 1, startTime: 1 });
+    // const shifts = await tutorShift.find({ tutorId: tutorId }).populate('tutorId', 'fname lname').sort({ shiftDate: 1, startTime: 1 });
+    // get current session user id and convert to ObjectId format for finding booked appointments and shifts
+            //const tutorId = new mongoose.Types.ObjectId(req.session.user._id);
+    const tutorObjectId = new mongoose.Types.ObjectId(tutorId);
+    // function to get all shifts for the tutor and sort by date and time
+    let shifts = [];
+    let shiftError = null;
+    console.log("Admin viewing schedule for tutor ID:", tutorObjectId);
+    try {
+      console.log("Attempting to retrieve tutor shifts...");
+      shifts = await getTutorShifts(tutorObjectId);
+      console.log("Retrieved tutor shifts:", shifts);
+    } catch (err) {
+      shiftError = "Failed to load tutor shifts.";
+    }
 
     // Load data needed to render the main tutor management page with the selected tutor's shifts
     const tutors = await User.find({ role: "tutor" });
@@ -1018,6 +1033,7 @@ exports.adminViewTutorShedule = async (req, res) => {
 
     res.render("adminTutorIndex", {
       error: null,
+      shiftError,
       title: "Admin Manage Tutors",
       cssStylesheet: "tutorIndex.css",
       jsFile: "tutorIndex.js",
@@ -1039,6 +1055,7 @@ exports.adminViewTutorShedule = async (req, res) => {
     console.error(err);
     res.render("adminTutorIndex", {
       error: "Could not load tutor shifts.",
+      shiftError: null,
       title: "Admin Manage Tutors",
       cssStylesheet: "tutorIndex.css",
       jsFile: "tutorIndex.js",
@@ -1056,6 +1073,57 @@ exports.adminViewTutorShedule = async (req, res) => {
     });
   }
 };
+
+// try to get the tutor's shifts, if error occurs render page with error message and empty shifts array
+async function getTutorShifts(theTutorId) {
+  console.log("Getting shifts for tutor ID:", theTutorId);
+    try {
+        const tutorShifts = await tutorShift.aggregate([
+            {
+                $match: { // filter shifts to only the tutor's shifts
+                    tutorId: theTutorId
+                },
+            },
+            { $sort: { shiftDate: 1, startTime: 1 } }, // sort by date and time so $first and $last retrieves the correct records
+            {
+                $group: { // group by date to find the beginning and end of a shift
+                    _id: { tutorId: "$tutorId", shiftDate: "$shiftDate" },
+                    shiftStart: { $first: "$startTime" },
+                    shiftEnd: { $last: "$endTime" },
+                },
+            },
+            { $lookup: { // join with user collection to get tutor's name for display
+                from: "users",
+                localField: "_id.tutorId",
+                foreignField: "_id",
+                as: "tutor"
+              }
+            },
+            { $unwind: "$tutor" },
+            {
+                $project: { // format result with only necessary details for displaying tutor shifts - date, start/end time
+                    _id: 0,
+                    tutorId: "$_id.tutorId",
+                    tutorName: { $concat: ["$tutor.fname", " ", "$tutor.lname"] },
+                    shiftDate: "$_id.shiftDate",
+                    shiftStart: 1,
+                    shiftEnd: 1,
+                },
+            },
+            { $sort: { shiftDate: 1 } },
+        ]);
+
+        // if there are no shifts found for the tutor, return an empty array
+        if (!tutorShifts || tutorShifts.length === 0) {
+            return [];
+        }
+
+        return tutorShifts;
+
+    } catch (err) {
+        throw err;
+    }
+}
 
 // -------------------------------------------------------------------------------------------
 
