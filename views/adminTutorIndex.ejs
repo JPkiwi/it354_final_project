@@ -285,13 +285,13 @@
        / be sent a link to change password? ) )-->
       <input type="hidden" name="role" value="tutor">
       
-<!-- looping through tutors in dropdown menu -->
+<!-- looping through *all tutors in dropdown menu -->
 <select name="tutorId" required>
   <option value="">-- Select Tutor --</option>
 
-      <% activeTutors.forEach(function(tutor) { %>
-      <option value="<%= tutor._id %>">
-      <%= tutor.fname %> <%= tutor.lname %>
+      <% tutors.forEach(function(tutor) { %>
+       <option value="<%= tutor._id %>" <%= selectedTutorId && selectedTutorId.toString() === tutor._id.toString() ? "selected" : "" %>>
+      <%= tutor.fname %> <%= tutor.lname %> <%= tutor.isActive ? "" : " (Inactive)" %>
     </option>
   <% }); %>
 </select>
@@ -299,27 +299,65 @@
 <br><br>
 
  <!-- input type changed to "text" for flatpickr-->
-<input type="text" name="shiftDate" id = "ShiftDate" placeholder="-- Select Date --" required>
+  <!-- choosing day -->
+<input type="text" id = "clearShiftDate" name="shiftDate" placeholder="-- Select Date --" required value ="<%= selectedShiftDate || '' %>" required>
 
       <br><br>
-      <button type="submit">Clear Tutor Hours</button>
+      <button type="submit" name = "action" value = "view">View Active Shifts</button>
       <br><br>
+
+      <% if (openClearTutorModal && shifts && shifts.length > 0) { %>
+        <h3>Active Shifts</h3> 
+
+        <div class= "shift-checkbox-container"> 
+          <% shifts.forEach(function(shift) {%>
+            <label> 
+              <input type = "checkbox" name = "selectedShiftIds" value = "<%= shift._id %>"> 
+              <%= shift.startTime %> - <%= shift.endTime %>
+              </label>
+              <br> 
+              <% }); %> 
+              </div>
+
+        <br>
+
+        <button type="submit" name="action" value="removeSelected">
+          Remove Selected Tutor Hours
+        </button>
+
+        <button type="submit" name="action" value="clearAll">
+          Fully Clear Selected Day
+        </button>
+
+      <% } else if (openClearTutorModal && shifts && shifts.length === 0) { %>
+        <p>No active shifts for selected tutor/date.</p>
+      <% } %>
     </form>
-
   </div>
-</div>
+
+</div> 
+<!-- ene of modal-->
+
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
 <script>
   window.closedWeekdays = <%- JSON.stringify(closedWeekdays || []) %>;
+  window.shouldOpenAssignTutorModal = <%- JSON.stringify(openAssignTutorModal || false) %>;
+  window.shouldOpenClearTutorModal = <%- JSON.stringify(openClearTutorModal || false) %>;
 </script>
+
+
+<!-- <script>
+  window.closedWeekdays = <%- JSON.stringify(closedWeekdays || []) %>;
+</script> -->
+
 <!-- Flatpickr CDN -->
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
-<script>
+<!-- <script>
   window.openAssignTutorModal = <%= openAssignTutorModal ? 'true' : 'false' %>;
-  </script>
+  </script> -->
 
 </body>
 
