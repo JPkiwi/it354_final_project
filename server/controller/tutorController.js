@@ -187,6 +187,11 @@ async function getUpcomingTutorShifts(theTutorId) {
     .sort({ shiftDate: 1, startTime: 1 })
     .lean(); // transform mongoose documents to plain JS objects for easier manipulation
 
+    // if there are no shifts found for the tutor, return an empty array
+    if (!shifts || shifts.length === 0) {
+        return [];
+    }
+
     return groupNonconsecutiveShifts(shifts);
 
   } catch (err) {
@@ -196,7 +201,7 @@ async function getUpcomingTutorShifts(theTutorId) {
 
 // helper function to group nonconsecutive shifts since tutors can be scheduled for multiple time blocks on the same day i.e. 11-2 pm and 4-6 pm on the same day
 // first groups shifts by date, then merges consecutive tutorShifts into the one time range, and returns an array of objects with the tutorId, shiftDate, and an array of time ranges for that day
-async function groupNonconsecutiveShifts(shifts) {
+function groupNonconsecutiveShifts(shifts) {
   const map = new Map();
 
   for (const shift of shifts) {
@@ -213,7 +218,9 @@ async function groupNonconsecutiveShifts(shifts) {
     const group = map.get(dateKey);
     const lastRange = group.timeRanges[group.timeRanges.length - 1];
 
-    // Merge into last range if consecutive, otherwise add a new range
+    // if lastRange exists and if the end time of the last range matches the start time of the current shift, 
+    // it is consecutive and extend the last group end time to the current shift end time
+    // otherwise, add a new time range to the group for the current shift
     if (lastRange && lastRange.shiftEnd === shift.startTime) {
       lastRange.shiftEnd = shift.endTime;
     } else {
