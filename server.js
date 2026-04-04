@@ -20,15 +20,16 @@ const { connect } = require("http2"); // not being used currently
 // Logging
 app.use(morgan("tiny"));
 
-// --- Google Calendar API Session Management ---
-// A session allows our server to remember things about a user between requests
-// In this case, it'll store the user's Google OAuth tokens so they STAY authenticated
-// as they move around our web app.
+// --- Login Sessions ---
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false, // session begins once user logs in, not before
+    rolling: true, // resets our maxAge timer whenever a user is actively using our website (making requests)
+    cookie: {
+      maxAge: 1000 * 60 * 30 // 30 minutes in milliseconds
+    }
   }),
 );
 
