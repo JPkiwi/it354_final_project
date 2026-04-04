@@ -17,11 +17,59 @@ exports.redirectToGoogleLogin = async (req, res) => {
 
 // Google redirects back here with a code
 exports.googleCallback = async (req, res) => {
-    const { code } = req.query;
-    const { tokens } = await oauth2Client.getToken(code);
-    req.session.tokens = tokens;
-    oauth2Client.setCredentials(tokens);
-    res.redirect('/studentIndex');
+    try {
+        const { code } = req.query;
+
+        // exchange code for tokens
+        /* The "tokens" consist of 3 different tokens:
+        * 1. access_token - makes API calls (Google Calendar) (1 hour lifspan)
+        * 2. refresh_token - gets a new access token when it expires (Long-lived lifespan)
+        * 3. id_token - proves who the user is (email/name/etc) (Single use lifespan)
+        */
+        const { tokens } = await oauth2Client.getToken(code);
+        // req.session.tokens = tokens;
+        oauth2Client.setCredentials(tokens);
+
+        // get user's email from the token
+        const ticket = await oauth2Client.verifyIdToken({
+            idToken: tokens.id_token,
+            audience: process.env.GOOGLE_CLIENT_ID,
+        });
+        
+        // Here, Google is sending back a JWT, and then getPayload()
+        // decodes the string into a plain JavaScript object with the user's
+        // info, that way we can grab the email.
+        const { email } = ticket.getPayload();
+
+        // checking to make sure this email belongs to our DB
+        const admin = await User.findOne({email, role:"admin"});
+
+        if (!admin) {
+            return res.render('login', 
+        {
+            error: "No admin found for that Google Account.",
+            title: 'Login Page',
+            cssStylesheet: 'login.css',
+            jsFile: null,
+            user: null
+        });
+        }
+
+        // setting our session
+        req.session.user = admin;
+        req.session.user.role = admin.role;
+
+        res.redirect('/adminIndex');
+
+    } catch (err) {
+        res.render("login", {
+            error: "Google login failed. Please try again.",
+            title: 'Login Page',
+            cssStylesheet: 'login.css',
+            jsFile: null,
+            user: null
+        });
+    }
 };
 
 // GET
@@ -90,14 +138,23 @@ exports.loginUser = async (req, res) => {
             });
         }
 
+        // checks to see if user is an admin
+        // if so, admins need to use Google OAuth to sign in.
+        if (user.role === "admin") {
+            return res.render('login', {
+                error: 'Admins must log in using Google.',
+                title: 'Login',
+                cssStylesheet: 'login.css',
+                jsFile: null,
+                user: null
+            });
+        }
+
         // stores user in session
         req.session.user = user;
 
         // checks user's role, redirects them to their corresponding index page
-        if (user.role === "admin") {
-            res.redirect('/adminIndex');
-        }
-        else if (user.role === "tutor") {
+        if (user.role === "tutor") {
             res.redirect('/tutorIndex');
         }
         else {
