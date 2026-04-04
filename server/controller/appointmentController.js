@@ -83,12 +83,11 @@ exports.bookAppointment = async (req, res) => {
       });
 
     } catch (emailErr) {
-      console.error("Email sending error:", emailErr);
+      console.error("Email sending error");
     }
 
     res.redirect("/studentIndex");
   } catch (err) {
-    console.error(err);
     res.render("studentAppointment", {
       title: "Book an Appointment",
       cssStylesheet: "studentStyle.css",
@@ -142,7 +141,6 @@ exports.getBookedAppointments = async (req, res) => {
       bookedAppointments,
     });
   } catch (err) {
-    console.error(err);
     res.render("studentAppointment", {
       title: "Booked Appointments",
       cssStylesheet: "studentStyle.css",

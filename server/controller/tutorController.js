@@ -29,13 +29,12 @@ exports.getTutorIndex = async (req, res) => {
 
         const tutorId = new mongoose.Types.ObjectId(req.session.user._id);
         // function to get all shifts for the tutor and sort by date and time
-        let tutorShifts = [];
+        let upcomingTutorShifts = [];
         let shiftError = null;
         try {
-            tutorShifts = await getTutorShifts(tutorId);
+            upcomingTutorShifts = await getUpcomingTutorShifts(tutorId);
         } catch (err) {
-            console.error("Shift load error:", err);
-            shiftError = "Failed to load tutor shifts.";
+            shiftError = "Failed to load upcoming tutor shifts.";
         }
 
 
@@ -49,7 +48,7 @@ exports.getTutorIndex = async (req, res) => {
             user: req.session.user,
             bookedAppointments: [],
             appointmentsLoaded: false,
-            tutorShifts,
+            upcomingTutorShifts,
             pastBookedAppointments: [],
             pastAppointmentsLoaded: false
         });
@@ -64,7 +63,7 @@ exports.getTutorIndex = async (req, res) => {
             user: req.session.user,
             bookedAppointments: [],
             appointmentsLoaded: false,
-            tutorShifts: [],
+            upcomingTutorShifts: [],
             pastBookedAppointments: [],
             pastAppointmentsLoaded: false
         });
@@ -104,10 +103,10 @@ exports.getTutorAppointments = async (req, res) => {
         const tutorId = new mongoose.Types.ObjectId(req.session.user._id);
 
         // function to get all shifts for the tutor and sort by date and time
-        let tutorShifts = [];
+        let upcomingTutorShifts = [];
         let shiftError = null;
         try {
-            tutorShifts = await getTutorShifts(tutorId);
+            upcomingTutorShifts = await getUpcomingTutorShifts(tutorId);
         } catch (err) {
             shiftError = "Failed to load tutor shifts.";
         }
@@ -157,7 +156,7 @@ exports.getTutorAppointments = async (req, res) => {
             user: req.session.user,
             bookedAppointments,
             appointmentsLoaded: true,
-            tutorShifts,
+            upcomingTutorShifts,
             pastBookedAppointments,
             pastAppointmentsLoaded: true
         });
@@ -171,53 +170,68 @@ exports.getTutorAppointments = async (req, res) => {
             user: req.session.user,
             bookedAppointments: [],
             appointmentsLoaded: true,
-            tutorShifts: [],
+            upcomingTutorShifts: [],
             pastBookedAppointments: [],
             pastAppointmentsLoaded: true
         });
     }
 }
 
+// try to get the tutor's upcoming shifts, if error occurs render page with error message and empty shifts array
+async function getUpcomingTutorShifts(theTutorId) {
+  try {
+    const shifts = await TutorShift.find({
+      tutorId: theTutorId,
+      shiftDate: { $gte: new Date(new Date().setUTCHours(0, 0, 0, 0)) }
+    })
+    .sort({ shiftDate: 1, startTime: 1 })
+    .lean(); // transform mongoose documents to plain JS objects for easier manipulation
 
-// try to get the tutor's shifts, if error occurs render page with error message and empty shifts array
-async function getTutorShifts(theTutorId) {
-    try {
-        const tutorShifts = await TutorShift.aggregate([
-            {
-                $match: { // filter shifts to only the tutor's shifts
-                    tutorId: theTutorId,
-                },
-            },
-            { $sort: { shiftDate: 1, startTime: 1 } }, // sort by date and time so $first and $last retrieves the correct records
-            {
-                $group: { // group by date to find the beginning and end of a shift
-                    _id: { tutorId: "$tutorId", shiftDate: "$shiftDate" },
-                    shiftStart: { $first: "$startTime" },
-                    shiftEnd: { $last: "$endTime" },
-                },
-            },
-            {
-                $project: { // format result with only necessary details for displaying tutor shifts - date, start/end time
-                    _id: 0,
-                    tutorId: "$_id.tutorId",
-                    shiftDate: "$_id.shiftDate",
-                    shiftStart: 1,
-                    shiftEnd: 1,
-                },
-            },
-            { $sort: { shiftDate: 1 } },
-        ]);
-
-        // if there are no shifts found for the tutor, return an empty array
-        if (!tutorShifts || tutorShifts.length === 0) {
-            return [];
-        }
-
-        return tutorShifts;
-
-    } catch (err) {
-        throw err;
+    // if there are no shifts found for the tutor, return an empty array
+    if (!shifts || shifts.length === 0) {
+        return [];
     }
+
+    return groupNonconsecutiveShifts(shifts);
+
+  } catch (err) {
+    throw err;
+  }
+}
+
+// helper function to group nonconsecutive shifts since tutors can be scheduled for multiple time blocks on the same day i.e. 11-2 pm and 4-6 pm on the same day
+// first groups shifts by date, then merges consecutive tutorShifts into the one time range, and returns an array of objects with the tutorId, shiftDate, and an array of time ranges for that day
+function groupNonconsecutiveShifts(shifts) {
+  const map = new Map();
+
+  for (const shift of shifts) {
+    const dateKey = new Date(shift.shiftDate).toDateString();
+
+    if (!map.has(dateKey)) {
+      map.set(dateKey, {
+        tutorId: shift.tutorId,
+        shiftDate: shift.shiftDate,
+        timeRanges: []
+      });
+    }
+
+    const group = map.get(dateKey);
+    const lastRange = group.timeRanges[group.timeRanges.length - 1];
+
+    // if lastRange exists and if the end time of the last range matches the start time of the current shift, 
+    // it is consecutive and extend the last group end time to the current shift end time
+    // otherwise, add a new time range to the group for the current shift
+    if (lastRange && lastRange.shiftEnd === shift.startTime) {
+      lastRange.shiftEnd = shift.endTime;
+    } else {
+      group.timeRanges.push({
+        shiftStart: shift.startTime,
+        shiftEnd: shift.endTime
+      });
+    }
+  }
+
+  return Array.from(map.values());
 }
 
 
@@ -250,12 +264,12 @@ exports.submitComment = async (req, res) => {
 
         const tutorId = new mongoose.Types.ObjectId(req.session.user._id);
         // function to get all shifts for the tutor and sort by date and time
-        let tutorShifts = [];
+        let upcomingTutorShifts = [];
         let shiftError = null;
         try {
-            tutorShifts = await getTutorShifts(tutorId);
+            upcomingTutorShifts = await getUpcomingTutorShifts(tutorId);
         } catch (err) {
-            shiftError = "Failed to load tutor shifts.";
+            shiftError = "Failed to load upcoming tutor shifts.";
         }
 
         // get appointment id and comments
@@ -273,7 +287,7 @@ exports.submitComment = async (req, res) => {
                 user: req.session.user,
                 bookedAppointments: [],
                 appointmentsLoaded: false,
-                tutorShifts,
+                upcomingTutorShifts,
                 pastBookedAppointments: [],
                 pastAppointmentsLoaded: false
             });
@@ -293,7 +307,7 @@ exports.submitComment = async (req, res) => {
                 user: req.session.user,
                 bookedAppointments: [],
                 appointmentsLoaded: false,
-                tutorShifts,
+                upcomingTutorShifts,
                 pastBookedAppointments: [],
                 pastAppointmentsLoaded: false
             });
@@ -309,7 +323,7 @@ exports.submitComment = async (req, res) => {
             user: req.session.user,
             bookedAppointments: [],
             appointmentsLoaded: false,
-            tutorShifts,
+            upcomingTutorShifts,
             pastBookedAppointments: [],
             pastAppointmentsLoaded: false
         });
@@ -323,7 +337,7 @@ exports.submitComment = async (req, res) => {
             user: req.session.user,
             bookedAppointments: [],
             appointmentsLoaded: false,
-            tutorShifts: [],
+            upcomingTutorShifts: [],
             pastBookedAppointments: [],
             pastAppointmentsLoaded: false
         });

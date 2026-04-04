@@ -6,6 +6,7 @@ const centerOpen = require("../model/centerOpenSchedule");
 const centerClosedSchedule = require("../model/centerClosedSchedule");
 const bcrypt = require('bcrypt');
 const { trusted } = require("mongoose");
+const mongoose = require("mongoose");
 
 //-----------------------------------------------
 
@@ -97,7 +98,6 @@ exports.getAdminIndex = async (req, res) => {
 
   }
   catch (err) {
-    console.error(err);
     // render same page, with error message & empty arrays passed 
     // to ensure page does not break
     res.render("adminIndex", {
@@ -252,7 +252,6 @@ exports.getAdminTutorIndex = async (req, res) => {
   } catch (err) {
 
     // prints error to console
-    console.error(err);
     const today = new Date().toLocaleDateString("en-CA");
 
     // even w/ error, page will still render
@@ -375,8 +374,6 @@ exports.toggleTutorStatus = async (req, res) => {
     // reloads page/show's updated active status
     return res.redirect("/adminTutorIndex");
   } catch (err) {
-    // logging error for debugging
-    console.error(err);
 
     const tutors = await User.find({ role: "tutor" });
     const courses = await Course.find();
@@ -504,7 +501,6 @@ exports.editUser = async (req, res) => {
 
   // in case of any errors, can log them and 500 for unfulfilled req 
   catch (err) {
-    console.error(err);
     res.status(500).send("Could not edit user.");
   }
 };
@@ -927,7 +923,6 @@ exports.assignTutorHours = async (req, res) => {
 
   } //end of try
   catch (err) {
-    console.error(err);
 
     const tutors = await User.find({ role: "tutor" });
     const courses = await Course.find();
@@ -1018,8 +1013,16 @@ exports.adminViewTutorShedule = async (req, res) => {
       return res.status(400).send("Tutor ID is required.");
     }
 
-    //get the shifts for the selected tutor, populate tutor info, sort by date and time
-    const shifts = await tutorShift.find({ tutorId: tutorId }).populate('tutorId', 'fname lname').sort({ shiftDate: 1, startTime: 1 });
+    //get the shifts for the selected tutor
+    const tutorObjectId = new mongoose.Types.ObjectId(tutorId);
+    // function to get all shifts for the tutor and sort by date and time
+    let shifts = [];
+    let shiftError = null;
+    try {
+      shifts = await getTutorShifts(tutorObjectId);
+    } catch (err) {
+      shiftError = "Failed to load tutor shifts.";
+    }
 
     // Load data needed to render the main tutor management page with the selected tutor's shifts
     const tutors = await User.find({ role: "tutor" });
@@ -1029,6 +1032,7 @@ exports.adminViewTutorShedule = async (req, res) => {
 
     res.render("adminTutorIndex", {
       error: null,
+      shiftError,
       title: "Admin Manage Tutors",
       cssStylesheet: "tutorIndex.css",
       jsFile: "tutorIndex.js",
@@ -1049,9 +1053,9 @@ exports.adminViewTutorShedule = async (req, res) => {
 
 
   } catch (err) {
-    console.error(err);
     res.render("adminTutorIndex", {
       error: "Could not load tutor shifts.",
+      shiftError: null,
       title: "Admin Manage Tutors",
       cssStylesheet: "tutorIndex.css",
       jsFile: "tutorIndex.js",
@@ -1070,6 +1074,73 @@ exports.adminViewTutorShedule = async (req, res) => {
     });
   }
 };
+
+// try to get the tutor's shifts, if error occurs render page with error message and empty shifts array
+async function getTutorShifts(theTutorId) {
+  try {
+    const tutorShifts = await tutorShift.aggregate([
+      {
+        $match: { // filter shifts to only the tutor's shifts
+          tutorId: theTutorId
+        },
+      },
+      { $lookup: { // join with user collection to get tutor's name for display
+        from: "users",
+        localField: "tutorId",
+        foreignField: "_id",
+        as: "tutor"
+        }
+      },
+      { $unwind: "$tutor" },
+      { $sort: { shiftDate: 1, startTime: 1 } }, // sort by date and time 
+    ]);
+
+    // if there are no shifts found for the tutor, return an empty array
+    if (!tutorShifts || tutorShifts.length === 0) {
+      return [];
+    }
+    return groupNonconsecutiveShifts(tutorShifts);
+
+  } catch (err) {
+    throw err;
+  }
+}
+
+// helper function to group nonconsecutive shifts since tutors can be scheduled for multiple time blocks on the same day i.e. 11-2 pm and 4-6 pm on the same day
+// first groups shifts by date, then merges consecutive tutorShifts into the one time range, and returns an array of objects with the tutorId, shiftDate, and an array of time ranges for that day
+function groupNonconsecutiveShifts(shifts) {
+  const map = new Map();
+
+  for (const shift of shifts) {
+    const dateKey = new Date(shift.shiftDate).toDateString();
+
+    if (!map.has(dateKey)) {
+      map.set(dateKey, {
+        tutorId: shift.tutorId,
+        tutorName: shift.tutor?.fname + " " + shift.tutor?.lname || "Unknown Tutor",
+        shiftDate: shift.shiftDate,
+        timeRanges: []
+      });
+    }
+
+    const group = map.get(dateKey);
+    const lastRange = group.timeRanges[group.timeRanges.length - 1];
+
+    // if lastRange exists and if the end time of the last range matches the start time of the current shift, 
+    // it is consecutive and extend the last group end time to the current shift end time
+    // otherwise, add a new time range to the group for the current shift
+    if (lastRange && lastRange.shiftEnd === shift.startTime) {
+      lastRange.shiftEnd = shift.endTime;
+    } else {
+      group.timeRanges.push({
+        shiftStart: shift.startTime,
+        shiftEnd: shift.endTime
+      });
+    }
+  }
+
+  return Array.from(map.values());
+}
 
 // -------------------------------------------------------------------------------------------
 
@@ -1307,7 +1378,6 @@ return res.render("adminTutorIndex", {
 
 
   } catch (err) {
-    console.error("Error clearing tutor hours:", err);
     const closedWeekdays = [];
     const tutors = await User.find({ role: "tutor" });
     const activeTutors = await User.find({ role: "tutor", isActive: true });
@@ -1465,7 +1535,6 @@ exports.toggleStudentStatus = async (req, res) => {
   // in case of any erros, can log them and 500 for unfulfilled req 
 
   catch (err) {
-    console.error(err);
 
     const students = await User.find({ role: "student" });
 
@@ -1618,7 +1687,6 @@ exports.addUser = async (req, res) => {
   }
   // in case of any errors, can log them and 500 for unfulfilled req 
   catch (err) {
-    console.error(err);
     res.status(500).send("Could not add user.");
   }
 };
@@ -1732,7 +1800,6 @@ exports.changeHours = async (req, res) => {
       weekdays
     });
   } catch (err) {
-    console.log("Change hours failed:", err);
     res.render('adminAvailabilityIndex', 
     {
       error: 'Failed to change hours.',
