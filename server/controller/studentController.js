@@ -2,6 +2,7 @@
 const TutorShift = require("../model/tutorShiftModel");
 const Course = require("../model/courseModel");
 const mongoose = require("mongoose");
+const Appointment = require("../model/appointmentModel");
 
 // GET: load the student index page with selection for course and day to view available appointments
 exports.getStudentIndex = async (req, res) => {
@@ -178,3 +179,90 @@ exports.viewAvailableAppointments = async (req, res) => {
 
 };
 
+
+
+
+
+exports.cancelAppointment = async (req, res) => {
+    try{
+        // if not an auth user, send to login page
+        if (!req.session.user) {
+            return res.render('login',
+                {
+                    title: 'Login Page',
+                    cssStylesheet: 'login.css',
+                    jsFile: null,
+                    error: "User not logged in.",
+                    user: null,
+                });
+        }
+
+        // if auth user but not a student, send to login page
+        if (req.session.user.role !== "student") {
+            return res.render('login',
+                {
+                    title: 'Login Page',
+                    cssStylesheet: 'login.css',
+                    jsFile: null,
+                    error: "Access denied. Only students can view this page.",
+                    user: req.session.user,
+                });
+        }
+
+        const appointmentId = req.params.appointmentId;
+
+        // make sure selected appointment belongs to correct user id (logged in student) 
+        const appointment = await Appointment.findOne({
+            _id: appointmentId, 
+            studentId: req.session.user._id
+        });
+           
+
+        // check if appointment selected exists in db
+         if(!appointment){
+            const bookedAppointments = await Appointment.find({ studentId: req.session.user._id });
+
+            return res.render("studentAppointment", {
+                title: "Booked Appointments",
+                cssStylesheet: "studentStyle.css",
+                jsFile: "studentScript.js",
+                error: "Appointment was not found.",
+                user: req.session.user,
+                bookedAppointments
+
+            });
+         }
+
+         // change tutorshift to open (isBooked: false) 
+         if(appointment.tutorShiftId){
+            await TutorShift.findByIdAndUpdate(appointment.tutorShiftId._id, {
+                isBooked: false
+            });
+         }
+
+         // cancel appt / remove from db
+         await Appointment.findByIdAndDelete(appointmentId);
+
+         // reload page 
+         res.redirect('/studentAppointment');
+
+
+    } // end of try 
+    catch(err){
+        const bookedAppointments = await Appointment.find({
+            studentId: req.session.user._id
+        });
+
+        
+            res.render("studentAppointment", {
+                title: "Booked Appointments",
+                cssStylesheet: "studentStyle.css",
+                jsFile: "studentScript.js",
+                error: "Could not cancel appointment.",
+                user: req.session.user,
+                bookedAppointments
+
+            });
+
+    }
+}
