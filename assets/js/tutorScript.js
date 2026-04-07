@@ -21,13 +21,35 @@ const appointmentRadios = document.querySelectorAll('input[name="selectedAppoint
 appointmentRadios.forEach(appointmentRadio => {
   appointmentRadio.addEventListener("change", () => {
     buttonOptions.style.visibility = "visible";
+
+    // every time a different radio button is selected, hide the button features again
+    commentText.style.visibility = "hidden";
+    commentSubmitButton.style.visibility = "hidden";
+    startTimeText.style.visibility = "hidden";
+    endTimeText.style.visibility = "hidden";
+    startTimeLabel.style.visibility = "hidden";
+    endTimeLabel.style.visibility = "hidden";
+    timeSubmitButton.style.visibility = "hidden";
+    showLabel.style.visibility = "hidden";
+    selectShow.style.visibility = "hidden";
+    showSubmitButton.style.visibility = "hidden";
   });
 });
 
-/*When select Edit / View Comment button on the screen, the comment textarea and submit button appear*/
+/*When select Edit / View Comment button on the screen, the comment textarea with previously entered data for appointment (if any) 
+  and submit button appear*/
 addCommentButton.addEventListener("click", ()=> {
     commentSubmitButton.style.visibility = "visible";
     commentText.style.visibility = "visible";
+
+    // get checked radio button and set the value of the comment-textarea to the selected appointment comment
+    const selectedAppointment = document.querySelector('input[name="selectedAppointment"]:checked');
+
+    if (selectedAppointment) {
+        commentText.value = JSON.parse(selectedAppointment.dataset.comment) || "";
+    } else {
+        commentText.value = "";
+    }
 });
 
 
@@ -53,7 +75,6 @@ showButton.addEventListener("click", ()=> {
 commentSubmitButton.addEventListener("click", ()=> {
     commentText.style.visibility = "hidden";
     commentSubmitButton.style.visibility = "hidden";
-    // buttonOptions.classList.toggle("tutor-button-options");
     buttonOptions.style.visibility = "hidden";
 });
 
@@ -65,7 +86,6 @@ timeSubmitButton.addEventListener("click", ()=> {
     startTimeLabel.style.visibility = "hidden";
     endTimeLabel.style.visibility = "hidden";
     timeSubmitButton.style.visibility = "hidden";
-    // buttonOptions.classList.toggle("tutor-button-options");
     buttonOptions.style.visibility = "hidden";
 });
 
@@ -75,6 +95,5 @@ showSubmitButton.addEventListener("click", ()=> {
     showLabel.style.visibility = "hidden";
     selectShow.style.visibility = "hidden";
     showSubmitButton.style.visibility = "hidden";
-    // buttonOptions.classList.toggle("tutor-button-options");
     buttonOptions.style.visibility = "hidden";
 });

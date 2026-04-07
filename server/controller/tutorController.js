@@ -117,7 +117,7 @@ exports.getTutorAppointments = async (req, res) => {
             { $lookup: { from: "tutorshifts", localField: "tutorShiftId", foreignField: "_id", as: "tutorShift" } },
             { $unwind: "$tutorShift" },
             { $match: { "tutorShift.tutorId": tutorId, "tutorShift.isBooked": true, appointmentDate: { $gte: new Date(new Date().setUTCHours(0, 0, 0, 0)) } } }, // shows appointments for today and future (not based on time)
-            { $project: { course: 1, appointmentDate: 1, startTime: 1, endTime: 1, appointmentStatus: 1 } },
+            { $project: { course: 1, appointmentDate: 1, startTime: 1, endTime: 1, appointmentStatus: 1, tutorComments: 1 } },
             { $sort: { appointmentDate: 1, startTime: 1 } }
         ]);
 
@@ -126,7 +126,7 @@ exports.getTutorAppointments = async (req, res) => {
             { $lookup: { from: "tutorshifts", localField: "tutorShiftId", foreignField: "_id", as: "tutorShift" } },
             { $unwind: "$tutorShift" },
             { $match: { "tutorShift.tutorId": tutorId, "tutorShift.isBooked": true, appointmentDate: { $lt: new Date(new Date().setUTCHours(0, 0, 0, 0)) } } }, // shows appointments for today and past (not based on time)
-            { $project: { course: 1, appointmentDate: 1, startTime: 1, endTime: 1, appointmentStatus: 1 } },
+            { $project: { course: 1, appointmentDate: 1, startTime: 1, endTime: 1, appointmentStatus: 1, tutorComments: 1 } },
             { $sort: { appointmentDate: 1, startTime: 1 } }
         ]);
 

@@ -94,7 +94,7 @@
                   <p><%= appointment.appointmentStatus %></p>
                   <br />
 
-                  <input type="radio" name="selectedAppointment" value="<%= appointment._id %>" />
+                  <input type="radio" name="selectedAppointment" value="<%= appointment._id %>" data-comment='<%= JSON.stringify(appointment.tutorComments || "") %>' />
 
                 </div>
               <% }) %>
@@ -190,7 +190,7 @@
                       <p><%= appointment.appointmentStatus %></p>
                       <br />
 
-                      <input type="radio" name="selectedAppointment" value="<%= appointment._id %>" />
+                      <input type="radio" name="selectedAppointment" value="<%= appointment._id %>" data-comment='<%- JSON.stringify(appointment.tutorComments || "") %>' />
 
                   </div>
                 <% }) %>
