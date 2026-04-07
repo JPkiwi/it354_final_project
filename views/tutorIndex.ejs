@@ -94,7 +94,7 @@
                   <p><%= appointment.appointmentStatus %></p>
                   <br />
 
-                  <input type="radio" name="selectedAppointment" value="<%= appointment._id %>" data-comment='<%= JSON.stringify(appointment.tutorComments || "") %>' />
+                  <input type="radio" name="selectedAppointment" value="<%= appointment._id %>" data-comment='<%= JSON.stringify(appointment.tutorComments || "") %>' data-actual-start="<%= appointment.attendance?.actualStart || '' %>" data-actual-end="<%= appointment.attendance?.actualEnd || '' %>" /> <!--    data-show=""-->
 
                 </div>
               <% }) %>
@@ -190,7 +190,7 @@
                       <p><%= appointment.appointmentStatus %></p>
                       <br />
 
-                      <input type="radio" name="selectedAppointment" value="<%= appointment._id %>" data-comment='<%- JSON.stringify(appointment.tutorComments || "") %>' />
+                      <input type="radio" name="selectedAppointment" value="<%= appointment._id %>" data-comment='<%= JSON.stringify(appointment.tutorComments || "") %>' data-actual-start="<%= appointment.attendance?.actualStart || '' %>" data-actual-end="<%= appointment.attendance?.actualEnd || '' %>" /> <!--    data-show=""-->
 
                   </div>
                 <% }) %>

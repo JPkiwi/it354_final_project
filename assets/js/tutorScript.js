@@ -60,6 +60,17 @@ addTimeButton.addEventListener("click", ()=> {
     endTimeText.style.visibility = "visible";
     startTimeLabel.style.visibility = "visible";
     endTimeLabel.style.visibility = "visible";
+
+    // get checked radio button and set the value of the startTimeText and endTimeText to the selected appointment times
+    const selectedAppointment = document.querySelector('input[name="selectedAppointment"]:checked');
+
+    if (selectedAppointment) {
+        startTimeText.value = selectedAppointment.dataset.actualStart || "";
+        endTimeText.value = selectedAppointment.dataset.actualEnd  || "";
+    } else {
+        startTimeText.value = "";
+        endTimeText.value = "";
+    }
 });
 
 
