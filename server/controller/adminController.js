@@ -4,6 +4,7 @@ const Course = require("../model/courseModel");
 const tutorShift = require("../model/tutorShiftModel");
 const centerOpen = require("../model/centerOpenSchedule");
 const centerClosedSchedule = require("../model/centerClosedSchedule");
+const AuditLog = require("../model/auditLog");
 const bcrypt = require('bcrypt');
 const { trusted } = require("mongoose");
 const mongoose = require("mongoose");
@@ -278,6 +279,63 @@ exports.getAdminTutorIndex = async (req, res) => {
 };
 
 // -------------------------------------------------------------------------------------------
+
+
+
+// renders ADMIN AUDIT LOG 
+
+
+exports.getAdminAuditLog = async (req,res) => {
+  try{
+    // if not an auth user, send to login page
+    if (!req.session.user) {
+      return res.render('login',
+        {
+          title: 'Login Page',
+          cssStylesheet: 'login.css',
+          jsFile: null,
+          error: "User not logged in.",
+          user: null
+        });
+    }
+
+    // if auth user but not a admin, send to login page
+    if (req.session.user.role !== "admin") {
+      return res.render('login',
+        {
+          title: 'Login Page',
+          cssStylesheet: 'login.css',
+          jsFile: null,
+          error: "Access denied. Only admins can view this page.",
+          user: null
+        });
+    }
+
+    
+    // render page 
+    res.render("adminAuditLog", {
+      title: "Audit Log",
+      cssStylesheet: "adminAuditLog.css",
+      jsFile: "adminAuditLog.js",
+      user: req.session.user, 
+      error: null
+    });
+
+  } catch(err){
+    res.render("adminAuditLog", {
+      title: "Audit Log",
+      cssStylesheet: "adminAuditLog.css",
+      jsFile: "adminAuditLog.js",
+      user: req.session.user, 
+      error: "Failed to load"
+    });
+
+
+  }
+};
+
+
+
 
 // Changing a TUTOR'S STATUS FROM ACTIVE TO INACTIVE or vice versa
 exports.toggleTutorStatus = async (req, res) => {

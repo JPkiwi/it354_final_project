@@ -128,8 +128,11 @@ exports.getBookedAppointments = async (req, res) => {
         });
     }
 
-    // get any booked appointments
-    const bookedAppointments = await Appointment.find({ studentId: req.session.user._id });
+    // get booked appointments that are scheduled (don't want to display cancelled status appointments)
+    const bookedAppointments = await Appointment.find({
+      studentId: req.session.user._id,
+      appointmentStatus: "scheduled"
+    });
 
     // render studentAppointment page with bookedAppointments
     res.render("studentAppointment", {

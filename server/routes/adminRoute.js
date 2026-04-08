@@ -11,7 +11,8 @@ route.get('/adminAvailabilityIndex', controller.getAdminAvailabilityIndex);
 // Receives POST request to toggle tutor active status
 route.post("/adminTutorIndex/toggle", controller.toggleTutorStatus);
 
-
+// renders adminAuditLog
+route.get('/adminAuditLog', controller.getAdminAuditLog);
 
 // renders adminTutorIndex
 route.get('/adminTutorIndex', controller.getAdminTutorIndex);

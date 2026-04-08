@@ -1,15 +1,20 @@
+
+<!-- ADMIN "Manage Tutors" EJS -->
+
 <%- include("includes/_header") %>
 
 <% if (error) { %>
   <div class="alert"><strong>Error:</strong> <%= error %></div>
 <% } %>
 
+
+<body>
 <!--Navigation Bar-->
 <header>
   <%- include("includes/_navbar") %>
 </header>
 
-<body>
+
   <br>
  
 <div class="adminTutorContainer">
@@ -354,6 +359,7 @@
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
+<!-- flagged as error, functions fine -->
 <script>
   window.closedWeekdays = <%- JSON.stringify(closedWeekdays || []) %>;
   window.shouldOpenAssignTutorModal = <%- JSON.stringify(openAssignTutorModal || false) %>;
