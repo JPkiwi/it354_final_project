@@ -53,12 +53,15 @@ exports.bookAppointment = async (req, res) => {
 
     // create the appointment
     const appointment = new Appointment({
-      studentId: req.session.user._id, // real auth needs to be set up
+      studentId: req.session.user._id,
       tutorShiftId: shift._id,
       course,
       appointmentDate: shift.shiftDate,
       startTime: shift.startTime,
       endTime: shift.endTime,
+      attendance: {
+        attendanceStatus: "pending"
+      }
     });
 
     await appointment.save();

@@ -94,7 +94,7 @@
                   <p><%= appointment.appointmentStatus %></p>
                   <br />
 
-                  <input type="radio" name="selectedAppointment" value="<%= appointment._id %>" />
+                  <input type="radio" name="selectedAppointment" value="<%= appointment._id %>" data-comment='<%= JSON.stringify(appointment.tutorComments || "") %>' data-actual-start="<%= appointment.attendance?.actualStart || '' %>" data-actual-end="<%= appointment.attendance?.actualEnd || '' %>" data-show="<%= appointment.attendance?.attendanceStatus || '' %>" />
 
                 </div>
               <% }) %>
@@ -138,6 +138,7 @@
             <br />
             <label id="show-label" for="select-show">Show / No-Show: </label>
             <select id="select-show" name="select-show">
+              <option value="" disabled selected hidden>-- Select an Option --</option>
               <option value="show">Show</option>
               <option value="no-show">No-Show</option>
             </select>
@@ -150,6 +151,9 @@
 
             <!--Update show/no show in backend when submit-->
             <button id="show-submit-button" type="submit" formaction="/tutorIndex/submitShow" >Submit Show / No-Show</button>
+
+            <!--Can cancel tutor edit features-->
+            <button id="cancel-button" type="button">Cancel</button>
             
           </div> <!-- end of tutor edit features -->
 
@@ -190,7 +194,7 @@
                       <p><%= appointment.appointmentStatus %></p>
                       <br />
 
-                      <input type="radio" name="selectedAppointment" value="<%= appointment._id %>" />
+                      <input type="radio" name="selectedAppointment" value="<%= appointment._id %>" data-comment='<%= JSON.stringify(appointment.tutorComments || "") %>' data-actual-start="<%= appointment.attendance?.actualStart || '' %>" data-actual-end="<%= appointment.attendance?.actualEnd || '' %>" data-show="<%= appointment.attendance?.attendanceStatus || '' %>" />
 
                   </div>
                 <% }) %>
