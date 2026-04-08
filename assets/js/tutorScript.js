@@ -14,6 +14,7 @@ const showButton = document.getElementById("show-button");
 const showSubmitButton = document.getElementById("show-submit-button");
 const showLabel = document.getElementById("show-label");
 const selectShow = document.getElementById("select-show");
+const cancelButton = document.getElementById("cancel-button");
 const appointmentRadios = document.querySelectorAll('input[name="selectedAppointment"]');
 
 
@@ -21,6 +22,7 @@ const appointmentRadios = document.querySelectorAll('input[name="selectedAppoint
 appointmentRadios.forEach(appointmentRadio => {
   appointmentRadio.addEventListener("change", () => {
     buttonOptions.style.visibility = "visible";
+    cancelButton.style.visibility = "visible";
 
     // every time a different radio button is selected, hide the button features again
     commentText.style.visibility = "hidden";
@@ -41,6 +43,14 @@ appointmentRadios.forEach(appointmentRadio => {
 addCommentButton.addEventListener("click", ()=> {
     commentSubmitButton.style.visibility = "visible";
     commentText.style.visibility = "visible";
+    startTimeText.style.visibility = "hidden";
+    endTimeText.style.visibility = "hidden";
+    startTimeLabel.style.visibility = "hidden";
+    endTimeLabel.style.visibility = "hidden";
+    timeSubmitButton.style.visibility = "hidden";
+    showLabel.style.visibility = "hidden";
+    selectShow.style.visibility = "hidden";
+    showSubmitButton.style.visibility = "hidden";
 
     // get checked radio button and set the value of the comment-textarea to the selected appointment comment
     const selectedAppointment = document.querySelector('input[name="selectedAppointment"]:checked');
@@ -60,6 +70,11 @@ addTimeButton.addEventListener("click", ()=> {
     endTimeText.style.visibility = "visible";
     startTimeLabel.style.visibility = "visible";
     endTimeLabel.style.visibility = "visible";
+    commentText.style.visibility = "hidden";
+    commentSubmitButton.style.visibility = "hidden";
+    showLabel.style.visibility = "hidden";
+    selectShow.style.visibility = "hidden";
+    showSubmitButton.style.visibility = "hidden";
 
     // get checked radio button and set the value of the startTimeText and endTimeText to the selected appointment times
     const selectedAppointment = document.querySelector('input[name="selectedAppointment"]:checked');
@@ -79,6 +94,30 @@ showButton.addEventListener("click", ()=> {
     showLabel.style.visibility = "visible";
     selectShow.style.visibility = "visible";
     showSubmitButton.style.visibility = "visible";
+    commentText.style.visibility = "hidden";
+    commentSubmitButton.style.visibility = "hidden";
+    startTimeText.style.visibility = "hidden";
+    endTimeText.style.visibility = "hidden";
+    startTimeLabel.style.visibility = "hidden";
+    endTimeLabel.style.visibility = "hidden";
+    timeSubmitButton.style.visibility = "hidden";
+
+    // get checked radio button and set the value of Show/No-Show to the selected appointment current show data (if any)
+    const selectedAppointment = document.querySelector('input[name="selectedAppointment"]:checked');
+
+    if (selectedAppointment) {
+        const showValue = selectedAppointment.dataset.show;
+
+        if (showValue === "attended") {
+            selectShow.value = "show";
+        } else if (showValue === "noShow") {
+            selectShow.value = "no-show";
+        } else {
+            selectShow.value = "";
+        }
+    } else {
+        selectShow.value = "";
+    }
 });
 
 
@@ -86,6 +125,7 @@ showButton.addEventListener("click", ()=> {
 commentSubmitButton.addEventListener("click", ()=> {
     commentText.style.visibility = "hidden";
     commentSubmitButton.style.visibility = "hidden";
+    cancelButton.style.visibility = "hidden";
     buttonOptions.style.visibility = "hidden";
 });
 
@@ -97,6 +137,7 @@ timeSubmitButton.addEventListener("click", ()=> {
     startTimeLabel.style.visibility = "hidden";
     endTimeLabel.style.visibility = "hidden";
     timeSubmitButton.style.visibility = "hidden";
+    cancelButton.style.visibility = "hidden";
     buttonOptions.style.visibility = "hidden";
 });
 
@@ -106,5 +147,30 @@ showSubmitButton.addEventListener("click", ()=> {
     showLabel.style.visibility = "hidden";
     selectShow.style.visibility = "hidden";
     showSubmitButton.style.visibility = "hidden";
+    cancelButton.style.visibility = "hidden";
     buttonOptions.style.visibility = "hidden";
+});
+
+
+/*When click cancel button, the show features and button options will be hidden and nothing will be submitted*/
+cancelButton.addEventListener("click", ()=> {
+    commentText.style.visibility = "hidden";
+    commentSubmitButton.style.visibility = "hidden";
+    startTimeText.style.visibility = "hidden";
+    endTimeText.style.visibility = "hidden";
+    startTimeLabel.style.visibility = "hidden";
+    endTimeLabel.style.visibility = "hidden";
+    timeSubmitButton.style.visibility = "hidden";
+    showLabel.style.visibility = "hidden";
+    selectShow.style.visibility = "hidden";
+    showSubmitButton.style.visibility = "hidden";
+    cancelButton.style.visibility = "hidden";
+    buttonOptions.style.visibility = "hidden";
+
+    // get checked radio button and unselect it
+    const selectedAppointment = document.querySelector('input[name="selectedAppointment"]:checked');
+
+    if (selectedAppointment) {
+        selectedAppointment.checked = false;
+    }
 });

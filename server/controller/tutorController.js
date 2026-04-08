@@ -685,8 +685,22 @@ exports.submitShow = async (req, res) => {
         let updateValue;
         if (isShow === "no-show") {
             updateValue = "noShow";
-        } else {
+        } else if (isShow === "show") {
             updateValue = "attended";
+        } else {
+            return res.render('tutorIndex', {
+                error: "Invalid show or no-show value.",
+                shiftError,
+                title: 'Tutor Appointments',
+                cssStylesheet: 'tutorStyle.css',
+                jsFile: 'tutorScript.js',
+                user: req.session.user,
+                bookedAppointments: [],
+                appointmentsLoaded: false,
+                upcomingTutorShifts,
+                pastBookedAppointments: [],
+                pastAppointmentsLoaded: false
+            });
         }
 
         // update the show/no show for specific appointment
