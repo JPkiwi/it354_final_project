@@ -117,7 +117,7 @@ exports.getTutorAppointments = async (req, res) => {
             { $lookup: { from: "tutorshifts", localField: "tutorShiftId", foreignField: "_id", as: "tutorShift" } },
             { $unwind: "$tutorShift" },
             { $match: { "tutorShift.tutorId": tutorId, "tutorShift.isBooked": true, appointmentDate: { $gte: new Date(new Date().setUTCHours(0, 0, 0, 0)) } } }, // shows appointments for today and future (not based on time)
-            { $project: { course: 1, appointmentDate: 1, startTime: 1, endTime: 1, appointmentStatus: 1 } },
+            { $project: { course: 1, appointmentDate: 1, startTime: 1, endTime: 1, appointmentStatus: 1, tutorComments: 1, attendance: 1 } },
             { $sort: { appointmentDate: 1, startTime: 1 } }
         ]);
 
@@ -126,7 +126,7 @@ exports.getTutorAppointments = async (req, res) => {
             { $lookup: { from: "tutorshifts", localField: "tutorShiftId", foreignField: "_id", as: "tutorShift" } },
             { $unwind: "$tutorShift" },
             { $match: { "tutorShift.tutorId": tutorId, "tutorShift.isBooked": true, appointmentDate: { $lt: new Date(new Date().setUTCHours(0, 0, 0, 0)) } } }, // shows appointments for today and past (not based on time)
-            { $project: { course: 1, appointmentDate: 1, startTime: 1, endTime: 1, appointmentStatus: 1 } },
+            { $project: { course: 1, appointmentDate: 1, startTime: 1, endTime: 1, appointmentStatus: 1, tutorComments: 1, attendance: 1 } },
             { $sort: { appointmentDate: 1, startTime: 1 } }
         ]);
 
@@ -554,7 +554,7 @@ exports.submitTimes = async (req, res) => {
         }
 
         // update the times for specific appointment
-        const appointmentUpdated = await Appointment.findOneAndUpdate({ _id: appointmentId }, { $set: { startTime: sessionStartTime, endTime: sessionEndTime } });
+        const appointmentUpdated = await Appointment.findOneAndUpdate({ _id: appointmentId }, { $set: { "attendance.actualStart": sessionStartTime, "attendance.actualEnd": sessionEndTime } });
 
         // appointment unable to update
         if (!appointmentUpdated) {
@@ -685,8 +685,22 @@ exports.submitShow = async (req, res) => {
         let updateValue;
         if (isShow === "no-show") {
             updateValue = "noShow";
-        } else {
+        } else if (isShow === "show") {
             updateValue = "attended";
+        } else {
+            return res.render('tutorIndex', {
+                error: "Invalid show or no-show value.",
+                shiftError,
+                title: 'Tutor Appointments',
+                cssStylesheet: 'tutorStyle.css',
+                jsFile: 'tutorScript.js',
+                user: req.session.user,
+                bookedAppointments: [],
+                appointmentsLoaded: false,
+                upcomingTutorShifts,
+                pastBookedAppointments: [],
+                pastAppointmentsLoaded: false
+            });
         }
 
         // update the show/no show for specific appointment
