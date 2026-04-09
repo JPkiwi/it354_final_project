@@ -50,6 +50,21 @@ exports.bookAppointment = async (req, res) => {
         bookedAppointments: [],
       });
     }
+    
+    //check if student already has an appointment at that time
+    const overlappingAppointment = await Appointment.findOne({
+      studentId: req.session.user._id,
+      appointmentDate: shift.shiftDate,
+      startTime: shift.startTime,
+      endTime: shift.endTime,
+      appointmentStatus: "scheduled"
+    });
+
+    if (overlappingAppointment) {
+      req.session.error = "You already have an appointment at that time.";
+      return res.redirect("/studentIndex");
+    }
+
 
     // create the appointment
     const appointment = new Appointment({
