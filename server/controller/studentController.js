@@ -240,8 +240,11 @@ exports.cancelAppointment = async (req, res) => {
             });
          }
 
-         // cancel appt / remove from db
-         await Appointment.findByIdAndDelete(appointmentId);
+         // not fully deleting appt --> instead setting status to "canceled" so appointment is still 
+         // able to be queried (admin audit log/admin view cancelled appointments/etc.) 
+         await Appointment.findByIdAndUpdate(appointmentId, {
+            appointmentStatus: "cancelled"
+});
 
          // reload page 
          res.redirect('/studentAppointment');
