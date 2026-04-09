@@ -50,7 +50,7 @@ exports.bookAppointment = async (req, res) => {
         bookedAppointments: [],
       });
     }
-    
+
     //check if student already has an appointment at that time
     const overlappingAppointment = await Appointment.findOne({
       studentId: req.session.user._id,
@@ -65,25 +65,33 @@ exports.bookAppointment = async (req, res) => {
       return res.redirect("/studentIndex");
     }
 
+    // book the appointment
+    // reserve the shift first to avoid race condition where two students try to book the same shift at the same time. 
+    const reservedShift = await TutorShift.findOneAndUpdate(
+      { _id: tutorShiftId, isBooked: false }, 
+      { isBooked: true }, 
+      { new: true } 
+    );
+    
+    if (!reservedShift) {
+      req.session.error = "That appointment is no longer available.";
+      return res.redirect("/studentIndex");
+    }
 
     // create the appointment
     const appointment = new Appointment({
       studentId: req.session.user._id,
-      tutorShiftId: shift._id,
+      tutorShiftId: reservedShift._id,
       course,
-      appointmentDate: shift.shiftDate,
-      startTime: shift.startTime,
-      endTime: shift.endTime,
+      appointmentDate: reservedShift.shiftDate,
+      startTime: reservedShift.startTime,
+      endTime: reservedShift.endTime,
       attendance: {
         attendanceStatus: "pending"
       }
     });
 
     await appointment.save();
-
-    // mark the shift as booked
-    shift.isBooked = true;
-    await shift.save();
 
     // send confirmation email to student and CC admin
     try {
