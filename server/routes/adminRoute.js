@@ -45,4 +45,6 @@ route.post("/clearTutorHours/remove", controller.clearTutorHours);
 // Handles admin viewing a specific tutor's schedule
 route.post("/adminTutorIndex/viewSchedule", controller.adminViewTutorShedule);
 
+route.post("/adminIndex/cancelAppointment", controller.adminCancelAppointment);
+
 module.exports = route;

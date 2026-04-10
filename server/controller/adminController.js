@@ -62,20 +62,41 @@ exports.getAdminIndex = async (req, res) => {
           user: null
         });
     }
-    // finding all appointments in db
-    const appointments = await Appointment.find()
-      // replace studentId ref with full student doc
-      .populate("studentId")
-      // replace tutorShiftId ref with full tutor shift doc
-      // also replace tutorId w/ full user doc 
-      // getting full info instead of just Id's
-      .populate({
-        path: "tutorShiftId",
-        populate: {
-          path: "tutorId",
-          model: "User"
-        }
-      });
+    // // finding all appointments in db
+    // const appointments = await Appointment.find()
+    //   // replace studentId ref with full student doc
+    //   .populate("studentId")
+    //   // replace tutorShiftId ref with full tutor shift doc
+    //   // also replace tutorId w/ full user doc 
+    //   // getting full info instead of just Id's
+    //   .populate({
+    //     path: "tutorShiftId",
+    //     populate: {
+    //       path: "tutorId",
+    //       model: "User"
+    //     }
+    //   });
+
+    const appointments = await Appointment.find({
+      appointmentStatus: { $ne: "cancelled" }
+    })
+    .select("appointmentDate startTime endTime course studentId tutorShiftId") // ✅ only needed fields
+    .populate({
+      path: "studentId",
+      select: "fname lname"
+    })
+    .populate({
+      path: "tutorShiftId",
+      select: "tutorId",
+      populate: {
+        path: "tutorId",
+        model: "User",
+        select: "fname lname"
+      }
+    })
+    .lean();
+
+
 
     // find all courses in db
     const courses = await Course.find();
@@ -119,6 +140,118 @@ exports.getAdminIndex = async (req, res) => {
     });
   }
 };
+
+// -------------------------------------------------------------------------------------------
+
+
+// POST: handle cancellation of an appointment from admin view (adminIndex)
+exports.adminCancelAppointment = async (req, res) => {
+  try {
+    // if not an auth user, send to login page
+    if (!req.session.user) {
+      return res.render('login',
+        {
+          title: 'Login Page',
+          cssStylesheet: 'login.css',
+          jsFile: null,
+          error: "User not logged in.",
+          user: null
+        });
+    }
+
+    // if auth user but not a admin, send to login page
+    if (req.session.user.role !== "admin") {
+      return res.render('login',
+        {
+          title: 'Login Page',
+          cssStylesheet: 'login.css',
+          jsFile: null,
+          error: "Access denied. Only admins can view this page.",
+          user: null
+        });
+    }
+
+    const appointmentId = req.body.appointmentId;
+    const appointment = await Appointment.findById(appointmentId, "appointmentStatus tutorShiftId").populate("tutorShiftId");
+    console.log("Shift BEFORE populate:", appointment.tutorShiftId); 
+    
+    if (!appointment) {
+      return res.status(404).send("Appointment not found.");
+    }
+    if (!appointment.tutorShiftId) {
+      throw new Error("Tutor shift missing on appointment");
+    }
+    // cancel appointment
+    appointment.appointmentStatus = "cancelled";
+    await appointment.save();
+    
+    // free the shift
+    await tutorShift.findByIdAndUpdate(
+      appointment.tutorShiftId._id,
+      { isBooked: false }
+    );
+
+    // finding all appointments in db
+    const appointments = await Appointment.find({
+      appointmentStatus: { $ne: "cancelled" }
+    })
+    .select("appointmentDate startTime endTime course studentId tutorShiftId") // ✅ only needed fields
+    .populate({
+      path: "studentId",
+      select: "fname lname"
+    })
+    .populate({
+      path: "tutorShiftId",
+      select: "tutorId",
+      populate: {
+        path: "tutorId",
+        model: "User",
+        select: "fname lname"
+      }
+    })
+    .lean();
+console.log("Updated Appointments after cancellation:", appointments);
+    // find all courses in db
+    const courses = await Course.find();
+
+    res.render("adminIndex", {
+      error: null,
+      title: "Admin Page",
+      cssStylesheet: "adminIndex.css",
+      jsFile: "adminIndex.js",
+      user: req.session.user,
+      appointments,
+      courses,
+      eligibleTutorShifts: [],
+      studentFName: "",
+      studentLName: "",
+      date: "",
+      time: "",
+      course: ""
+    });
+  } catch (err) {
+    console.error("FULL ERROR:", err);
+    // render same page, with error message & empty arrays passed 
+    // to ensure page does not break
+    res.render("adminIndex", {
+      error: "Could not load appointments.",
+      title: "Admin Page",
+      cssStylesheet: "adminIndex.css",
+      jsFile: "adminIndex.js",
+      user: req.session.user,
+      appointments: [],
+      courses: [],
+      // default form values
+      eligibleTutorShifts: [],
+      studentFName: "",
+      studentLName: "",
+      date: "",
+      time: "",
+      course: ""
+    });
+  }
+};
+
 
 
 // -------------------------------------------------------------------------------------------
