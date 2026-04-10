@@ -12,3 +12,54 @@
 <header>
   <%- include("includes/_navbar") %>
 </header>
+
+<body>
+
+  <div style="padding: 30px;">
+
+
+    
+  
+
+      <table border="1" cellpadding="6" cellspacing="0">
+        <thead>
+          <tr>
+            <!-- table headings for audit log -->
+            <th>Timestamp</th>
+            <th>Action</th>
+            <th>Details</th>
+          </tr>
+        </thead>
+
+        
+        <tbody>
+            <% if (auditLogs && auditLogs.length > 0) { %>
+
+          <!-- loading the audit logs into table  -->
+          <% auditLogs.forEach(log => { %>
+            <tr>
+              <td><%= new Date(log.timestamp).toLocaleString() %></td>
+              <td><%= log.actionType %></td>
+              <td><%= log.details %></td>
+            </tr>
+          <% }) %>
+
+          
+          <% } else { %>
+            <tr>
+             <td colspan="3" style="text-align: center;">
+               No audit logs found.
+            </td>
+             </tr>
+          <% } %>
+        </tbody>
+      </table>
+
+
+  </div>
+
+</body>
+
+
+
+

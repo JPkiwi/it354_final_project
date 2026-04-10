@@ -34,11 +34,14 @@ exports.getStudentIndex = async (req, res) => {
         // get all courses for the dropdown
         const courses = await Course.find().sort({ courseName: 1 });
 
+        const error = req.session.error || null;
+        delete req.session.error; // clear the error after displaying it once
+
         res.render("studentIndex", {
             title: "Book an Appointment",
             cssStylesheet: "studentStyle.css",
             jsFile: "studentScript.js",
-            error: null,
+            error,
             form: {},
             user: req.session.user,
             courses,

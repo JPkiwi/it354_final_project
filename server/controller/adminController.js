@@ -375,7 +375,9 @@ exports.getAdminTutorIndex = async (req, res) => {
       activeTutors,
       courses,
       today,
-      shifts: [],
+      // changed from "shifts: []" 
+      scheduleShifts: [],
+      clearShifts: [],
       closedWeekdays,
       selectedTutorId: null,
       selectedShiftDate: "",
@@ -400,7 +402,9 @@ exports.getAdminTutorIndex = async (req, res) => {
       activeTutors: [],
       courses: [],
       today,
-      shifts: [],
+      // changed from "shifts: []"
+      scheduleShifts: [],
+      clearShifts: [],
       closedWeekdays: [],
       selectedTutorId: null,
       selectedShiftDate: "",
@@ -444,6 +448,8 @@ exports.getAdminAuditLog = async (req,res) => {
         });
     }
 
+    const auditLogs = await AuditLog.find({}, "timestamp actionType details")
+  .sort({ timestamp: -1 });
     
     // render page 
     res.render("adminAuditLog", {
@@ -451,7 +457,8 @@ exports.getAdminAuditLog = async (req,res) => {
       cssStylesheet: "adminAuditLog.css",
       jsFile: "adminAuditLog.js",
       user: req.session.user, 
-      error: null
+      error: null,
+      auditLogs
     });
 
   } catch(err){
@@ -460,14 +467,15 @@ exports.getAdminAuditLog = async (req,res) => {
       cssStylesheet: "adminAuditLog.css",
       jsFile: "adminAuditLog.js",
       user: req.session.user, 
-      error: "Failed to load"
+      error: "Failed to load",
+      auditLogs: []
     });
 
 
   }
 };
 
-
+// -------------------------------------------------------------------
 
 
 // Changing a TUTOR'S STATUS FROM ACTIVE TO INACTIVE or vice versa
@@ -542,7 +550,9 @@ exports.toggleTutorStatus = async (req, res) => {
         selectedShiftDate: req.body?.shiftDate || "",
         availableShiftBlocks: [],
         openAssignTutorModal: false,
-        shifts: [],
+        // changed from "shifts: []"
+        scheduleShifts: [],
+        clearShifts: [],
         openClearTutorModal: false
       });
     }
@@ -555,12 +565,31 @@ exports.toggleTutorStatus = async (req, res) => {
       return res.status(404).send("Tutor not found.");
     }
 
+    const newStatus = !tutor.isActive;
+
+    
     // Finds tutor by Id/role 
     // sets isActive to opposite of current value
+    // await User.updateOne(
+    //   { _id: tutorId, role: "tutor" },
+    //   { $set: { isActive: !tutor.isActive } }
+    // );
+
     await User.updateOne(
       { _id: tutorId, role: "tutor" },
-      { $set: { isActive: !tutor.isActive } }
+      { $set: { isActive: newStatus } }
     );
+
+
+    // audit log --> creating new log
+    await AuditLog.create({
+      actionUserId: req.session.user._id,
+      actionType: "TUTOR_STATUS_CHANGED",
+      targetUserId: tutor._id,
+      details: `Tutor ${tutor.fname} ${tutor.lname} status set to ${newStatus ? "active" : "inactive"}.`
+    });
+
+
 
     // reloads page/show's updated active status
     return res.redirect("/adminTutorIndex");
@@ -583,7 +612,9 @@ exports.toggleTutorStatus = async (req, res) => {
       courses,
       today,
       closedWeekdays: [],
-      shifts: [],
+      // changed from "shifts: []"
+      scheduleShifts: [],
+      clearShifts: [],
       selectedTutorId: req.body.tutorId || null,
       selectedShiftDate: req.body?.shiftDate || "",
       availableShiftBlocks: [],
@@ -680,6 +711,18 @@ exports.editUser = async (req, res) => {
       tutorCourses: tutorCourses
     });
 
+
+    // audit log --> creating new log
+    await AuditLog.create({
+      actionUserId: req.session.user._id,
+      actionType: "USER_EDITED",
+      targetUserId: userId,
+      // logging user
+      details: `User ${fname} ${lname} was edited. role: ${role}. status: ${isActive === "true" ? "active" : "inactive"}.`
+    });
+
+
+
     // redirect back to the correct page after editing the user
     if (role === "student") {
       return res.redirect("/adminStudentIndex");
@@ -732,6 +775,8 @@ exports.assignTutorHours = async (req, res) => {
     let { shiftBlocks } = req.body;
     let today = new Date().toLocaleDateString("en-CA");
     const centerSchedule = await centerOpen.find();
+    // for audit log to print the assigned shifts 
+    const assignedShiftTimes = []; 
 
 
     // for flatpickr (for disabling days to choose from)-> creates mapping between the weekday names & their number
@@ -779,7 +824,9 @@ exports.assignTutorHours = async (req, res) => {
         selectedShiftDate: shiftDate || "",
         availableShiftBlocks: [],
         openAssignTutorModal: false,
-        shifts: []
+        // changed from "shifts: []"
+        scheduleShifts: [],
+        clearShifts: []
       });
     } // end of if(!tutorId || !shiftDate etc...)
 
@@ -803,7 +850,9 @@ exports.assignTutorHours = async (req, res) => {
         selectedShiftDate: shiftDate || "",
         availableShiftBlocks: [],
         openAssignTutorModal: false,
-        shifts: []
+        // changed from "shifts: []"
+        scheduleShifts: [],
+        clearShifts: []
       });
 
     }// end of if(!tutor)
@@ -855,7 +904,9 @@ exports.assignTutorHours = async (req, res) => {
         selectedShiftDate: shiftDate || "",
         availableShiftBlocks: [],
         openAssignTutorModal: false,
-        shifts: []
+        // changed from "shifts: []"
+        scheduleShifts: [],
+        clearShifts: []
       });
     }
 
@@ -896,7 +947,9 @@ exports.assignTutorHours = async (req, res) => {
         courses,
         today,
         closedWeekdays,
-        shifts: [],
+        // changed from "shifts: []"
+        scheduleShifts: [],
+        clearShifts: [],
         selectedTutorId: tutorId,
         selectedShiftDate: shiftDate,
         openAssignTutorModal: true,
@@ -974,7 +1027,9 @@ exports.assignTutorHours = async (req, res) => {
         selectedShiftDate: shiftDate, 
         availableShiftBlocks, 
         openAssignTutorModal: true,
-        shifts: [],
+        // changed from "shifts: []"
+        scheduleShifts: [],
+        clearShifts: [],
         openClearTutorModal: false
       })
     }
@@ -997,7 +1052,9 @@ exports.assignTutorHours = async (req, res) => {
           selectedShiftDate: shiftDate,
           availableShiftBlocks, 
           openAssignTutorModal: true,
-          shifts: [],
+          // changed from "shifts: []"
+          scheduleShifts: [],
+          clearShifts: [],
           openClearTutorModal: false
         })
       }
@@ -1074,8 +1131,25 @@ exports.assignTutorHours = async (req, res) => {
         endTime
       });
 
+      
+      // collecting the shift times for audit log
+        assignedShiftTimes.push(
+      `${formatTo12Hour(startTime)} - ${formatTo12Hour(endTime)}`
+      );
+
+
       createdCount++;
     }
+
+    // audit log (AFTER loop --> collected the shifts assigned, passing them into details to show exactly which shifts were assigned)
+    if (assignedShiftTimes.length > 0) {
+      await AuditLog.create({
+    actionUserId: req.session.user._id,
+    actionType: "TUTOR_SHIFT_ASSIGNED",
+    targetUserId: tutor._id,
+    details: `Tutor ${tutor.fname} ${tutor.lname} was assigned shifts on ${shiftDate}: ${assignedShiftTimes.join(", ")}.`
+    });
+  }
 
 
     // messages about shift creation amount AFTER submission 
@@ -1103,7 +1177,9 @@ exports.assignTutorHours = async (req, res) => {
       selectedShiftDate: shiftDate, 
       availableShiftBlocks,
       openAssignTutorModal: false,
-      shifts: [],
+      // changed from "shifts: []"
+      scheduleShifts: [],
+      clearShifts: [],
       openClearTutorModal: false
         });
 
@@ -1132,7 +1208,9 @@ exports.assignTutorHours = async (req, res) => {
       courses,
       today,
       closedWeekdays: [],
-      shifts: [],
+      // changed from "shifts: []"
+      scheduleShifts: [],
+      clearShifts: [],
       openAssignTutorModal: false,
       selectedTutorId: req.body.tutorId || null,
       selectedShiftDate: req.body?.shiftDate || "",
@@ -1232,7 +1310,9 @@ exports.adminViewTutorShedule = async (req, res) => {
       activeTutors,
       courses,
       today,
-      shifts,
+      // changed from "shifts, "
+      scheduleShifts: shifts,
+      clearShifts: [],
       closedWeekdays,
       selectedTutorId: req.body.tutorId || null,
       selectedShiftDate: req.body?.shiftDate || "",
@@ -1255,7 +1335,9 @@ exports.adminViewTutorShedule = async (req, res) => {
       activeTutors: [],
       courses: [],
       today: new Date().toISOString().split("T")[0],
-      shifts: [],
+      // changed from "shifts: []"
+      scheduleShifts: [],
+      clearShifts: [],
       closedWeekdays: [],
       selectedTutorId: req.body.tutorId || null,
       selectedShiftDate: req.body?.shiftDate || "",
@@ -1265,6 +1347,11 @@ exports.adminViewTutorShedule = async (req, res) => {
     });
   }
 };
+
+
+
+// -----------------------------------------------------------------------------------------------------
+
 
 // try to get the tutor's shifts, if error occurs render page with error message and empty shifts array
 async function getTutorShifts(theTutorId) {
@@ -1364,6 +1451,10 @@ exports.clearTutorHours = async (req, res) => {
     // retrieving tutorId and shiftDate chosen by admin
     const { tutorId, shiftDate, action } = req.body;
     let {selectedShiftIds} = req.body;
+    // fetching tutorId for auditLog (so name can be displayed)
+    const tutor = tutorId
+  ? await User.findOne({ _id: tutorId, role: "tutor" })
+  : null;
 
     const tutors = await User.find({role: "tutor"});
     const activeTutors = await User.find({role: "tutor", isActive: true});
@@ -1402,7 +1493,9 @@ exports.clearTutorHours = async (req, res) => {
         courses,
         today,
         closedWeekdays,
-        shifts: [],
+        // changed from "ClearShifts: shifts,"
+        scheduleShifts: [],
+        clearShifts: [],
         selectedTutorId: req.body.tutorId || null,
         selectedShiftDate: req.body?.shiftDate || "",
         availableShiftBlocks: [],
@@ -1458,7 +1551,9 @@ exports.clearTutorHours = async (req, res) => {
         courses,
         today,
         closedWeekdays,
-        shifts,
+        // changed from "shifts,"
+        scheduleShifts: [],
+        clearShifts: shifts,
         selectedTutorId: req.body.tutorId || null,
         selectedShiftDate: req.body?.shiftDate || "",
         availableShiftBlocks: [],
@@ -1490,7 +1585,9 @@ return res.render("adminTutorIndex", {
         courses,
         today,
         closedWeekdays,
-        shifts,
+        //changed from "shifts,"
+        scheduleShifts: [],
+        clearShifts: shifts,
         selectedTutorId: req.body.tutorId || null,
         selectedShiftDate: req.body?.shiftDate || "",
         availableShiftBlocks: [],
@@ -1503,7 +1600,7 @@ return res.render("adminTutorIndex", {
       selectedShiftIds = [selectedShiftIds];
     }
 
-    await tutorShift.deleteMany({
+    const removedShifts = await tutorShift.deleteMany({
       _id: { $in: selectedShiftIds },
       tutorId, 
       shiftDate: {
@@ -1511,6 +1608,18 @@ return res.render("adminTutorIndex", {
         $lte: endOfDay
       }
     });
+
+// double-checking removedShifts is greater than 0, then logging 
+    if(removedShifts.deletedCount > 0){
+      await AuditLog.create({
+      actionUserId: req.session.user._id,
+      actionType: "TUTOR_SHIFT_REMOVED",
+      targetUserId: tutor._id,
+      details: `Tutor ${tutor.fname} ${tutor.lname} has been removed from shift(s) on ${shiftDate}.`
+    });
+    }
+
+
     return res.redirect("/adminTutorIndex");
   } // end of remove checked shifts
 
@@ -1536,7 +1645,9 @@ return res.render("adminTutorIndex", {
         courses,
         today,
         closedWeekdays,
-        shifts: [],
+        // changed from "shifts: []"
+        scheduleShifts: [],
+        clearShifts: [],
         selectedTutorId: req.body.tutorId || null,
         selectedShiftDate: req.body?.shiftDate || "",
         availableShiftBlocks: [],
@@ -1559,7 +1670,9 @@ return res.render("adminTutorIndex", {
         courses,
         today,
         closedWeekdays,
-        shifts: [],
+        //changed from "shifts: []"
+        scheduleShifts: [],
+        clearShifts: [],
         selectedTutorId: req.body.tutorId || null,
         selectedShiftDate: req.body?.shiftDate || "",
         availableShiftBlocks: [],
@@ -1586,7 +1699,9 @@ return res.render("adminTutorIndex", {
       courses,
       today,
       closedWeekdays,
-      shifts: [],
+      // changed from "shifts: [],"
+      scheduleShifts: [],
+      clearShifts: [],
       selectedTutorId: req.body.tutorId || null,
       selectedShiftDate: req.body?.shiftDate || "",
       availableShiftBlocks: [],
@@ -1713,11 +1828,22 @@ exports.toggleStudentStatus = async (req, res) => {
       return res.status(404).send("Student not found.");
     }
 
+    const newStatus = !student.isActive;
+
     // Toggle the students isActive value / update it
     await User.updateOne(
       { _id: studentId, role: "student" },
-      { $set: { isActive: !student.isActive } }
+      { $set: { isActive: newStatus } }
     );
+
+    // audit log for changing student status
+    await AuditLog.create({
+      actionUserId: req.session.user._id, 
+      actionType: "STUDENT_STATUS_CHANGED",
+      targetUserId: student._id,
+      details: `Student ${student.fname} ${student.lname} status set to ${newStatus ? "active": "inactive" }.`
+
+    });
 
     // re-renders updated list (active vs. inactive) and redirects to the manage students page
     res.redirect("/adminStudentIndex");
@@ -1821,7 +1947,9 @@ exports.addUser = async (req, res) => {
     courses,
     activeTutors,
     today,
-    shifts: [],
+    // changed from "shifts: [],"
+    scheduleShifts: [],
+    clearShifts: [],
     closedWeekdays,
     selectedTutorId: null,
     selectedShiftDate: "",
@@ -1856,7 +1984,7 @@ exports.addUser = async (req, res) => {
     const passwordHash = await bcrypt.hash(password, saltRounds);
 
     // when all above is passed/checked, create the new user
-    await User.create({
+    const newUser = await User.create({
       fname: fname,
       lname: lname,
       email: email,
@@ -1865,6 +1993,35 @@ exports.addUser = async (req, res) => {
       isActive: true,
       tutorCourses: tutorCourses
     });
+
+
+    // audit log -> logging new user created, tutor or student 
+    // if a tutor was created
+    if (role === "tutor"){
+
+      //log
+      const courseDocs = await Course.find({ _id: { $in: tutorCourses } });
+      const courseNames = courseDocs.map(course => course.courseName);
+
+      await AuditLog.create({
+        actionUserId: req.session.user._id,
+        actionType: "TUTOR_ADDED",
+        targetUserId: newUser._id, 
+        details: `New tutor ${fname} ${lname} added. Status: active. Courses: ${courseNames.join(", ")}. `
+      });
+
+    } 
+    // if student was added
+    else {
+      await AuditLog.create({
+        actionUserId: req.session.user._id, 
+        actionType: "STUDENT_ADDED",
+        targetUserId: newUser._id, 
+        details: `New student ${fname} ${lname} added. Status: active.`
+      })
+    }
+
+
 
     // redirect back to the correct page after creating the user
     if (role === "student") {
@@ -1928,9 +2085,32 @@ exports.changeHours = async (req, res) => {
       });
     }
 
+    // helper func to format the time displayed in audit log (log)
+    function formatTime(time) {
+      if (!time || !time.includes(":")) 
+        return "N/A";
+
+      let [h, m] = time.split(":");
+      h = Number(h);
+      const ampm = h >= 12 ? "PM" : "AM";
+      h = h % 12 || 12;
+      return `${h}:${m} ${ampm}`;
+    }
+
+    // fetching prior open & close times for weekday BEFORE being updated 
+    // (for comparison in audit log)
+    const existingDay = await centerOpen.findOne({ weekday });
+
     // if closeWeekdayDropdown is set to "Yes", then set the specified weekday to closed
     if (closeWeekdayDropdown === "Yes") {
       await centerOpen.findOneAndUpdate({ weekday: weekday }, { $set: { isClosed: true } });
+      // logging that the day has been fully closed
+      await AuditLog.create({
+        actionUserId: req.session.user._id,
+        actionType: "CENTER_HOURS_CHANGED",
+        details: `${weekday} has been set to closed.`
+      });
+
     } else { // otherwise, set hours for specified weekday and set isClosed to false
       const openHour = Number(centerOpenTime.split(":")[0]); // Get open hour as an integer
       const closeHour = Number(centerCloseTime.split(":")[0]); // Get close hour as an integer
@@ -1973,9 +2153,43 @@ exports.changeHours = async (req, res) => {
         });
       }
 
+      // for audit log details section -> printing "closed" if weekday was previously closed or
+      // the original open/close times
+      let priorHours; 
+      if(existingDay?.isClosed){
+        priorHours = "closed";
+      }
+      else{
+        // finding ORIGINAL open/close times for weekday we are changing open/close status of
+      const priorOpen = formatTime(existingDay?.openTime);
+      const priorClose = formatTime(existingDay?.closeTime);
+      priorHours = `${priorOpen}-${priorClose}`;
+      }
+
+
+      // for audit log details section -> printing "closed" if weekday set to closed 
+      // or new open/close times
+      let newHours;
+
+    if (closeWeekdayDropdown === "Yes") {
+      newHours = "closed";
+    } else {
+      newHours = `${formatTime(centerOpenTime)} - ${formatTime(centerCloseTime)}`;
+    }
+      
+
+
       // update MongoDB with new times and set isClosed to false
       await centerOpen.findOneAndUpdate({ weekday: weekday }, { $set: { isClosed: false ,openTime: centerOpenTime, closeTime: centerCloseTime} });
-    }
+
+      // audit log --> logging new open/close time compared to original 
+      await AuditLog.create({
+        actionUserId: req.session.user._id, 
+        actionType: "CENTER_HOURS_CHANGED",
+        details: `${weekday} hours changed from ${priorHours} to ${newHours}.`
+      });
+
+    } // end of else (weekday time updated )
     
     // get newly updated weekdays
     weekdays = await centerOpen.find();
