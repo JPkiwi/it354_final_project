@@ -27,7 +27,7 @@ exports.googleCallback = async (req, res) => {
         * 3. id_token - proves who the user is (email/name/etc) (Single use lifespan)
         */
         const { tokens } = await oauth2Client.getToken(code);
-        // req.session.tokens = tokens;
+        req.session.tokens = tokens;
         oauth2Client.setCredentials(tokens);
 
         // get user's email from the token
@@ -57,7 +57,6 @@ exports.googleCallback = async (req, res) => {
 
         // setting our session
         req.session.user = admin;
-        req.session.user.role = admin.role;
 
         res.redirect('/adminIndex');
 
