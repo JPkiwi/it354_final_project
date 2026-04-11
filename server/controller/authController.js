@@ -10,7 +10,8 @@ const { oauth2Client, SCOPES } = require('../config/googleAuth');
 exports.redirectToGoogleLogin = async (req, res) => {
     const url = oauth2Client.generateAuthUrl({
         access_type: 'offline',
-        scope: SCOPES
+        scope: SCOPES,
+        prompt: 'consent' // This forces a new refresh_token every login
     });
     res.redirect(url);
 };
@@ -27,8 +28,6 @@ exports.googleCallback = async (req, res) => {
         * 3. id_token - proves who the user is (email/name/etc) (Single use lifespan)
         */
         const { tokens } = await oauth2Client.getToken(code);
-        req.session.tokens = tokens;
-        oauth2Client.setCredentials(tokens);
 
         // get user's email from the token
         const ticket = await oauth2Client.verifyIdToken({
@@ -36,7 +35,7 @@ exports.googleCallback = async (req, res) => {
             audience: process.env.GOOGLE_CLIENT_ID,
         });
         
-        // Here, Google is sending back a JWT, and then getPayload()
+        // Here, Google is sending back a JWT, and then getPayload() which
         // decodes the string into a plain JavaScript object with the user's
         // info, that way we can grab the email.
         const { email } = ticket.getPayload();
@@ -54,6 +53,11 @@ exports.googleCallback = async (req, res) => {
             user: null
         });
         }
+
+        // Setting our googleTokens for admin
+        admin.googleTokens = tokens;
+        // writes our admin tokens to our MongoDB
+        await admin.save();
 
         // setting our session
         req.session.user = admin;

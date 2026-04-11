@@ -7,6 +7,7 @@ const userSchema = new mongoose.Schema(
         email: { type: String, required: true, unique: true },
         passwordHash: { type: String, required: true, minlength: 6 },
         isActive: { type: Boolean, default: true },
+        googleTokens: { type: Object, default: null},
         // only for tutors, references courses they can tutor
         tutorCourses: {
             type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }],

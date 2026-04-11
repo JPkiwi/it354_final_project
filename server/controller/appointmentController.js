@@ -3,6 +3,7 @@ const { confirmationTemplate, cancellationTemplate } = require("../../views/temp
 const Appointment = require("../model/appointmentModel");
 const TutorShift = require("../model/tutorShiftModel");
 const mongoose = require("mongoose");
+const { createCalendarEvent } = require("../services/calendarService");
 
 
 // POST: handle bookAppointment form submission
@@ -66,6 +67,8 @@ exports.bookAppointment = async (req, res) => {
     // mark the shift as booked
     shift.isBooked = true;
     await shift.save();
+
+    // Creates Google Calendar event 
 
     // send confirmation email to student and CC admin
     try {
