@@ -222,7 +222,7 @@ exports.cancelAppointment = async (req, res) => {
            
 
         // check if appointment selected exists in db
-         if(!appointment){
+        if(!appointment){
             const bookedAppointments = await Appointment.find({ studentId: req.session.user._id });
 
             return res.render("studentAppointment", {
@@ -234,20 +234,42 @@ exports.cancelAppointment = async (req, res) => {
                 bookedAppointments
 
             });
-         }
+        }
 
          // change tutorshift to open (isBooked: false) 
-         if(appointment.tutorShiftId){
+        if(appointment.tutorShiftId){
             await TutorShift.findByIdAndUpdate(appointment.tutorShiftId._id, {
                 isBooked: false
             });
-         }
+        }
 
-         // not fully deleting appt --> instead setting status to "canceled" so appointment is still 
-         // able to be queried (admin audit log/admin view cancelled appointments/etc.) 
-         await Appointment.findByIdAndUpdate(appointmentId, {
+        // not fully deleting appt --> instead setting status to "cancelled" so appointment is still 
+        // able to be queried (admin audit log/admin view cancelled appointments/etc.) 
+        await Appointment.findByIdAndUpdate(appointmentId, {
             appointmentStatus: "cancelled"
-});
+        });
+
+        //console.log("student cancel email information", appointment.appointmentDate, appointment.startTime, appointment.endTime, appointment.course, appointment.tutorShiftId.tutorId.fname, appointment.tutorShiftId.tutorId.lname);
+
+        // // send cancellation confirmation email to student and CC admin
+        // try {
+        //     await sendEmail({
+        //     to: req.session.user.email,
+        //     cc: process.env.GMAIL_ADMIN, // CC admin
+        //     subject: "Appointment Cancellation",
+        //     html: studentCancellationTemplate({
+        //         studentName: req.session.user.fname,
+        //         tutorName: shift.tutorId.fname + " " + shift.tutorId.lname,
+        //         date: shift.shiftDate.toLocaleDateString('en-US', { timeZone: 'UTC' }),
+        //         time: `${shift.startTime} - ${shift.endTime}`,
+        //         course
+        //         })
+        //     });
+        
+        // } catch (emailErr) {
+        //     console.error("Email sending error");
+        // }
+
 
          // reload page 
          res.redirect('/studentAppointment');
@@ -255,6 +277,7 @@ exports.cancelAppointment = async (req, res) => {
 
     } // end of try 
     catch(err){
+        //console.error("Error cancelling appointment:", err);
         const bookedAppointments = await Appointment.find({
             studentId: req.session.user._id
         });
