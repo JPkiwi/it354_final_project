@@ -1,13 +1,19 @@
+
+<!-- ADMIN "Manage Tutors" EJS -->
+
 <%- include("includes/_header") %>
 
 <% if (error) { %>
   <div class="alert"><strong>Error:</strong> <%= error %></div>
 <% } %>
 
+
+<body>
 <!--Navigation Bar-->
 <header>
   <%- include("includes/_navbar") %>
 </header>
+
 
   <br>
  
@@ -72,22 +78,47 @@
         <% if (error) { %>
           <br/><br/>
           <div class="alert"><%= error %></div>
-        <% } else if (shifts && shifts.length > 0) { %>
-          <h3>Scheduled Shifts for <%= shifts[0].tutorId.fname %> <%= shifts[0].tutorId.lname %></h3>
-          <% shifts.forEach(shift => { %>
+          <!-- updated for scheduleShifts -->
+          <% } else if (scheduleShifts && scheduleShifts.length > 0) { %>
+            <h3>Scheduled Shifts for <%= scheduleShifts[0].tutorName || "Selected Tutor" %></h3>
+
+          <!-- shift time displayed when clicking "View Tutor Schedule"-->
+          <!-- changed to "scheduleShifts.forEach"-->
+          <% scheduleShifts.forEach(shift => { %>
             <div class="tutorShiftInfo">
               <p><%= shift.shiftDate.toUTCString().slice(0, 16) %></p>
-              <p><b><%= shift.startTime %> - <%= shift.endTime %></b></p>
-            </div>
-          <% }) %>
-        <% } else { %>
-          <p>No shifts found.</p>
-        <% } %>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+                <!--Display in standard time-->
+                <% if (shift.timeRanges && shift.timeRanges.length > 0){ %>
+                  <% shift.timeRanges.forEach(range => { %>
+                  <% 
+                  const [startHour, startMinute] = range.shiftStart.split(":");
+                        const [endHour, endMinute] = range.shiftEnd.split(":");
+                        let startHourNum = parseInt(startHour);
+                        let endHourNum = parseInt(endHour);
+                        const startAMPM = startHourNum >= 12 ? "PM" : "AM";
+                        const endAMPM = endHourNum >= 12 ? "PM" : "AM";
+                        startHourNum = startHourNum % 12 || 12;
+                        endHourNum = endHourNum % 12 || 12;
+                        %> 
+                      <p><b><%= startHourNum + ":" + startMinute + " " + startAMPM + " - " + endHourNum + ":" + endMinute + " " + endAMPM %></b></p>
+                      <% }) %>
+
+                      <% } else if (shift.startTime && shift.endTime) { %>
+                      <p><b><%= shift.startTime %> - <%= shift.endTime %></b></p>
+                      <% } %>
+                  </div>
+                  <% }) %>
+
+                  <% } else { %>
+                    <p>No shifts found.</p>
+                  <% } %>
+
+        </div> <!--end of ScheduleResults-->
+
+      </div> <!-- end of ScheduleContent-->
+    </div> <!--end of viewTutorShedule -->
+  </div> <!--end of adminTutorContent -->
+</div> <!-- end of adminTutorContainer -->
 
 
   <!-- "Add Tutor" Modal -> form to create/Add new tutor to db  -->
@@ -105,6 +136,13 @@
        temporary password set by admin for students to use to login and then student can change password after
        / be sent a link to change password? ) )-->
       <input type="hidden" name="role" value="tutor">
+
+
+      <!-- -->
+      <input type="hidden" name="sourcePage" value="adminTutorIndex">
+
+
+
       <label>First Name:</label>
       <input type="text" name="fname" required>
       <br><br>
@@ -136,10 +174,8 @@
         <br>
       <% }) %>
 
-
-
-
       <br><br>
+      
       <button type="submit">Create Tutor</button>
     </form>
   </div>
@@ -189,7 +225,10 @@
 
 
 
-  <!-- "Assign Tutor Hours" Modal -> FORM TO ASSIGN TUTOR HOURS  -->
+
+
+
+  <!-- "ASSIGN TUTOR HOURS" Modal -->
    <!-- pop-up container-->
 <div id="assignTutorModal" class="modal">
   <!-- content box (temp white)-->
@@ -198,19 +237,19 @@
     <span class="assign-close-btn" id="closeAssignTutorModal">&times;</span>
 
     <h2>Assign Tutor Hours</h2>
+
 <!-- connected to route, sends data to /addUser, POST req for submission-->
+ <!-- <form action="/viewAvailableTutorShifts" method="POST"></form> -->
     <form action="/assignTutorHours" method="POST">
-      <!-- data to be sent (first name, last name, email, password (We can just have it as a 
-       temporary password set by admin for students to use to login and then student can change password after
-       / be sent a link to change password? ) )-->
+      
       <input type="hidden" name="role" value="tutor">
       
-<!-- looping through tutors in dropdown menu -->
+<!-- looping through ACTIVE tutors in dropdown menu -->
 <select name="tutorId" required>
   <option value="">-- Select Tutor --</option>
 
-      <% activeTutors.forEach(function(tutor) { %>
-      <option value="<%= tutor._id %>">
+  <% activeTutors.forEach(function(tutor) { %>
+    <option value="<%= tutor._id %>" <%= selectedTutorId && selectedTutorId.toString() === tutor._id.toString() ? "selected" : "" %>>
       <%= tutor.fname %> <%= tutor.lname %>
     </option>
   <% }); %>
@@ -218,28 +257,46 @@
 
 <br><br>
 
-<!-- Date (input type = date) with minimum of "today" : admin has to choose a date 
- for assign tutor shift from today and onward only-->
-<input type="date" name="shiftDate" min="<%= today %>"  required>
+<!-- choosing day from calendar (flatpickr) -->
+<input type="text" id="shiftDate" name="shiftDate" value = "<%= selectedShiftDate || '' %>" required>
 
-<br><br>
+<button type="submit" name="action" value="view">View Available Shifts</button>
 
-<!-- step = "3600" ensures time picker only allows hour increments to choose from-->
-<Label>Start Time: </Label>
-<input type = "time" name = "startTime" step = "3600" required> 
+ <% if (openAssignTutorModal && availableShiftBlocks && availableShiftBlocks.length > 0){%>
+  <h3>Available Shifts</h3>
 
-<br><br>
+  
+  <div class="shift-checkbox-container">
+    <% availableShiftBlocks.forEach(function(block) { %>
+      <label>
+        <input 
+          type="checkbox" 
+          name="shiftBlocks"
+          value="<%= block.value %>">
+        <%= block.label %>
+      </label>
+      <br>
+    <% }); %>
+  </div>
 
-<Label>End Time: </Label>
-<input type = "time" name = "endTime" step = "3600" required> 
+  <br>
+
+  <button type = "submit" name ="action" value ="assign">Assign Hours</button>
+
+  <% } else if (openAssignTutorModal && availableShiftBlocks && availableShiftBlocks.length === 0) { %>
+  <p>No available shifts for date.</p>
+<% } %>
 
 
-      <br><br>
-      <button type="submit">Assign Hours</button>
-      <br><br>
+
+
+
+ <!-- <button type="submit">Assign Hours</button> -->
+ 
     </form>
   </div>
 </div>
+<!-- end of assignTutorModal -->
 
 
 
@@ -258,36 +315,86 @@
        / be sent a link to change password? ) )-->
       <input type="hidden" name="role" value="tutor">
       
-<!-- looping through tutors in dropdown menu -->
+<!-- looping through *all tutors in dropdown menu -->
 <select name="tutorId" required>
   <option value="">-- Select Tutor --</option>
 
-      <% activeTutors.forEach(function(tutor) { %>
-      <option value="<%= tutor._id %>">
-      <%= tutor.fname %> <%= tutor.lname %>
+      <% tutors.forEach(function(tutor) { %>
+       <option value="<%= tutor._id %>" <%= selectedTutorId && selectedTutorId.toString() === tutor._id.toString() ? "selected" : "" %>>
+      <%= tutor.fname %> <%= tutor.lname %> <%= tutor.isActive ? "" : " (Inactive)" %>
     </option>
   <% }); %>
 </select>
 
 <br><br>
 
-<!-- Date (input type = date) with minimum of "today" : admin has to choose a date 
- for assign tutor shift from today and onward only-->
-<input type="date" name="shiftDate" min="<%= today %>"  required>
+ <!-- input type changed to "text" for flatpickr-->
+  <!-- choosing day -->
+<input type="text" id = "clearShiftDate" name="shiftDate" placeholder="-- Select Date --" required value ="<%= selectedShiftDate || '' %>" required>
 
       <br><br>
-
-
+      <button type="submit" name = "action" value = "view">View Active Shifts</button>
       <br><br>
-      <button type="submit">Clear Tutor Hours</button>
-      <br><br>
+<!-- updated below to reflect "clearShifts"-->
+      <% if (openClearTutorModal && clearShifts && clearShifts.length > 0 ) { %>
+        <h3>Active Shifts</h3> 
+
+        <div class= "shift-checkbox-container"> 
+          <!-- changed from "shifts.forEach" to "clearShifts"-->
+          <% clearShifts.forEach(function(shift) {%>
+            <label> 
+              <input type = "checkbox" name = "selectedShiftIds" value = "<%= shift._id %>"> 
+              <%= shift.startTime %> - <%= shift.endTime %>
+              </label>
+              <br> 
+              <% }); %> 
+              </div>
+
+        <br>
+
+        <button type="submit" name="action" value="removeSelected">
+          Remove Selected Tutor Hours
+        </button>
+
+        <button type="submit" name="action" value="clearAll">
+          Fully Clear Selected Day
+        </button>
+
+      <% } 
+  
+      
+      else if (openClearTutorModal && clearShifts && clearShifts.length === 0) { %>
+        <p>No active shifts for selected tutor/date.</p>
+      <% } %>
     </form>
-
   </div>
-</div>
+
+</div> 
+<!-- ene of modal-->
 
 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
+<!-- flagged as error, functions fine -->
+<script>
+  window.closedWeekdays = <%- JSON.stringify(closedWeekdays || []) %>;
+  window.shouldOpenAssignTutorModal = <%- JSON.stringify(openAssignTutorModal || false) %>;
+  window.shouldOpenClearTutorModal = <%- JSON.stringify(openClearTutorModal || false) %>;
+</script>
+
+
+<!-- <script>
+  window.closedWeekdays = <%- JSON.stringify(closedWeekdays || []) %>;
+</script> -->
+
+<!-- Flatpickr CDN -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<!-- <script>
+  window.openAssignTutorModal = <%= openAssignTutorModal ? 'true' : 'false' %>;
+  </script> -->
+
+</body>
 
 
 <%- include("includes/_footer") %>

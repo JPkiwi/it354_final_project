@@ -27,8 +27,8 @@ exports.createCalendarEvent = async (tokens, appointment) => {
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
 
     const event = {
-        summary: `Tutoring: ${appointment.course}`,
-        description: `Student appointment for ${appointment.course}`,
+        summary: `Tutoring ${appointment.course} with ${appointment.tutorShiftId.tutorId.fname}`,
+        description: `Student ${appointment.studentId.fname} appointment for ${appointment.course}`,
         start: {
             dateTime: buildDateTime(appointment.appointmentDate, appointment.startTime),
             timeZone: 'America/Chicago',

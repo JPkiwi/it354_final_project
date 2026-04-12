@@ -10,7 +10,4 @@ route.post('/bookAppointment', controller.bookAppointment);
 // display the student's booked appointments
 route.get('/studentAppointment', controller.getBookedAppointments);
 
-// display the tutor's booked appointments
-route.get('/tutorAppointment', controller.getTutorAppointments);
-
 module.exports = route;

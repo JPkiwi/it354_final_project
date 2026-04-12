@@ -1,12 +1,38 @@
-/*Box styling to visualize where the Google Calendar is going to go (I don't think the positioning does anything but I'm not sure)*/
-.tutor-calendar-container {
+.tutor-container {
     display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.tutor-columns {
+    display: flex;
+    gap: 60px; /* space between columns */
+}
+
+.tutor-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 600px; 
+}
+
+/*Box styling to visualize where the Google Calendar is going to go (I don't think the positioning does anything but I'm not sure)*/
+ /* .tutor-calendar-container{
     align-items: flex-start;
     text-align: center;
     justify-content: center;
+    padding: 10px;
     border: 5px solid #e8bbed;
     height: 300px;
     width: 400px;
+} */
+
+.tutor-calendar-container, .tutor-view-appointments {
+    width: 100%;
+    border: 2px solid #e8bbed;
+    padding: 10px;
+    min-height: 300px;
+    text-align: center;
 }
 
 /*Styling for all the appointment features*/
@@ -33,7 +59,7 @@ textarea::placeholder {
 }
 
 /*Messy and can/should be changed later, these elements are initially hidden from the user*/
-#comments-textarea, #session-start-time, #session-end-time, #start-time-label, #end-time-label, #comment-submit-button, #time-submit-button, #show-submit-button, #select-show, #show-label {
+#comments-textarea, #session-start-time, #session-end-time, #start-time-label, #end-time-label, #comment-submit-button, #time-submit-button, #show-submit-button, #select-show, #show-label, #cancel-button {
     visibility: hidden;
 }
 

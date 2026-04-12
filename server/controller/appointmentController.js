@@ -52,14 +52,44 @@ exports.bookAppointment = async (req, res) => {
       });
     }
 
-    // create the appointment
-    const appointment = new Appointment({
-      studentId: req.session.user._id, // real auth needs to be set up
-      tutorShiftId: shift._id,
-      course,
+    //check if student already has an appointment at that time
+    const overlappingAppointment = await Appointment.findOne({
+      studentId: req.session.user._id,
       appointmentDate: shift.shiftDate,
       startTime: shift.startTime,
       endTime: shift.endTime,
+      appointmentStatus: "scheduled"
+    });
+
+    if (overlappingAppointment) {
+      req.session.error = "You already have an appointment at that time.";
+      return res.redirect("/studentIndex");
+    }
+
+    // book the appointment
+    // reserve the shift first to avoid race condition where two students try to book the same shift at the same time. 
+    const reservedShift = await TutorShift.findOneAndUpdate(
+      { _id: tutorShiftId, isBooked: false }, 
+      { isBooked: true }, 
+      { new: true } 
+    );
+    
+    if (!reservedShift) {
+      req.session.error = "That appointment is no longer available.";
+      return res.redirect("/studentIndex");
+    }
+
+    // create the appointment
+    const appointment = new Appointment({
+      studentId: req.session.user._id,
+      tutorShiftId: reservedShift._id,
+      course,
+      appointmentDate: reservedShift.shiftDate,
+      startTime: reservedShift.startTime,
+      endTime: reservedShift.endTime,
+      attendance: {
+        attendanceStatus: "pending"
+      }
     });
 
     await appointment.save();
@@ -86,12 +116,11 @@ exports.bookAppointment = async (req, res) => {
       });
 
     } catch (emailErr) {
-      console.error("Email sending error:", emailErr);
+      console.error("Email sending error");
     }
 
     res.redirect("/studentIndex");
   } catch (err) {
-    console.error(err);
     res.render("studentAppointment", {
       title: "Book an Appointment",
       cssStylesheet: "studentStyle.css",
@@ -132,8 +161,11 @@ exports.getBookedAppointments = async (req, res) => {
         });
     }
 
-    // get any booked appointments
-    const bookedAppointments = await Appointment.find({ studentId: req.session.user._id });
+    // get booked appointments that are scheduled (don't want to display cancelled status appointments)
+    const bookedAppointments = await Appointment.find({
+      studentId: req.session.user._id,
+      appointmentStatus: "scheduled"
+    });
 
     // render studentAppointment page with bookedAppointments
     res.render("studentAppointment", {
@@ -145,7 +177,6 @@ exports.getBookedAppointments = async (req, res) => {
       bookedAppointments,
     });
   } catch (err) {
-    console.error(err);
     res.render("studentAppointment", {
       title: "Booked Appointments",
       cssStylesheet: "studentStyle.css",
@@ -158,66 +189,3 @@ exports.getBookedAppointments = async (req, res) => {
   }
 };
 
-
-// GET: display the tutor's booked appointments
-exports.getTutorAppointments = async (req, res) => {
-  try {
-    // if not an auth user, send to login page
-    if (!req.session.user) {
-      return res.render('login',
-        {
-          title: 'Login Page',
-          cssStylesheet: 'login.css',
-          jsFile: null,
-          error: "User not logged in.",
-          user: null
-        });
-    }
-
-    // if auth user but not a tutor, send to login page
-    if (req.session.user.role !== "tutor") {
-      return res.render('login',
-        {
-          title: 'Login Page',
-          cssStylesheet: 'login.css',
-          jsFile: null,
-          error: "Access denied. Only tutors can view this page.",
-          user: null
-        });
-    }
-
-    // get current session user id and convert to ObjectId format for finding booked appointments
-    const tutorId = new mongoose.Types.ObjectId(req.session.user._id);
-
-    // get any booked appointments under current tutor user
-    const bookedAppointments = await Appointment.aggregate([
-      { $lookup: { from: "tutorshifts", localField: "tutorShiftId", foreignField: "_id", as: "tutorShift" } },
-      { $unwind: "$tutorShift" },
-      { $match: { "tutorShift.tutorId": tutorId, "tutorShift.isBooked": true, appointmentDate: { $gte: new Date(new Date().setUTCHours(0, 0, 0, 0)) } } }, // shows appointments for today and future (not based on time)
-      { $project: { course: 1, appointmentDate: 1, startTime: 1, endTime: 1, appointmentStatus: 1 } },
-      { $sort: { appointmentDate: 1, startTime: 1 } }
-    ]);
-
-    // render tutorIndex page with bookedAppointments under tutor
-    res.render("tutorIndex", {
-      title: "Tutor Appointments",
-      cssStylesheet: "tutorStyle.css",
-      jsFile: "tutorScript.js",
-      error: null,
-      user: req.session.user,
-      bookedAppointments,
-      appointmentsLoaded: true
-    });
-  } catch (err) {
-    console.error("Tutor appointment error:", err);
-    res.render("tutorIndex", {
-      title: "Tutor Appointments",
-      cssStylesheet: "tutorStyle.css",
-      jsFile: "tutorScript.js",
-      error: "Failed to show appointments.",
-      user: req.session.user,
-      bookedAppointments: [],
-      appointmentsLoaded: true
-    });
-  }
-}
