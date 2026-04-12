@@ -254,7 +254,6 @@ exports.getAdminTutorIndex = async (req, res) => {
     });
   } catch (err) {
 
-    // prints error to console
     const today = new Date().toLocaleDateString("en-CA");
 
     // even w/ error, page will still render
@@ -522,7 +521,7 @@ exports.editUser = async (req, res) => {
       }
 
     // get data from what was entered in the modal
-    const { fname, lname, email, password, role, userId, isActive} = req.body;
+    const { fname, lname, email, password, confirmPassword, role, userId, isActive} = req.body;
     let tutorCourses = [];
 
     // make sure all necessary fields were filled out
@@ -1764,17 +1763,17 @@ exports.addUser = async (req, res) => {
         });
     }
     // get data from what was entered in the modal
-    const { fname, lname, email, password, role, sourcePage } = req.body;
+    const { fname, lname, email, password, confirmPassword, role, sourcePage } = req.body;
     const tutors = await User.find({ role: "tutor" });
     const users = await User.find();
     const courses = await Course.find();
     const activeTutors = await User.find({role: "tutor", isActive: true});
     const today = new Date().toLocaleDateString("en-CA");
-    // 
+    
     let { tutorCourses } = req.body;
 
     // make sure all fields were filled out
-    if (!fname || !lname || !email || !password || !role) {
+    if (!fname || !lname || !email || !password || !confirmPassword || !role) {
   return res.status(400).render('adminAddUser', {
     title: 'Add User',
     error: "All fields are required.",
@@ -1782,6 +1781,18 @@ exports.addUser = async (req, res) => {
     user: req.session.user
   });
 }
+
+
+  // password and confirm password
+  if (password !== confirmPassword) {
+    return res.status(400).render('adminAddUser', {
+      title: 'Add User',
+      error: "Password and Confirm Password must be the same.",
+      formData: req.body,
+      user: req.session.user
+    });
+  }
+
 
     // Admin can only assign students and tutors, 
     // if we need to change to add another admin this is just temporary for now

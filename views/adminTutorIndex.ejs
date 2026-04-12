@@ -157,6 +157,9 @@
     <br><br>
       <label>Password:</label>
       <input type="password" name="password" required>
+      <br /><br />
+      <label>Confirm Password:</label>
+      <input type="password" name="confirmPassword" required>
 
 <!-- a tutor NEEDS to be assigned to at least one course based on User model, 
  so we need to make sure that when admin creates a tutor, they assign them to the 
@@ -206,7 +209,10 @@
     <br><br>
       <label>Password:</label>
       <input type="password" name="password">
-      <p style="color: rgb(88, 73, 73); font-style: italic;">Keep password field blank unless changing password.</p>
+      <br /><br />
+      <label>Confirm Password:</label>
+      <input type="password" name="confirmPassword">
+      <p style="color: rgb(88, 73, 73); font-style: italic;">Keep password fields blank unless changing password.</p>
       <label>Courses:</label><br>
       <span id="editCourseError" style="color: red; font-size: 0.8em; display: block; margin-top: 1px;"></span>
       <% courses.forEach(course => { %>
