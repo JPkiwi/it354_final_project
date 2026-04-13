@@ -20,7 +20,8 @@ const appointmentSchema = new mongoose.Schema(
         endTime: { type: String, required: true },
         appointmentStatus: { type: String, enum: ["scheduled", "completed", "cancelled"], default: "scheduled" },
         tutorComments: { type: String },
-        attendance: attendanceSchema
+        attendance: attendanceSchema,
+        calendarEventId: { type: String, default: null}
     },
     { timestamps: true }
 );
