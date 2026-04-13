@@ -10,12 +10,6 @@ const confirmCancelModal = document.getElementById("confirmCancelModal");
 const confirmInput = document.getElementById("confirmAppointmentId");
 const closeConfirmBtn = document.getElementById("closeConfirmBtn");
 
-// Debug: check if elements are found
-console.log("cancelBtn:", cancelBtn);
-console.log("confirmCancelModal:", confirmCancelModal);
-console.log("confirmInput:", confirmInput);
-
-
 
 // Sortation of students names when they are added to appt
 // Sorts from A to Z (Will be more organized)
@@ -56,7 +50,6 @@ search.addEventListener("input", () => {
 
 // cancel button function
 cancelBtn.addEventListener("click", () => {
-  console.log("Cancel button clicked");
   // get selected radio button
   const selected = document.querySelector('input[name="selectedAppointment"]:checked');
 

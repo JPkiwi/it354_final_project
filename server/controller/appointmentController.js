@@ -1,5 +1,8 @@
 const { sendEmail } = require("../services/emailService");
-const { confirmationTemplate, cancellationTemplate } = require("../../views/templates/appointmentEmail");
+const {
+  confirmationTemplate,
+  cancellationTemplate,
+} = require("../../views/templates/appointmentEmail");
 const Appointment = require("../model/appointmentModel");
 const TutorShift = require("../model/tutorShiftModel");
 const mongoose = require("mongoose");
@@ -7,39 +10,39 @@ const NotificationLog = require("../model/notificationLog");
 const { createCalendarEvent } = require("../services/calendarService");
 const User = require("../model/userModel");
 
-
 // POST: handle bookAppointment form submission
 exports.bookAppointment = async (req, res) => {
   try {
     // if not an auth user, send to login page
     if (!req.session.user) {
-      return res.render('login',
-        {
-          title: 'Login Page',
-          cssStylesheet: 'login.css',
-          jsFile: null,
-          error: "User not logged in.",
-          user: null,
-        });
+      return res.render("login", {
+        title: "Login Page",
+        cssStylesheet: "login.css",
+        jsFile: "login.js",
+        error: "User not logged in.",
+        user: null,
+      });
     }
 
     // if auth user but not a student, send to login page
     if (req.session.user.role !== "student") {
-      return res.render('login',
-        {
-          title: 'Login Page',
-          cssStylesheet: 'login.css',
-          jsFile: null,
-          error: "Access denied. Only students can view this page.",
-          user: req.session.user,
-        });
+      return res.render("login", {
+        title: "Login Page",
+        cssStylesheet: "login.css",
+        jsFile: "login.js",
+        error: "Access denied. Only students can view this page.",
+        user: req.session.user,
+      });
     }
 
     // get the tutorShiftId and course
     const { tutorShiftId, course } = req.body;
 
     // get the selected shift
-    const shift = await TutorShift.findById(tutorShiftId).populate("tutorId", "fname lname");
+    const shift = await TutorShift.findById(tutorShiftId).populate(
+      "tutorId",
+      "fname lname",
+    );
 
     // shift not available if doesn't exist or is booked
     if (!shift || shift.isBooked) {
@@ -60,7 +63,7 @@ exports.bookAppointment = async (req, res) => {
       appointmentDate: shift.shiftDate,
       startTime: shift.startTime,
       endTime: shift.endTime,
-      appointmentStatus: "scheduled"
+      appointmentStatus: "scheduled",
     });
 
     if (overlappingAppointment) {
@@ -69,13 +72,13 @@ exports.bookAppointment = async (req, res) => {
     }
 
     // book the appointment
-    // reserve the shift first to avoid race condition where two students try to book the same shift at the same time. 
+    // reserve the shift first to avoid race condition where two students try to book the same shift at the same time.
     const reservedShift = await TutorShift.findOneAndUpdate(
-      { _id: tutorShiftId, isBooked: false }, 
-      { isBooked: true }, 
-      { new: true } 
+      { _id: tutorShiftId, isBooked: false },
+      { isBooked: true },
+      { new: true },
     );
-    
+
     if (!reservedShift) {
       req.session.error = "That appointment is no longer available.";
       return res.redirect("/studentIndex");
@@ -90,8 +93,8 @@ exports.bookAppointment = async (req, res) => {
       startTime: reservedShift.startTime,
       endTime: reservedShift.endTime,
       attendance: {
-        attendanceStatus: "pending"
-      }
+        attendanceStatus: "pending",
+      },
     });
 
     await appointment.save();
@@ -99,22 +102,31 @@ exports.bookAppointment = async (req, res) => {
     // ── Create Google Calendar event ────────────────────────────
     try {
       const admin = await User.findOne({ role: "admin" });
-      if (admin?.googleTokens) { // checks for our admin and if the admin has tokens. returns undefined if not found
+      if (admin?.googleTokens) {
+        // checks for our admin and if the admin has tokens. returns undefined if not found
         const eventId = await createCalendarEvent(admin.googleTokens, {
-            course: appointment.course,
-            appointmentDate: appointment.appointmentDate,
-            startTime: appointment.startTime,
-            endTime: appointment.endTime,
-            tutorFName: shift.tutorId.fname,
-            studentFName: req.session.user.fname
+          course: appointment.course,
+          appointmentDate: appointment.appointmentDate,
+          startTime: appointment.startTime,
+          endTime: appointment.endTime,
+          tutorFName: shift.tutorId.fname,
+          studentFName: req.session.user.fname,
         });
         // store the event ID on the appointment for deletion later
-        appointment.calendarEventId = eventId;  // unique ID assigned by google, stored in our appointmentModel
+        appointment.calendarEventId = eventId; // unique ID assigned by google, stored in our appointmentModel
         await appointment.save();
       }
-  } catch (calendarErr) {
-    console.error("Calendar event creation failed:", calendarErr);
-  } 
+    } catch (calendarErr) {
+      return res.render("studentAppointment", {
+        title: "Book an Appointment",
+        cssStylesheet: "studentAppointment.css",
+        jsFile: "studentScript.js",
+        error: "Calendar event creation failed.",
+        user: req.session.user,
+        availableShifts: [],
+        bookedAppointments: [],
+      });
+    }
     // ────────────────────────────────────────────────────────────
 
     // send confirmation email to student and CC admin
@@ -126,7 +138,9 @@ exports.bookAppointment = async (req, res) => {
         html: confirmationTemplate({
           studentName: req.session.user.fname,
           tutorName: shift.tutorId.fname + " " + shift.tutorId.lname,
-          date: shift.shiftDate.toLocaleDateString('en-US', { timeZone: 'UTC' }),
+          date: shift.shiftDate.toLocaleDateString("en-US", {
+            timeZone: "UTC",
+          }),
           time: `${shift.startTime} - ${shift.endTime}`,
           course
         })
@@ -143,7 +157,15 @@ exports.bookAppointment = async (req, res) => {
     });
 
     } catch (emailErr) {
-      console.error("Email sending error");
+      res.render("studentAppointment", {
+        title: "Book an Appointment",
+        cssStylesheet: "studentStyle.css",
+        jsFile: "studentScript.js",
+        error: "Email sending error.",
+        user: req.session.user,
+        availableShifts: [],
+        bookedAppointments: [],
+      });
     }
 
     res.redirect("/studentIndex");
@@ -160,38 +182,35 @@ exports.bookAppointment = async (req, res) => {
   }
 };
 
-
 // GET: display the student's booked appointments
 exports.getBookedAppointments = async (req, res) => {
   try {
     // if not an auth user, send to login page
     if (!req.session.user) {
-      return res.render('login',
-        {
-          title: 'Login Page',
-          cssStylesheet: 'login.css',
-          jsFile: null,
-          error: "User not logged in.",
-          user: null,
-        });
+      return res.render("login", {
+        title: "Login Page",
+        cssStylesheet: "login.css",
+        jsFile: "login.js",
+        error: "User not logged in.",
+        user: null,
+      });
     }
 
     // if auth user but not a student, send to login page
     if (req.session.user.role !== "student") {
-      return res.render('login',
-        {
-          title: 'Login Page',
-          cssStylesheet: 'login.css',
-          jsFile: null,
-          error: "Access denied. Only students can view this page.",
-          user: req.session.user,
-        });
+      return res.render("login", {
+        title: "Login Page",
+        cssStylesheet: "login.css",
+        jsFile: "login.js",
+        error: "Access denied. Only students can view this page.",
+        user: req.session.user,
+      });
     }
 
     // get booked appointments that are scheduled (don't want to display cancelled status appointments)
     const bookedAppointments = await Appointment.find({
       studentId: req.session.user._id,
-      appointmentStatus: "scheduled"
+      appointmentStatus: "scheduled",
     });
 
     // render studentAppointment page with bookedAppointments
@@ -215,4 +234,3 @@ exports.getBookedAppointments = async (req, res) => {
     });
   }
 };
-

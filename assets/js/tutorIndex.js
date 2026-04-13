@@ -241,6 +241,26 @@ function validateForm(emailId, modalId, courseErrorId) {
         errorSpan.innerText = "";
     }
 
+    if (modalId) {
+        const passwordInput = document.querySelector(`#${modalId} input[name="password"]`);
+        const passwordError = document.querySelector(`#${modalId} #passwordError`);
+
+        if (passwordInput) {
+            const password = passwordInput.value;
+
+            if (modalId === "addTutorModal" && password.length === 0) {
+                passwordError.innerText = "Password is required.";
+                valid = false;
+            } else if (password !== "" && password.length < 8) {
+                passwordError.innerText = "Password must be at least 8 characters long.";
+                valid = false;
+            } else {
+                passwordError.innerText = "";
+            }
+        }
+    }
+
+
     // check courses if a modalId was passed in
     if (modalId) {
         const checkedCourses = document.querySelectorAll(`#${modalId} input[name="tutorCourses"]:checked`);
