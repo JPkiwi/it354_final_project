@@ -13,7 +13,7 @@ exports.getStudentIndex = async (req, res) => {
                 {
                     title: 'Login Page',
                     cssStylesheet: 'login.css',
-                    jsFile: null,
+                    jsFile: 'login.js',
                     error: "User not logged in.",
                     user: null,
                 });
@@ -25,7 +25,7 @@ exports.getStudentIndex = async (req, res) => {
                 {
                     title: 'Login Page',
                     cssStylesheet: 'login.css',
-                    jsFile: null,
+                    jsFile: 'login.js',
                     error: "Access denied. Only students can view this page.",
                     user: req.session.user,
                 });
@@ -70,7 +70,7 @@ exports.viewAvailableAppointments = async (req, res) => {
                 {
                     title: 'Login Page',
                     cssStylesheet: 'login.css',
-                    jsFile: null,
+                    jsFile: 'login.js',
                     error: "User not logged in.",
                     user: null,
                 });
@@ -82,7 +82,7 @@ exports.viewAvailableAppointments = async (req, res) => {
                 {
                     title: 'Login Page',
                     cssStylesheet: 'login.css',
-                    jsFile: null,
+                    jsFile: 'login.js',
                     error: "Access denied. Only students can view this page.",
                     user: req.session.user,
                 });
@@ -194,7 +194,7 @@ exports.cancelAppointment = async (req, res) => {
                 {
                     title: 'Login Page',
                     cssStylesheet: 'login.css',
-                    jsFile: null,
+                    jsFile: 'login.js',
                     error: "User not logged in.",
                     user: null,
                 });
@@ -206,7 +206,7 @@ exports.cancelAppointment = async (req, res) => {
                 {
                     title: 'Login Page',
                     cssStylesheet: 'login.css',
-                    jsFile: null,
+                    jsFile: 'login.js',
                     error: "Access denied. Only students can view this page.",
                     user: req.session.user,
                 });

@@ -45,7 +45,7 @@ exports.getAdminIndex = async (req, res) => {
         {
           title: 'Login Page',
           cssStylesheet: 'login.css',
-          jsFile: null,
+          jsFile: 'login.js',
           error: "User not logged in.",
           user: null
         });
@@ -57,7 +57,7 @@ exports.getAdminIndex = async (req, res) => {
         {
           title: 'Login Page',
           cssStylesheet: 'login.css',
-          jsFile: null,
+          jsFile: 'login.js',
           error: "Access denied. Only admins can view this page.",
           user: null
         });
@@ -137,7 +137,7 @@ exports.adminCancelAppointment = async (req, res) => {
         {
           title: 'Login Page',
           cssStylesheet: 'login.css',
-          jsFile: null,
+          jsFile: 'login.js',
           error: "User not logged in.",
           user: null
         });
@@ -149,7 +149,7 @@ exports.adminCancelAppointment = async (req, res) => {
         {
           title: 'Login Page',
           cssStylesheet: 'login.css',
-          jsFile: null,
+          jsFile: 'login.js',
           error: "Access denied. Only admins can view this page.",
           user: null
         });
@@ -260,7 +260,7 @@ exports.getAdminAvailabilityIndex = async (req, res) => {
         {
           title: 'Login Page',
           cssStylesheet: 'login.css',
-          jsFile: null,
+          jsFile: 'login.js',
           error: "User not logged in.",
           user: null
         });
@@ -272,7 +272,7 @@ exports.getAdminAvailabilityIndex = async (req, res) => {
         {
           title: 'Login Page',
           cssStylesheet: 'login.css',
-          jsFile: null,
+          jsFile: 'login.js',
           error: "Access denied. Only admins can view this page.",
           user: null
         });
@@ -313,7 +313,7 @@ exports.getAdminTutorIndex = async (req, res) => {
         {
           title: 'Login Page',
           cssStylesheet: 'login.css',
-          jsFile: null,
+          jsFile: 'login.js',
           error: "User not logged in.",
           user: null
         });
@@ -325,7 +325,7 @@ exports.getAdminTutorIndex = async (req, res) => {
         {
           title: 'Login Page',
           cssStylesheet: 'login.css',
-          jsFile: null,
+          jsFile: 'login.js',
           error: "Access denied. Only admins can view this page.",
           user: null
         });
@@ -423,7 +423,7 @@ exports.getAdminAuditLog = async (req,res) => {
         {
           title: 'Login Page',
           cssStylesheet: 'login.css',
-          jsFile: null,
+          jsFile: 'login.js',
           error: "User not logged in.",
           user: null
         });
@@ -435,7 +435,7 @@ exports.getAdminAuditLog = async (req,res) => {
         {
           title: 'Login Page',
           cssStylesheet: 'login.css',
-          jsFile: null,
+          jsFile: 'login.js',
           error: "Access denied. Only admins can view this page.",
           user: null
         });
@@ -480,7 +480,7 @@ exports.toggleTutorStatus = async (req, res) => {
         {
           title: 'Login Page',
           cssStylesheet: 'login.css',
-          jsFile: null,
+          jsFile: 'login.js',
           error: "User not logged in.",
           user: null
         });
@@ -492,7 +492,7 @@ exports.toggleTutorStatus = async (req, res) => {
         {
           title: 'Login Page',
           cssStylesheet: 'login.css',
-          jsFile: null,
+          jsFile: 'login.js',
           error: "Access denied. Only admins can view this page.",
           user: null
         });
@@ -555,7 +555,26 @@ exports.toggleTutorStatus = async (req, res) => {
 
     // if a matching tutor doesn't exist, return "not found" & stops function
     if (!tutor) {
-      return res.status(404).send("Tutor not found.");
+      return res.status(404).render("adminTutorIndex", {
+      error: "Tutor not found.",
+      title: "Admin Manage Tutors",
+      cssStylesheet: "tutorIndex.css",
+      jsFile: "tutorIndex.js",
+      user: req.session.user,
+      tutors: [],
+      activeTutors,
+      courses: [],
+      today,
+      closedWeekdays: [],
+      // changed from "shifts: []"
+      scheduleShifts: [],
+      clearShifts: [],
+      selectedTutorId: req.body.tutorId || null,
+      selectedShiftDate: req.body?.shiftDate || "",
+      availableShiftBlocks: [],
+      openAssignTutorModal: false,
+      openClearTutorModal: false,
+    });
     }
 
     const newStatus = !tutor.isActive;
@@ -629,7 +648,7 @@ exports.editUser = async (req, res) => {
           {
             title: 'Login Page',
             cssStylesheet: 'login.css',
-            jsFile: null,
+            jsFile: 'login.js',
             error: "User not logged in.",
             user: null
         });
@@ -641,7 +660,7 @@ exports.editUser = async (req, res) => {
           {
             title: 'Login Page',
             cssStylesheet: 'login.css',
-            jsFile: null,
+            jsFile: 'login.js',
             error: "Access denied. Only admins can view this page.",
             user: null
         });
@@ -653,14 +672,44 @@ exports.editUser = async (req, res) => {
 
     // make sure all necessary fields were filled out
     if (!fname || !lname || !email || !role) {
-      return res.status(400).send("All fields are required.");
+      return res.status(400).render('adminAuditLog', {
+      title: 'Audit Log',
+      error: "All fields are required.",
+      cssStylesheet: "adminAuditLog.css",
+      jsFile: "adminAuditLog.js",
+      formData: req.body,
+      user: req.session.user,
+      auditLogs: []
+      });
     }
 
     // Security check to make sure that emails will not be dupliated 
     // Checks all emails EXCEPT the current user email
     const existingUser = await User.findOne({ email: email, _id: { $ne: userId} });
     if (existingUser) {
-      return res.status(400).send("A user with that email already exists.");
+      return res.status(400).render('adminAuditLog', {
+      title: 'Audit Log',
+      error: "A user with that email already exists.",
+      cssStylesheet: "adminAuditLog.css",
+      jsFile: "adminAuditLog.js",
+      formData: req.body,
+      user: req.session.user,
+      auditLogs: []
+    });
+    }
+
+    // ensures email is entered in the form of @ilstu.edu
+    const emailRegex = /^[^\s@]+@ilstu\.edu$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).render('adminAuditLog', {
+      title: 'Audit Log',
+      error: "Email address not in the form of @ilstu.edu.",
+      cssStylesheet: "adminAuditLog.css",
+      jsFile: "adminAuditLog.js",
+      formData: req.body,
+      user: req.session.user,
+      auditLogs: []
+      });
     }
 
     // checks to see if role is a tutor
@@ -675,7 +724,15 @@ exports.editUser = async (req, res) => {
       }
 
         if (tutorCourses.length === 0) {
-        return res.status(400).send("Course(s) must be selected to edit a tutor.")
+        return res.status(400).render('adminAuditLog', {
+      title: 'Audit Log',
+      error: "Course(s) must be selected to edit a tutor.",
+      cssStylesheet: "adminAuditLog.css",
+      jsFile: "adminAuditLog.js",
+      formData: req.body,
+      user: req.session.user,
+      auditLogs: []
+      });
       }
 
     }
@@ -683,6 +740,20 @@ exports.editUser = async (req, res) => {
     // checks to see if password field is empty
     // IF the password field is NOT empty, hash new password
     // ELSE, keep the existing password by fetching it from the database
+
+    // make sure password is at least 8 characters long
+    if (password && password.trim() !== "" && password.length() < 8) {
+      return res.render('adminAuditLog', {
+          title: 'Audit Log',
+          error: 'Password must be at least 8 characters long.',
+          cssStylesheet: "adminAuditLog.css",
+          jsFile: "adminAuditLog.js",
+          formData: req.body,
+          user: req.session.user,
+          auditLogs: []
+      });
+    }
+
     let passwordHash;
     if (password && password.trim() !== "") {
         const saltRounds = 10;
@@ -691,7 +762,7 @@ exports.editUser = async (req, res) => {
     else {
         const existingUser = await User.findById(userId);
         passwordHash = existingUser.passwordHash;
-}
+    }
 
     // when all above is passed/checked, edit user
     await User.findByIdAndUpdate(userId, {
@@ -728,7 +799,15 @@ exports.editUser = async (req, res) => {
 
   // in case of any errors, can log them and 500 for unfulfilled req 
   catch (err) {
-    res.status(500).send("Could not edit user.");
+    return res.status(500).render('adminAuditLog', {
+      title: 'Audit Log',
+      error: "Could not edit user",
+      cssStylesheet: "adminAuditLog.css",
+      jsFile: "adminAuditLog.js",
+      formData: req.body,
+      user: req.session.user,
+      auditLogs: []
+    });
   }
 };
 
@@ -744,7 +823,7 @@ exports.assignTutorHours = async (req, res) => {
         {
           title: 'Login Page',
           cssStylesheet: 'login.css',
-          jsFile: null,
+          jsFile: 'login.js',
           error: "User not logged in.",
           user: null
         });
@@ -756,7 +835,7 @@ exports.assignTutorHours = async (req, res) => {
         {
           title: 'Login Page',
           cssStylesheet: 'login.css',
-          jsFile: null,
+          jsFile: 'login.js',
           error: "Access denied. Only admins can view this page.",
           user: null
         });
@@ -1231,7 +1310,7 @@ exports.adminViewTutorShedule = async (req, res) => {
           {
             title: 'Login Page',
             cssStylesheet: 'login.css',
-            jsFile: null,
+            jsFile: 'login.js',
             error: "User not logged in.",
             user: null
         });
@@ -1243,7 +1322,7 @@ exports.adminViewTutorShedule = async (req, res) => {
           {
             title: 'Login Page',
             cssStylesheet: 'login.css',
-            jsFile: null,
+            jsFile: 'login.js',
             error: "Access denied. Only admins can view this page.",
             user: null
         });
@@ -1272,7 +1351,28 @@ exports.adminViewTutorShedule = async (req, res) => {
 
     //if the user did not select a tutor first, return an error message
     if (!tutorId) {
-      return res.status(400).send("Tutor ID is required.");
+      return res.status(400).render("adminTutorIndex", {
+      error: "Tutor ID is required.",
+      shiftError,
+      title: "Admin Manage Tutors",
+      cssStylesheet: "tutorIndex.css",
+      jsFile: "tutorIndex.js",
+      user: req.session.user,
+      tutors,
+      activeTutors,
+      courses,
+      today,
+      // changed from "shifts, "
+      scheduleShifts: shifts,
+      clearShifts: [],
+      closedWeekdays,
+      selectedTutorId: req.body.tutorId || null,
+      selectedShiftDate: req.body?.shiftDate || "",
+      availableShiftBlocks: [],
+      openAssignTutorModal: false,
+      openClearTutorModal: false
+
+    });
     }
 
     //get the shifts for the selected tutor
@@ -1424,7 +1524,7 @@ exports.clearTutorHours = async (req, res) => {
         {
           title: 'Login Page',
           cssStylesheet: 'login.css',
-          jsFile: null,
+          jsFile: 'login.js',
           error: "User not logged in.",
           user: null
         });
@@ -1436,7 +1536,7 @@ exports.clearTutorHours = async (req, res) => {
         {
           title: 'Login Page',
           cssStylesheet: 'login.css',
-          jsFile: null,
+          jsFile: 'login.js',
           error: "Access denied. Only admins can view this page.",
           user: null
         });
@@ -1719,7 +1819,7 @@ exports.getAdminStudentIndex = async (req, res) => {
         {
           title: 'Login Page',
           cssStylesheet: 'login.css',
-          jsFile: null,
+          jsFile: 'login.js',
           error: "User not logged in.",
           user: null
         });
@@ -1731,7 +1831,7 @@ exports.getAdminStudentIndex = async (req, res) => {
         {
           title: 'Login Page',
           cssStylesheet: 'login.css',
-          jsFile: null,
+          jsFile: 'login.js',
           error: "Access denied. Only admins can view this page.",
           user: null
         });
@@ -1776,7 +1876,7 @@ exports.toggleStudentStatus = async (req, res) => {
         {
           title: 'Login Page',
           cssStylesheet: 'login.css',
-          jsFile: null,
+          jsFile: 'login.js',
           error: "User not logged in.",
           user: null
         });
@@ -1788,7 +1888,7 @@ exports.toggleStudentStatus = async (req, res) => {
         {
           title: 'Login Page',
           cssStylesheet: 'login.css',
-          jsFile: null,
+          jsFile: 'login.js',
           error: "Access denied. Only admins can view this page.",
           user: null
         });
@@ -1818,7 +1918,14 @@ exports.toggleStudentStatus = async (req, res) => {
 
     // Makes sure student exists in db 
     if (!student) {
-      return res.status(404).send("Student not found.");
+      return res.status(404).render("adminStudentIndex", {
+      error: "Student not found.",
+      title: "Admin Manage Students",
+      cssStylesheet: "studentIndex.css",
+      jsFile: "studentIndex.js",
+      user: req.session.user,
+      students: []
+    });
     }
 
     const newStatus = !student.isActive;
@@ -1872,7 +1979,7 @@ exports.addUser = async (req, res) => {
         {
           title: 'Login Page',
           cssStylesheet: 'login.css',
-          jsFile: null,
+          jsFile: 'login.js',
           error: "User not logged in.",
           user: null
         });
@@ -1884,7 +1991,7 @@ exports.addUser = async (req, res) => {
         {
           title: 'Login Page',
           cssStylesheet: 'login.css',
-          jsFile: null,
+          jsFile: 'login.js',
           error: "Access denied. Only admins can view this page.",
           user: null
         });
@@ -1901,34 +2008,69 @@ exports.addUser = async (req, res) => {
 
     // make sure all fields were filled out
     if (!fname || !lname || !email || !password || !confirmPassword || !role) {
-  return res.status(400).render('adminAddUser', {
-    title: 'Add User',
-    error: "All fields are required.",
-    formData: req.body,
-    user: req.session.user
-  });
-}
-
-
-  // password and confirm password
-  if (password !== confirmPassword) {
-    return res.status(400).render('adminAddUser', {
-      title: 'Add User',
-      error: "Password and Confirm Password must be the same.",
+    return res.status(400).render('adminAuditLog', {
+      title: 'Audit Log',
+      error: "All fields are required.",
+      cssStylesheet: "adminAuditLog.css",
+      jsFile: "adminAuditLog.js",
       formData: req.body,
-      user: req.session.user
+      user: req.session.user,
+      auditLogs: []
     });
-  }
+    }
+
+    // ensures email is entered in the form of @ilstu.edu
+    const emailRegex = /^[^\s@]+@ilstu\.edu$/;
+      if (!emailRegex.test(email)) {
+        return res.render('adminAuditLog', {
+          title: 'Audit Log',
+          error: 'Email address not in the form of @ilstu.edu.',
+          cssStylesheet: "adminAuditLog.css",
+          jsFile: "adminAuditLog.js",
+          formData: req.body,
+          user: req.session.user,
+          auditLogs: []
+        });
+    }
+
+    // make sure password is at least 8 characters long
+    if (password.length() < 8) {
+      return res.render('adminAuditLog', {
+          title: 'Audit Log',
+          error: 'Password must be at least 8 characters long.',
+          cssStylesheet: "adminAuditLog.css",
+          jsFile: "adminAuditLog.js",
+          formData: req.body,
+          user: req.session.user,
+          auditLogs: []
+        });
+    }
+
+    // password and confirm password
+    if (password !== confirmPassword) {
+      return res.status(400).render('adminAuditLog', {
+        title: 'Audit Log',
+        error: "Password and Confirm Password must be the same.",
+        cssStylesheet: "adminAuditLog.css",
+        jsFile: "adminAuditLog.js",
+        formData: req.body,
+        user: req.session.user,
+        auditLogs: []
+      });
+    }
 
 
     // Admin can only assign students and tutors, 
     // if we need to change to add another admin this is just temporary for now
     if (role !== "student" && role !== "tutor") {
-      return res.status(400).render('adminAddUser', {
-    title: 'Add User',
-    error: "Invalid role.",
-    formData: req.body,
-    user: req.session.user
+      return res.status(400).render('adminAuditLog', {
+        title: 'Audit Log',
+        error: "Invalid role.",
+        cssStylesheet: "adminAuditLog.css",
+        jsFile: "adminAuditLog.js",
+        formData: req.body,
+        user: req.session.user,
+        auditLogs: []
   });
 }
 
@@ -1941,7 +2083,7 @@ exports.addUser = async (req, res) => {
 
     if (existingUser) {
       return res.status(400).render("adminTutorIndex", {
-    title: 'Add User',
+    title: 'Admin Manage Tutors',
     cssStylesheet: 'tutorIndex.css',
     jsFile: "tutorIndex.js",
     error: "A user with that email already exists.",
@@ -1969,7 +2111,28 @@ exports.addUser = async (req, res) => {
     // then 400/cannot process req is sent and that at least one course must be selected
     if (role == "tutor") {
       if (!tutorCourses) {
-        return res.status(400).send("Course(s) must be selected to add a tutor")
+        return res.status(400).render("adminTutorIndex", {
+    title: 'Admin Manage Tutors',
+    cssStylesheet: 'tutorIndex.css',
+    jsFile: "tutorIndex.js",
+    error: "Course(s) must be selected to add a tutor.",
+    formData: req.body,
+    user: req.session.user,
+    tutors,
+    users,
+    courses,
+    activeTutors,
+    today,
+    // changed from "shifts: [],"
+    scheduleShifts: [],
+    clearShifts: [],
+    closedWeekdays,
+    selectedTutorId: null,
+    selectedShiftDate: "",
+    availableShiftBlocks: [],
+    openAssignTutorModal: false
+  });
+
       }
 
       // making sure selected course(s) is turned into an array bc model expects 
@@ -2040,7 +2203,16 @@ exports.addUser = async (req, res) => {
   }
   // in case of any errors, can log them and 500 for unfulfilled req 
   catch (err) {
-    res.status(500).send("Could not add user.");
+    res.status(500).render('adminAuditLog', {
+      title: 'Audit Log',
+      error: "Could not add user.",
+      cssStylesheet: "adminAuditLog.css",
+      jsFile: "adminAuditLog.js",
+      formData: req.body,
+      user: req.session.user,
+      auditLogs: []
+    });
+
   }
 };
 
@@ -2056,7 +2228,7 @@ exports.changeHours = async (req, res) => {
         {
           title: 'Login Page',
           cssStylesheet: 'login.css',
-          jsFile: null,
+          jsFile: 'login.js',
           error: "User not logged in.",
           user: null
         });
@@ -2068,7 +2240,7 @@ exports.changeHours = async (req, res) => {
         {
           title: 'Login Page',
           cssStylesheet: 'login.css',
-          jsFile: null,
+          jsFile: 'login.js',
           error: "Access denied. Only admins can view this page.",
           user: null
         });

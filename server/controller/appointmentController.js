@@ -14,7 +14,7 @@ exports.bookAppointment = async (req, res) => {
         {
           title: 'Login Page',
           cssStylesheet: 'login.css',
-          jsFile: null,
+          jsFile: 'login.js',
           error: "User not logged in.",
           user: null,
         });
@@ -26,7 +26,7 @@ exports.bookAppointment = async (req, res) => {
         {
           title: 'Login Page',
           cssStylesheet: 'login.css',
-          jsFile: null,
+          jsFile: 'login.js',
           error: "Access denied. Only students can view this page.",
           user: req.session.user,
         });
@@ -136,7 +136,7 @@ exports.getBookedAppointments = async (req, res) => {
         {
           title: 'Login Page',
           cssStylesheet: 'login.css',
-          jsFile: null,
+          jsFile: 'login.js',
           error: "User not logged in.",
           user: null,
         });
@@ -148,7 +148,7 @@ exports.getBookedAppointments = async (req, res) => {
         {
           title: 'Login Page',
           cssStylesheet: 'login.css',
-          jsFile: null,
+          jsFile: 'login.js',
           error: "Access denied. Only students can view this page.",
           user: req.session.user,
         });

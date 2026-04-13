@@ -50,7 +50,7 @@ exports.googleCallback = async (req, res) => {
             error: "No admin found for that Google Account.",
             title: 'Login Page',
             cssStylesheet: 'login.css',
-            jsFile: null,
+            jsFile: 'login.js',
             user: null
         });
         }
@@ -66,7 +66,7 @@ exports.googleCallback = async (req, res) => {
             error: "Google login failed. Please try again.",
             title: 'Login Page',
             cssStylesheet: 'login.css',
-            jsFile: null,
+            jsFile: 'login.js',
             user: null
         });
     }
@@ -94,7 +94,7 @@ exports.getLoginPage = async (req, res) => {
             error: null,
             title: 'Login Page',
             cssStylesheet: 'login.css',
-            jsFile: null,
+            jsFile: 'login.js',
             user: null
         });
     } catch (err) {
@@ -103,7 +103,7 @@ exports.getLoginPage = async (req, res) => {
             error: "Unable to load login details.",
             title: 'Login Page',
             cssStylesheet: 'login.css',
-            jsFile: null,
+            jsFile: 'login.js',
             user: null
         });
     }
@@ -116,13 +116,36 @@ exports.loginUser = async (req, res) => {
     try {
         const user = await User.findOne({ email });
 
+        // make sure password is at least 8 characters long
+        if (!password || password.length() < 8) {
+            return res.render('login', {
+                error: 'Password must be at least 8 characters long.',
+                title: 'Login',
+                cssStylesheet: 'login.css',
+                jsFile: 'login.js',
+                user: null
+            });
+        }
+
         // checks to see if this user exists or if password doesn't match
         if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
             return res.render('login', {
                 error: 'Invalid email or password.',
                 title: 'Login',
                 cssStylesheet: 'login.css',
-                jsFile: null,
+                jsFile: 'login.js',
+                user: null
+            });
+        }
+
+        // ensures email is entered and in the form of @ilstu.edu
+        const emailRegex = /^[^\s@]+@ilstu\.edu$/;
+        if (!email || !emailRegex.test(email)) {
+            return res.render('login', {
+                error: 'Email address not in the form of @ilstu.edu.',
+                title: 'Login',
+                cssStylesheet: 'login.css',
+                jsFile: 'login.js',
                 user: null
             });
         }
@@ -133,7 +156,7 @@ exports.loginUser = async (req, res) => {
                 error: 'Account is no longer active.',
                 title: 'Login',
                 cssStylesheet: 'login.css',
-                jsFile: null,
+                jsFile: 'login.js',
                 user: null
             });
         }
@@ -145,7 +168,7 @@ exports.loginUser = async (req, res) => {
                 error: 'Admins must log in using Google.',
                 title: 'Login',
                 cssStylesheet: 'login.css',
-                jsFile: null,
+                jsFile: 'login.js',
                 user: null
             });
         }
@@ -162,12 +185,11 @@ exports.loginUser = async (req, res) => {
         }
     }
     catch (err) {
-        console.error(err);
         res.render('login', {
             error: 'Something went wrong. Please try again.',
             title: 'Login',
             cssStylesheet: 'login.css',
-            jsFile: null,
+            jsFile: 'login.js',
             user: null
         });
     }
@@ -177,7 +199,13 @@ exports.loginUser = async (req, res) => {
 exports.logout = async (req, res) => {
     req.session.destroy((err) => {
         if (err) {
-            console.error(err);
+            res.render('login', {
+                error: 'Something went wrong. Please try again.',
+                title: 'Login',
+                cssStylesheet: 'login.css',
+                jsFile: 'login.js',
+                user: null
+            });
         }
         res.redirect('/');
     });

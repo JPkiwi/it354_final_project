@@ -138,7 +138,6 @@
       <input type="hidden" name="role" value="tutor">
 
 
-      <!-- -->
       <input type="hidden" name="sourcePage" value="adminTutorIndex">
 
 
@@ -157,6 +156,7 @@
     <br><br>
       <label>Password:</label>
       <input type="password" name="password" required>
+      <span id="passwordError" style="color: red; font-size: 0.8em; display: block; margin-top: 1px;"></span>
       <br /><br />
       <label>Confirm Password:</label>
       <input type="password" name="confirmPassword" required>
@@ -209,10 +209,13 @@
     <br><br>
       <label>Password:</label>
       <input type="password" name="password">
+      <span id="passwordError" style="color: red; font-size: 0.8em; display: block; margin-top: 1px;"></span>
       <br /><br />
+
       <label>Confirm Password:</label>
       <input type="password" name="confirmPassword">
       <p style="color: rgb(88, 73, 73); font-style: italic;">Keep password fields blank unless changing password.</p>
+
       <label>Courses:</label><br>
       <span id="editCourseError" style="color: red; font-size: 0.8em; display: block; margin-top: 1px;"></span>
       <% courses.forEach(course => { %>
