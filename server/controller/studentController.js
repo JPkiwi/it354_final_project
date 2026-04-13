@@ -1,8 +1,9 @@
-// const User = require("../model/userModel"); // will need eventually
+const User = require("../model/userModel");
 const TutorShift = require("../model/tutorShiftModel");
 const Course = require("../model/courseModel");
 const mongoose = require("mongoose");
 const Appointment = require("../model/appointmentModel");
+const { deleteCalendarEvent } = require('../services/calendarService');
 
 // GET: load the student index page with selection for course and day to view available appointments
 exports.getStudentIndex = async (req, res) => {
@@ -184,8 +185,6 @@ exports.viewAvailableAppointments = async (req, res) => {
 
 
 
-
-
 exports.cancelAppointment = async (req, res) => {
     try{
         // if not an auth user, send to login page
@@ -248,6 +247,19 @@ exports.cancelAppointment = async (req, res) => {
         await Appointment.findByIdAndUpdate(appointmentId, {
             appointmentStatus: "cancelled"
         });
+
+        // ──────────── Delete Google Calendar event ──────────────────
+        try {
+            if (appointment.calendarEventId) {
+                const admin = await User.findOne({ role: "admin" });
+                if (admin?.googleTokens) {
+                    await deleteCalendarEvent(admin.googleTokens, appointment.calendarEventId);
+                }
+            }
+        } catch (calendarErr) {
+            console.error("Calendar event deletion failed:", calendarErr);
+        }
+        // ────────────────────────────────────────────────────────────
 
         //console.log("student cancel email information", appointment.appointmentDate, appointment.startTime, appointment.endTime, appointment.course, appointment.tutorShiftId.tutorId.fname, appointment.tutorShiftId.tutorId.lname);
 
