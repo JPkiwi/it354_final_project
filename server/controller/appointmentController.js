@@ -4,6 +4,8 @@ const Appointment = require("../model/appointmentModel");
 const TutorShift = require("../model/tutorShiftModel");
 const mongoose = require("mongoose");
 const NotificationLog = require("../model/notificationLog");
+const { createCalendarEvent } = require("../services/calendarService");
+const User = require("../model/userModel");
 
 
 // POST: handle bookAppointment form submission
@@ -93,6 +95,27 @@ exports.bookAppointment = async (req, res) => {
     });
 
     await appointment.save();
+
+    // ── Create Google Calendar event ────────────────────────────
+    try {
+      const admin = await User.findOne({ role: "admin" });
+      if (admin?.googleTokens) { // checks for our admin and if the admin has tokens. returns undefined if not found
+        const eventId = await createCalendarEvent(admin.googleTokens, {
+            course: appointment.course,
+            appointmentDate: appointment.appointmentDate,
+            startTime: appointment.startTime,
+            endTime: appointment.endTime,
+            tutorFName: shift.tutorId.fname,
+            studentFName: req.session.user.fname
+        });
+        // store the event ID on the appointment for deletion later
+        appointment.calendarEventId = eventId;  // unique ID assigned by google, stored in our appointmentModel
+        await appointment.save();
+      }
+  } catch (calendarErr) {
+    console.error("Calendar event creation failed:", calendarErr);
+  } 
+    // ────────────────────────────────────────────────────────────
 
     // send confirmation email to student and CC admin
     try {

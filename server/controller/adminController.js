@@ -1,19 +1,23 @@
 const Appointment = require("../model/appointmentModel");
 const User = require("../model/userModel");
 const Course = require("../model/courseModel");
-const tutorShift = require("../model/tutorShiftModel");
-const centerOpen = require("../model/centerOpenSchedule");
+const TutorShift = require("../model/tutorShiftModel");
+const CenterOpen = require("../model/centerOpenSchedule");
 const centerClosedSchedule = require("../model/centerClosedSchedule");
 const AuditLog = require("../model/auditLog");
 const bcrypt = require('bcrypt');
 const { trusted } = require("mongoose");
 const mongoose = require("mongoose");
+<<<<<<< HEAD
 const NotificationLog = require("../model/notificationLog");
+=======
+const { deleteCalendarEvent } = require('../services/calendarService');
+>>>>>>> main
 
 //-----------------------------------------------
 
 async function getClosedWeekdays() {
-  const centerSchedule = await centerOpen.find();
+  const centerSchedule = await CenterOpen.find();
 
   const weekdayMap = {
     Sunday: 0,
@@ -63,20 +67,25 @@ exports.getAdminIndex = async (req, res) => {
           user: null
         });
     }
-    // finding all appointments in db
-    const appointments = await Appointment.find()
-      // replace studentId ref with full student doc
-      .populate("studentId")
-      // replace tutorShiftId ref with full tutor shift doc
-      // also replace tutorId w/ full user doc 
-      // getting full info instead of just Id's
-      .populate({
-        path: "tutorShiftId",
-        populate: {
-          path: "tutorId",
-          model: "User"
-        }
-      });
+
+    const appointments = await Appointment.find({
+      appointmentStatus: { $ne: "cancelled" }
+    })
+    .select("appointmentDate startTime endTime course studentId tutorShiftId") 
+    .populate({
+      path: "studentId",
+      select: "fname lname"
+    })
+    .populate({
+      path: "tutorShiftId",
+      select: "tutorId",
+      populate: {
+        path: "tutorId",
+        model: "User",
+        select: "fname lname"
+      }
+    })
+    .lean();
 
     // find all courses in db
     const courses = await Course.find();
@@ -132,6 +141,141 @@ exports.getAdminIndex = async (req, res) => {
   }
 };
 
+// -------------------------------------------------------------------------------------------
+
+
+// POST: handle cancellation of an appointment from admin view (adminIndex)
+exports.adminCancelAppointment = async (req, res) => {
+  try {
+    // if not an auth user, send to login page
+    if (!req.session.user) {
+      return res.render('login',
+        {
+          title: 'Login Page',
+          cssStylesheet: 'login.css',
+          jsFile: null,
+          error: "User not logged in.",
+          user: null
+        });
+    }
+
+    // if auth user but not a admin, send to login page
+    if (req.session.user.role !== "admin") {
+      return res.render('login',
+        {
+          title: 'Login Page',
+          cssStylesheet: 'login.css',
+          jsFile: null,
+          error: "Access denied. Only admins can view this page.",
+          user: null
+        });
+    }
+
+    const appointmentId = req.body.appointmentId;
+    const appointment = await Appointment.findById(appointmentId, "appointmentStatus tutorShiftId calendarEventId").populate("tutorShiftId");
+
+    if (!appointment) {
+      return res.render("adminIndex", {
+      error: "Appointment not found.",
+      title: "Admin Page",
+      cssStylesheet: "adminIndex.css",
+      jsFile: "adminIndex.js",
+      user: req.session.user,
+      appointments: [],
+      courses: [],
+      eligibleTutorShifts: [],
+      studentFName: "",
+      studentLName: "",
+      date: "",
+      time: "",
+      course: ""
+      });
+    }
+    if (!appointment.tutorShiftId) {
+      return res.render("adminIndex", {
+      error: "Tutor shift missing on appointment.",
+      title: "Admin Page",
+      cssStylesheet: "adminIndex.css",
+      jsFile: "adminIndex.js",
+      user: req.session.user,
+      appointments: [],
+      courses: [],
+      eligibleTutorShifts: [],
+      studentFName: "",
+      studentLName: "",
+      date: "",
+      time: "",
+      course: ""
+      });
+    }
+    // cancel appointment
+    appointment.appointmentStatus = "cancelled";
+    await appointment.save();
+
+    // free the shift so it can be booked by another student
+    await TutorShift.findByIdAndUpdate(
+    appointment.tutorShiftId._id,
+    { isBooked: false }
+    );
+
+    // ───────── Delete Google Calendar event ────────────────────
+    try {
+      if (appointment.calendarEventId) {
+        const admin = await User.findOne({ role: "admin" });
+        if (admin?.googleTokens) {
+            await deleteCalendarEvent(admin.googleTokens, appointment.calendarEventId);
+        }
+      }
+    } catch (calendarErr) {
+    console.error("Calendar event deletion failed:", calendarErr);
+    }
+    // ────────────────────────────────────────────────────────────
+
+    //console.log("information for email", appointment.studentId.fname, appointment.tutorShiftId.tutorId.fname, appointment.tutorShiftId.tutorId.lname, appointment.appointmentDate, appointment.startTime, appointment.endTime, appointment.course);
+
+    // send cancellation notification email to student and CC admin
+    // try {
+    //   await sendEmail({
+    //     to: req.session.user.email,
+    //     cc: process.env.GMAIL_ADMIN, // CC admin
+    //     subject: "Appointment Cancellation",
+    //     html: adminCancellationTemplate({
+    //       studentName: req.session.user.fname,
+    //       tutorName: shift.tutorId.fname + " " + shift.tutorId.lname,
+    //       date: shift.shiftDate.toLocaleDateString('en-US', { timeZone: 'UTC' }),
+    //       time: `${shift.startTime} - ${shift.endTime}`,
+    //       course
+    //     })
+    //   });
+        
+    // } catch (emailErr) {
+    //   console.error("Email sending error");
+    // }
+
+    return res.redirect("/adminIndex");
+  } catch (err) {
+    // render same page, with error message & empty arrays passed 
+    // to ensure page does not break
+    res.render("adminIndex", {
+      error: "Could not load appointments.",
+      title: "Admin Page",
+      cssStylesheet: "adminIndex.css",
+      jsFile: "adminIndex.js",
+      user: req.session.user,
+      appointments: [],
+      courses: [],
+      // default form values
+      eligibleTutorShifts: [],
+      studentFName: "",
+      studentLName: "",
+      date: "",
+      time: "",
+      course: ""
+    });
+  }
+};
+
+
 
 // -------------------------------------------------------------------------------------------
 
@@ -163,7 +307,7 @@ exports.getAdminAvailabilityIndex = async (req, res) => {
         });
       }
 
-      const weekdays = await centerOpen.find();
+      const weekdays = await CenterOpen.find();
 
       res.render('adminAvailabilityIndex',
       {
@@ -221,7 +365,7 @@ exports.getAdminTutorIndex = async (req, res) => {
     // retrieving courses (for when admin adds a tutor, they need to select the course(s) tutor will teach)
     const courses = await Course.find();
     const today = new Date().toLocaleDateString("en-CA");
-    const centerSchedule = await centerOpen.find();
+    const centerSchedule = await CenterOpen.find();
 
     const weekdayMap = {
       Sunday: 0,
@@ -385,7 +529,7 @@ exports.toggleTutorStatus = async (req, res) => {
     }
     // retrieving selected tutor ID from submitted form (selected Tutor)
     const tutorId = req.body.selectedTutor;
-    const centerSchedule = await centerOpen.find();
+    const centerSchedule = await CenterOpen.find();
 
     const weekdayMap = {
       Sunday: 0,
@@ -653,7 +797,7 @@ exports.assignTutorHours = async (req, res) => {
     // get shiftBlocks chosen by admin (checkbox)
     let { shiftBlocks } = req.body;
     let today = new Date().toLocaleDateString("en-CA");
-    const centerSchedule = await centerOpen.find();
+    const centerSchedule = await CenterOpen.find();
     // for audit log to print the assigned shifts 
     const assignedShiftTimes = []; 
 
@@ -763,7 +907,7 @@ exports.assignTutorHours = async (req, res) => {
     const weekday = weekdayNames[selectedDate.getDay()];
 
     // find normal center open hours for that weekday
-    const centerOpenDay = await centerOpen.findOne({ weekday });
+    const centerOpenDay = await CenterOpen.findOne({ weekday });
 
     // if center is fully closed that weekday, shift creation not allowed
     if (!centerOpenDay || centerOpenDay.isClosed) {
@@ -855,7 +999,7 @@ exports.assignTutorHours = async (req, res) => {
     const startOfDay = new Date (year, month -1, day, 0,0,0,0);
     const endOfDay = new Date (year, month -1, day, 23, 59, 59, 999);
 
-    const existingTutorShifts = await tutorShift.find({
+    const existingTutorShifts = await TutorShift.find({
       tutorId: tutorId,
       shiftDate: {
         $gte: startOfDay, 
@@ -988,7 +1132,7 @@ exports.assignTutorHours = async (req, res) => {
       }
 
       // validation check for dpublicate shifts (making sure duplicates are not chosen)
-      const existingShift = await tutorShift.findOne({
+      const existingShift = await TutorShift.findOne({
         tutorId,
         shiftDate: selectedDate,
         startTime, 
@@ -1002,7 +1146,7 @@ exports.assignTutorHours = async (req, res) => {
       }
 
 
-      await tutorShift.create({
+      await TutorShift.create({
         tutorId,
         assignedByAdminId: req.session.user._id,
         shiftDate: selectedDate, 
@@ -1136,7 +1280,7 @@ exports.adminViewTutorShedule = async (req, res) => {
       }
     
     const tutorId = req.body.tutorId || req.body.selectedTutor;
-    const centerSchedule = await centerOpen.find();
+    const centerSchedule = await CenterOpen.find();
 
     const weekdayMap = {
       Sunday: 0,
@@ -1235,7 +1379,7 @@ exports.adminViewTutorShedule = async (req, res) => {
 // try to get the tutor's shifts, if error occurs render page with error message and empty shifts array
 async function getTutorShifts(theTutorId) {
   try {
-    const tutorShifts = await tutorShift.aggregate([
+    const tutorShifts = await TutorShift.aggregate([
       {
         $match: { // filter shifts to only the tutor's shifts
           tutorId: theTutorId
@@ -1339,7 +1483,7 @@ exports.clearTutorHours = async (req, res) => {
     const activeTutors = await User.find({role: "tutor", isActive: true});
     const courses = await Course.find();
     const today = new Date().toLocaleDateString("en-CA");
-    const centerSchedule = await centerOpen.find(); 
+    const centerSchedule = await CenterOpen.find(); 
     
 
     const weekdayMap = {
@@ -1406,7 +1550,7 @@ exports.clearTutorHours = async (req, res) => {
 
 // retrieving the tutor shifts and formatting them 12-hr format
 // formatting them in controller --> when I tried to format in ejs, it affected the flatpickr/safest way here
-      const shifts = (await tutorShift.find({
+      const shifts = (await TutorShift.find({
     tutorId,
     shiftDate: {
       $gte: startOfDay,
@@ -1445,7 +1589,7 @@ exports.clearTutorHours = async (req, res) => {
     // remove the checked shifts 
     if (action === "removeSelected") {
       if (!selectedShiftIds) {
-        const shifts = await tutorShift.find({
+        const shifts = await TutorShift.find({
           tutorId,
           shiftDate: {
             $gte: startOfDay,
@@ -1479,6 +1623,7 @@ return res.render("adminTutorIndex", {
       selectedShiftIds = [selectedShiftIds];
     }
 
+<<<<<<< HEAD
     // helper function (12-hr formatting)
     function formatTo12Hour(time){
       const [hourStr, minute] = time.split(":");
@@ -1509,6 +1654,9 @@ const removedShiftTimes = shiftsToRemove.map(shift => {
 
 
     const removedShifts = await tutorShift.deleteMany({
+=======
+    const removedShifts = await TutorShift.deleteMany({
+>>>>>>> main
       _id: { $in: selectedShiftIds },
       tutorId, 
       shiftDate: {
@@ -1533,7 +1681,7 @@ const removedShiftTimes = shiftsToRemove.map(shift => {
 
   // clearing full selected day 
   if (action === "clearAll"){
-    const deletedShifts = await tutorShift.deleteMany({
+    const deletedShifts = await TutorShift.deleteMany({
       tutorId,
       shiftDate: {
         $gte: startOfDay, 
@@ -1979,7 +2127,7 @@ exports.changeHours = async (req, res) => {
       
     const { weekday, centerOpenTime, centerCloseTime, closeWeekdayDropdown } = req.body;
 
-    let weekdays = await centerOpen.find();
+    let weekdays = await CenterOpen.find();
 
     // make sure all required fields were filled out if weekday is set to open
     if ((!weekday || !centerOpenTime || !centerCloseTime) && closeWeekdayDropdown === "No") {
@@ -2007,11 +2155,11 @@ exports.changeHours = async (req, res) => {
 
     // fetching prior open & close times for weekday BEFORE being updated 
     // (for comparison in audit log)
-    const existingDay = await centerOpen.findOne({ weekday });
+    const existingDay = await CenterOpen.findOne({ weekday });
 
     // if closeWeekdayDropdown is set to "Yes", then set the specified weekday to closed
     if (closeWeekdayDropdown === "Yes") {
-      await centerOpen.findOneAndUpdate({ weekday: weekday }, { $set: { isClosed: true } });
+      await CenterOpen.findOneAndUpdate({ weekday: weekday }, { $set: { isClosed: true } });
       // logging that the day has been fully closed
       await AuditLog.create({
         actionUserId: req.session.user._id,
@@ -2088,7 +2236,7 @@ exports.changeHours = async (req, res) => {
 
 
       // update MongoDB with new times and set isClosed to false
-      await centerOpen.findOneAndUpdate({ weekday: weekday }, { $set: { isClosed: false ,openTime: centerOpenTime, closeTime: centerCloseTime} });
+      await CenterOpen.findOneAndUpdate({ weekday: weekday }, { $set: { isClosed: false ,openTime: centerOpenTime, closeTime: centerCloseTime} });
 
       // audit log --> logging new open/close time compared to original 
       await AuditLog.create({
@@ -2100,7 +2248,7 @@ exports.changeHours = async (req, res) => {
     } // end of else (weekday time updated )
     
     // get newly updated weekdays
-    weekdays = await centerOpen.find();
+    weekdays = await CenterOpen.find();
     
     // re-render page once update completes
     res.render('adminAvailabilityIndex', 
