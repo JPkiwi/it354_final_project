@@ -8,11 +8,8 @@ const AuditLog = require("../model/auditLog");
 const bcrypt = require('bcrypt');
 const { trusted } = require("mongoose");
 const mongoose = require("mongoose");
-<<<<<<< HEAD
 const NotificationLog = require("../model/notificationLog");
-=======
 const { deleteCalendarEvent } = require('../services/calendarService');
->>>>>>> main
 
 //-----------------------------------------------
 
@@ -1623,7 +1620,6 @@ return res.render("adminTutorIndex", {
       selectedShiftIds = [selectedShiftIds];
     }
 
-<<<<<<< HEAD
     // helper function (12-hr formatting)
     function formatTo12Hour(time){
       const [hourStr, minute] = time.split(":");
@@ -1654,9 +1650,7 @@ const removedShiftTimes = shiftsToRemove.map(shift => {
 
 
     const removedShifts = await tutorShift.deleteMany({
-=======
-    const removedShifts = await TutorShift.deleteMany({
->>>>>>> main
+    // const removedShifts = await TutorShift.deleteMany({
       _id: { $in: selectedShiftIds },
       tutorId, 
       shiftDate: {
