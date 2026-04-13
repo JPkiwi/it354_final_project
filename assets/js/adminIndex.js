@@ -69,13 +69,13 @@ search.addEventListener("input", () => {
 });
 
 
-// When add button is clicked
-addBtn.addEventListener("click", () => {
-  // form hidden, show -> otherwise, default non-display
-  addForm.style.display = (addForm.style.display === "none") ? "block" : "none";
-});
+// // When add button is clicked
+// addBtn.addEventListener("click", () => {
+//   // form hidden, show -> otherwise, default non-display
+//   addForm.style.display = (addForm.style.display === "none") ? "block" : "none";
+// });
 
-
+if(addForm){
 // when form is submitted
 addForm.addEventListener("submit", (e) => {
 
@@ -111,6 +111,7 @@ addForm.addEventListener("submit", (e) => {
   // hide form
   addForm.style.display = "none";
 });
+}
 
 
 
@@ -223,6 +224,32 @@ cancelBtn.addEventListener("click", () => {
 });
 
 
+console.log("test") 
 
-sortAppointments();
+// notification button modal function
+
+ const notifBtn = document.getElementById("notifs");
+  const modal = document.getElementById("notificationsModal");
+  const closeBtn = document.getElementById("closeNotificationsBtn");
+// display modal when "Notifications" button is clicked
+if (notifBtn && modal && closeBtn){
+  notifBtn.onclick = function () {
+    modal.style.display = "block";
+  };
+// close modal when close button is clicked
+  closeBtn.onclick = function () {
+    modal.style.display = "none";
+  };
+
+  // if anywhere outside of modal is clicked, modal closes
+  window.onclick = function (event) {
+  if (event.target === modal) {
+    modal.style.display = "none";
+  }
+}; 
+}
+
+if (rows) {
+  sortAppointments();
+}
 

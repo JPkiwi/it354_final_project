@@ -8,6 +8,7 @@ const AuditLog = require("../model/auditLog");
 const bcrypt = require('bcrypt');
 const { trusted } = require("mongoose");
 const mongoose = require("mongoose");
+const NotificationLog = require("../model/notificationLog");
 
 //-----------------------------------------------
 
@@ -80,6 +81,14 @@ exports.getAdminIndex = async (req, res) => {
     // find all courses in db
     const courses = await Course.find();
 
+    // get notification logs for admin modal
+    const notificationLogs = await NotificationLog.find({
+    notificationType: "ADMIN_NOTIF"
+  })
+  .populate("recipientUserId", "fname lname")
+  .populate("appointmentId")
+  .sort({ timestamp: -1 });
+
     // render adminIndex view 
     res.render("adminIndex", {
       error: null,
@@ -94,7 +103,8 @@ exports.getAdminIndex = async (req, res) => {
       studentLName: "",
       date: "",
       time: "",
-      course: ""
+      course: "",
+      notificationLogs
     });
 
   }
@@ -115,7 +125,9 @@ exports.getAdminIndex = async (req, res) => {
       studentLName: "",
       date: "",
       time: "",
-      course: ""
+      course: "",
+      notificationLogs: []
+
     });
   }
 };
@@ -1467,6 +1479,35 @@ return res.render("adminTutorIndex", {
       selectedShiftIds = [selectedShiftIds];
     }
 
+    // helper function (12-hr formatting)
+    function formatTo12Hour(time){
+      const [hourStr, minute] = time.split(":");
+      let hour = parseInt(hourStr, 10);
+      const ampm = hour >= 12 ? "PM" : "AM";
+
+      hour = hour % 12; 
+      if( hour === 0 ) hour = 12; 
+      
+      return `${hour}:${minute} ${ampm}`;
+    }
+
+    // retrive shifts before deleting them 
+    const shiftsToRemove = await tutorShift.find({
+      _id: { $in: selectedShiftIds },
+      tutorId, 
+      shiftDate: {
+        $gte: startOfDay,
+        $lte: endOfDay
+      }
+    }).sort({ startTime: 1 });
+
+// shift time string (for audit log) 
+const removedShiftTimes = shiftsToRemove.map(shift => {
+  return `${formatTo12Hour(shift.startTime)} - ${formatTo12Hour(shift.endTime)}`;
+}).join(", ");
+
+
+
     const removedShifts = await tutorShift.deleteMany({
       _id: { $in: selectedShiftIds },
       tutorId, 
@@ -1482,7 +1523,7 @@ return res.render("adminTutorIndex", {
       actionUserId: req.session.user._id,
       actionType: "TUTOR_SHIFT_REMOVED",
       targetUserId: tutor._id,
-      details: `Tutor ${tutor.fname} ${tutor.lname} has been removed from shift(s) on ${shiftDate}.`
+      details: `Tutor ${tutor.fname} ${tutor.lname} was removed from shifts on ${shiftDate}: ${removedShiftTimes}.`
     });
     }
 

@@ -3,6 +3,7 @@ const { confirmationTemplate, cancellationTemplate } = require("../../views/temp
 const Appointment = require("../model/appointmentModel");
 const TutorShift = require("../model/tutorShiftModel");
 const mongoose = require("mongoose");
+const NotificationLog = require("../model/notificationLog");
 
 
 // POST: handle bookAppointment form submission
@@ -107,6 +108,16 @@ exports.bookAppointment = async (req, res) => {
           course
         })
       });
+
+      // Admin notification log after email is sent (notification to be viewed by admin after clicking "notifications" 
+      // on the "Manage Appointments" admin page)
+    await NotificationLog.create({
+      appointmentId: appointment._id,
+      recipientUserId: req.session.user._id,
+      appointmentDate: appointment.appointmentDate,
+      notificationType: "ADMIN_NOTIF",
+      isRead: false
+    });
 
     } catch (emailErr) {
       console.error("Email sending error");

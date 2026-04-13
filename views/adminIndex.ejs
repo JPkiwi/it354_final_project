@@ -31,7 +31,7 @@
 
 
   <%
-  <!-- defined func for formatting the time in adminIndex (appointment view)-->
+
 function formatTo12Hour(timeStr) {
   if (!timeStr) return "No time";
 
@@ -123,6 +123,47 @@ function formatTo12Hour(timeStr) {
   </table>
 
 
+<div id="notificationsModal" style ="display:none; background: #eee; padding: 30px;">
+  
+  <h3>Notifications</h3>
+  
+  <button id="closeNotificationsBtn">Close</button>
+
+  <table border ="1">
+    <thead>
+      <tr>
+        <th>Time</th>
+        <th>Details</th>
+        </tr>
+      </thead>
+    
+      <tbody>
+        <% if (notificationLogs && notificationLogs.length > 0) { %> 
+          <% notificationLogs.forEach(function(notification) { %> 
+            <tr>
+              <td>
+                <%= notification.timestamp ? new Date(notification.timestamp).toLocaleString() : "No time" %>
+                </td>
+                
+                <td>
+                  Student
+                  <%= notification.recipientUserId ? notification.recipientUserId.fname : "Unknown" %>
+                  booked an appointment on 
+                  <%= notification.appointmentDate ? new Date(notification.appointmentDate).toISOString().split('T')[0] : "No date" %>
+                  </td>
+                </tr>
+                <% }) %>
+                <% } else { %> 
+                  <tr> 
+                    <td colspan="2">No notifications</td>
+                    </tr>
+               <% } %>
+        </tbody>
+    </table>
+  
+  </div>
+
+
 
 
   <!-- Cancellation History Modal -->
@@ -150,5 +191,7 @@ function formatTo12Hour(timeStr) {
       </table>
   </div>
   </div>
+
+<script src="/js/adminIndex.js"></script>
 
 <%- include("includes/_footer") %>
