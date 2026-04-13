@@ -120,7 +120,7 @@ exports.loginUser = async (req, res) => {
         const user = await User.findOne({ email });
 
         // make sure password is at least 8 characters long
-        if (!password || password.length() < 8) {
+        if (!password || password.length < 8) {
             return res.render('login', {
                 error: 'Password must be at least 8 characters long.',
                 title: 'Login',

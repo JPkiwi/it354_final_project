@@ -212,7 +212,21 @@ exports.adminCancelAppointment = async (req, res) => {
         }
       }
     } catch (calendarErr) {
-    console.error("Calendar event deletion failed:", calendarErr);
+      return res.render("adminIndex", {
+      error: "Something went wrong with Google Calendar.",
+      title: "Admin Page",
+      cssStylesheet: "adminIndex.css",
+      jsFile: "adminIndex.js",
+      user: req.session.user,
+      appointments: [],
+      courses: [],
+      eligibleTutorShifts: [],
+      studentFName: "",
+      studentLName: "",
+      date: "",
+      time: "",
+      course: ""
+      });
     }
     // ────────────────────────────────────────────────────────────
 
@@ -756,7 +770,7 @@ exports.editUser = async (req, res) => {
     // ELSE, keep the existing password by fetching it from the database
 
     // make sure password is at least 8 characters long
-    if (password && password.trim() !== "" && password.length() < 8) {
+    if (password && password.trim() !== "" && password.length < 8) {
       return res.render('adminAuditLog', {
           title: 'Audit Log',
           error: 'Password must be at least 8 characters long.',
@@ -2048,7 +2062,7 @@ exports.addUser = async (req, res) => {
     }
 
     // make sure password is at least 8 characters long
-    if (password.length() < 8) {
+    if (password.length < 8) {
       return res.render('adminAuditLog', {
           title: 'Audit Log',
           error: 'Password must be at least 8 characters long.',
@@ -2217,7 +2231,7 @@ exports.addUser = async (req, res) => {
   }
   // in case of any errors, can log them and 500 for unfulfilled req 
   catch (err) {
-    res.status(500).render('adminAuditLog', {
+    return res.status(500).render('adminAuditLog', {
       title: 'Audit Log',
       error: "Could not add user.",
       cssStylesheet: "adminAuditLog.css",

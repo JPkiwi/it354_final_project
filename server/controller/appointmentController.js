@@ -112,7 +112,15 @@ exports.bookAppointment = async (req, res) => {
         await appointment.save();
       }
   } catch (calendarErr) {
-    console.error("Calendar event creation failed:", calendarErr);
+    return res.render("studentAppointment", {
+        title: "Book an Appointment",
+        cssStylesheet: "studentAppointment.css",
+        jsFile: "studentScript.js",
+        error: "Calendar event creation failed.",
+        user: req.session.user,
+        availableShifts: [],
+        bookedAppointments: [],
+      });
   } 
     // ────────────────────────────────────────────────────────────
 
@@ -132,7 +140,15 @@ exports.bookAppointment = async (req, res) => {
       });
 
     } catch (emailErr) {
-      console.error("Email sending error");
+      res.render("studentAppointment", {
+      title: "Book an Appointment",
+      cssStylesheet: "studentStyle.css",
+      jsFile: "studentScript.js",
+      error: "Email sending error.",
+      user: req.session.user,
+      availableShifts: [],
+      bookedAppointments: [],
+    });
     }
 
     res.redirect("/studentIndex");
