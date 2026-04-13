@@ -28,7 +28,6 @@ exports.getLandingPage = async (req, res) => {
       weekdays
     });
   } catch (err) {
-    console.log("Landing page error:", err);
     res.render("index", {
       error: "Could not load center hours accurately.",
       title: "ISU Learning Center",

@@ -14,7 +14,7 @@ exports.getStudentIndex = async (req, res) => {
                 {
                     title: 'Login Page',
                     cssStylesheet: 'login.css',
-                    jsFile: null,
+                    jsFile: 'login.js',
                     error: "User not logged in.",
                     user: null,
                 });
@@ -26,7 +26,7 @@ exports.getStudentIndex = async (req, res) => {
                 {
                     title: 'Login Page',
                     cssStylesheet: 'login.css',
-                    jsFile: null,
+                    jsFile: 'login.js',
                     error: "Access denied. Only students can view this page.",
                     user: req.session.user,
                 });
@@ -71,7 +71,7 @@ exports.viewAvailableAppointments = async (req, res) => {
                 {
                     title: 'Login Page',
                     cssStylesheet: 'login.css',
-                    jsFile: null,
+                    jsFile: 'login.js',
                     error: "User not logged in.",
                     user: null,
                 });
@@ -83,7 +83,7 @@ exports.viewAvailableAppointments = async (req, res) => {
                 {
                     title: 'Login Page',
                     cssStylesheet: 'login.css',
-                    jsFile: null,
+                    jsFile: 'login.js',
                     error: "Access denied. Only students can view this page.",
                     user: req.session.user,
                 });
@@ -178,7 +178,16 @@ exports.viewAvailableAppointments = async (req, res) => {
         }
 
     } catch (err) {
-        res.status(500).json({ error: "Failed to load available appointments." });
+        return res.status(500).render("studentIndex", {
+            title: "Book an Appointment",
+            cssStylesheet: "studentStyle.css",
+            jsFile: "studentScript.js",
+            error: "Failed to load available appointments.",
+            form: { course: req.body.course, selectDay: req.body.selectDay },
+            user: req.session.user,
+            courses: [],
+            availableShifts: []
+        });
     }
 
 };
@@ -193,7 +202,7 @@ exports.cancelAppointment = async (req, res) => {
                 {
                     title: 'Login Page',
                     cssStylesheet: 'login.css',
-                    jsFile: null,
+                    jsFile: 'login.js',
                     error: "User not logged in.",
                     user: null,
                 });
@@ -205,7 +214,7 @@ exports.cancelAppointment = async (req, res) => {
                 {
                     title: 'Login Page',
                     cssStylesheet: 'login.css',
-                    jsFile: null,
+                    jsFile: 'login.js',
                     error: "Access denied. Only students can view this page.",
                     user: req.session.user,
                 });
@@ -257,7 +266,15 @@ exports.cancelAppointment = async (req, res) => {
                 }
             }
         } catch (calendarErr) {
-            console.error("Calendar event deletion failed:", calendarErr);
+            return res.render("studentAppointment", {
+                title: "Booked Appointments",
+                cssStylesheet: "studentStyle.css",
+                jsFile: "studentScript.js",
+                error: "Calendar event deletion failed.",
+                user: req.session.user,
+                bookedAppointments
+
+            });
         }
         // ────────────────────────────────────────────────────────────
 

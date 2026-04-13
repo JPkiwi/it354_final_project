@@ -20,7 +20,7 @@ exports.createCalendarEvent = async (tokens, appointment) => {
             await admin.save();                                           // it essentially overwrites what it needs to, but keeps what it doesn't need to overwrite
             // console.log("Admin tokens refreshed and saved.");
         } catch (err) {
-            console.error("Failed to save refreshed tokens:", err);
+            console.error("Failed to save refreshed tokens.");
         }
     });
 
@@ -61,7 +61,7 @@ exports.deleteCalendarEvent = async (tokens, calendarEventId) => {
             await admin.save();
             // console.log("Admin tokens refreshed and saved.");
         } catch (err) {
-            console.error("Failed to save refreshed tokens:", err);
+            console.error("Failed to save refreshed tokens.");
         }
     });
 

@@ -98,7 +98,10 @@
       <br><br>
       <label>Password:</label>
       <input type="password" name="password" required>
-
+      <span id="passwordError" style="color: red; font-size: 0.8em; display: block; margin-top: 1px;"></span>
+      <br /><br />
+      <label>Confirm Password:</label>
+      <input type="password" name="confirmPassword" required>
       <br><br>
       <button type="submit">Create Student</button>
     </form>
@@ -130,7 +133,11 @@
       <br><br>
       <label>Password:</label>
       <input type="password" name="password">
-      <p style="color: rgb(88, 73, 73); font-style: italic;">Keep password field blank unless changing password.</p>
+      <span id="passwordError" style="color: red; font-size: 0.8em; display: block; margin-top: 1px;"></span>
+      <br /><br />
+      <label>Confirm Password:</label>
+      <input type="password" name="confirmPassword">
+      <p style="color: rgb(88, 73, 73); font-style: italic;">Keep password fields blank unless changing password.</p>
       <button type="submit">Submit Changes</button>
       </form>
   </div>

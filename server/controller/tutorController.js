@@ -11,7 +11,7 @@ exports.getTutorIndex = async (req, res) => {
             return res.render('login', {
                 title: 'Login Page',
                 cssStylesheet: 'login.css',
-                jsFile: null,
+                jsFile: 'login.js',
                 error: "User not logged in.",
                 user: null
             });
@@ -22,7 +22,7 @@ exports.getTutorIndex = async (req, res) => {
             return res.render('login', {
                 title: 'Login Page',
                 cssStylesheet: 'login.css',
-                jsFile: null,
+                jsFile: 'login.js',
                 error: "Access denied. Only tutors can view this page.",
                 user: req.session.user
             });
@@ -82,7 +82,7 @@ exports.getTutorAppointments = async (req, res) => {
                 {
                     title: 'Login Page',
                     cssStylesheet: 'login.css',
-                    jsFile: null,
+                    jsFile: 'login.js',
                     error: "User not logged in.",
                     user: null
                 });
@@ -94,7 +94,7 @@ exports.getTutorAppointments = async (req, res) => {
                 {
                     title: 'Login Page',
                     cssStylesheet: 'login.css',
-                    jsFile: null,
+                    jsFile: 'login.js',
                     error: "Access denied. Only tutors can view this page.",
                     user: null
                 });
@@ -245,7 +245,7 @@ exports.submitComment = async (req, res) => {
             {
                 title: 'Login Page',
                 cssStylesheet: 'login.css',
-                jsFile: null,
+                jsFile: 'login.js',
                 error: "User not logged in.",
                 user: null
             });
@@ -257,7 +257,7 @@ exports.submitComment = async (req, res) => {
             {
                 title: 'Login Page',
                 cssStylesheet: 'login.css',
-                jsFile: null,
+                jsFile: 'login.js',
                 error: "Access denied. Only tutors can view this page.",
                 user: null
             });
@@ -378,7 +378,7 @@ exports.submitTimes = async (req, res) => {
             {
                 title: 'Login Page',
                 cssStylesheet: 'login.css',
-                jsFile: null,
+                jsFile: 'login.js',
                 error: "User not logged in.",
                 user: null
             });
@@ -390,7 +390,7 @@ exports.submitTimes = async (req, res) => {
             {
                 title: 'Login Page',
                 cssStylesheet: 'login.css',
-                jsFile: null,
+                jsFile: 'login.js',
                 error: "Access denied. Only tutors can view this page.",
                 user: null
             });
@@ -614,7 +614,7 @@ exports.submitShow = async (req, res) => {
             {
                 title: 'Login Page',
                 cssStylesheet: 'login.css',
-                jsFile: null,
+                jsFile: 'login.js',
                 error: "User not logged in.",
                 user: null
             });
@@ -626,7 +626,7 @@ exports.submitShow = async (req, res) => {
             {
                 title: 'Login Page',
                 cssStylesheet: 'login.css',
-                jsFile: null,
+                jsFile: 'login.js',
                 error: "Access denied. Only tutors can view this page.",
                 user: null
             });
