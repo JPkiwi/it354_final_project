@@ -8,6 +8,7 @@ const AuditLog = require("../model/auditLog");
 const bcrypt = require('bcrypt');
 const { trusted } = require("mongoose");
 const mongoose = require("mongoose");
+const { deleteCalendarEvent } = require('../services/calendarService');
 
 //-----------------------------------------------
 
@@ -156,7 +157,7 @@ exports.adminCancelAppointment = async (req, res) => {
     }
 
     const appointmentId = req.body.appointmentId;
-    const appointment = await Appointment.findById(appointmentId, "appointmentStatus tutorShiftId").populate("tutorShiftId");
+    const appointment = await Appointment.findById(appointmentId, "appointmentStatus tutorShiftId calendarEventId").populate("tutorShiftId");
 
     if (!appointment) {
       return res.render("adminIndex", {
@@ -195,12 +196,25 @@ exports.adminCancelAppointment = async (req, res) => {
     // cancel appointment
     appointment.appointmentStatus = "cancelled";
     await appointment.save();
-    
+
     // free the shift so it can be booked by another student
     await TutorShift.findByIdAndUpdate(
-      appointment.tutorShiftId._id,
-      { isBooked: false }
+    appointment.tutorShiftId._id,
+    { isBooked: false }
     );
+
+    // ───────── Delete Google Calendar event ────────────────────
+    try {
+      if (appointment.calendarEventId) {
+        const admin = await User.findOne({ role: "admin" });
+        if (admin?.googleTokens) {
+            await deleteCalendarEvent(admin.googleTokens, appointment.calendarEventId);
+        }
+      }
+    } catch (calendarErr) {
+    console.error("Calendar event deletion failed:", calendarErr);
+    }
+    // ────────────────────────────────────────────────────────────
 
     //console.log("information for email", appointment.studentId.fname, appointment.tutorShiftId.tutorId.fname, appointment.tutorShiftId.tutorId.lname, appointment.appointmentDate, appointment.startTime, appointment.endTime, appointment.course);
 

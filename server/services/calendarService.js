@@ -16,8 +16,8 @@ exports.createCalendarEvent = async (tokens, appointment) => {
     oauth2Client.on('tokens', async (newTokens) => {
         try {
             const admin = await User.findOne({ role: "admin" });
-            admin.googleTokens = { ...admin.googleTokens, ...newTokens };
-            await admin.save();
+            admin.googleTokens = { ...admin.googleTokens, ...newTokens }; // here the "..." is called a spread operator.
+            await admin.save();                                           // it essentially overwrites what it needs to, but keeps what it doesn't need to overwrite
             // console.log("Admin tokens refreshed and saved.");
         } catch (err) {
             console.error("Failed to save refreshed tokens:", err);
@@ -27,8 +27,8 @@ exports.createCalendarEvent = async (tokens, appointment) => {
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
 
     const event = {
-        summary: `Tutoring ${appointment.course} with ${appointment.tutorShiftId.tutorId.fname}`,
-        description: `Student ${appointment.studentId.fname} appointment for ${appointment.course}`,
+        summary: `Tutoring ${appointment.course} with ${appointment.tutorFName}`,
+        description: `Student ${appointment.studentFName} appointment for ${appointment.course}`,
         start: {
             dateTime: buildDateTime(appointment.appointmentDate, appointment.startTime),
             timeZone: 'America/Chicago',
@@ -39,6 +39,7 @@ exports.createCalendarEvent = async (tokens, appointment) => {
         },
     };
 
+    // inserts into our calendar
     const response = await calendar.events.insert({
         calendarId: 'primary',
         resource: event,
