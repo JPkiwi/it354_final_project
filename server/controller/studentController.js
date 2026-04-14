@@ -3,6 +3,8 @@ const TutorShift = require("../model/tutorShiftModel");
 const Course = require("../model/courseModel");
 const mongoose = require("mongoose");
 const Appointment = require("../model/appointmentModel");
+const { sendEmail } = require("../services/emailService");
+const { studentCancellationTemplate } = require("../../views/templates/appointmentEmail");
 const { deleteCalendarEvent } = require('../services/calendarService');
 
 // GET: load the student index page with selection for course and day to view available appointments
@@ -226,6 +228,12 @@ exports.cancelAppointment = async (req, res) => {
         const appointment = await Appointment.findOne({
             _id: appointmentId, 
             studentId: req.session.user._id
+        }).populate({
+            path: 'tutorShiftId',
+            populate: {
+                path: 'tutorId',
+                select: 'fname lname'
+            } 
         });
            
 
@@ -246,7 +254,7 @@ exports.cancelAppointment = async (req, res) => {
 
          // change tutorshift to open (isBooked: false) 
         if(appointment.tutorShiftId){
-            await TutorShift.findByIdAndUpdate(appointment.tutorShiftId._id, {
+            await TutorShift.findByIdAndUpdate(appointment.tutorShiftId, {
                 isBooked: false
             });
         }
@@ -278,49 +286,40 @@ exports.cancelAppointment = async (req, res) => {
         }
         // ────────────────────────────────────────────────────────────
 
-        //console.log("student cancel email information", appointment.appointmentDate, appointment.startTime, appointment.endTime, appointment.course, appointment.tutorShiftId.tutorId.fname, appointment.tutorShiftId.tutorId.lname);
-
-        // // send cancellation confirmation email to student and CC admin
-        // try {
-        //     await sendEmail({
-        //     to: req.session.user.email,
-        //     cc: process.env.GMAIL_ADMIN, // CC admin
-        //     subject: "Appointment Cancellation",
-        //     html: studentCancellationTemplate({
-        //         studentName: req.session.user.fname,
-        //         tutorName: shift.tutorId.fname + " " + shift.tutorId.lname,
-        //         date: shift.shiftDate.toLocaleDateString('en-US', { timeZone: 'UTC' }),
-        //         time: `${shift.startTime} - ${shift.endTime}`,
-        //         course
-        //         })
-        //     });
+        // send cancellation confirmation email to student and CC admin
+        try {
+            await sendEmail({
+            to: req.session.user.email,
+            cc: process.env.GMAIL_ADMIN, // CC admin
+            subject: "Appointment Cancellation",
+            html: studentCancellationTemplate({
+                studentName: req.session.user.fname,
+                tutorName: `${appointment.tutorShiftId.tutorId.fname} ${appointment.tutorShiftId.tutorId.lname}`,
+                date: appointment.appointmentDate.toLocaleDateString('en-US', { timeZone: 'UTC' }),
+                time: `${appointment.startTime} - ${appointment.endTime}`,
+                course: appointment.course
+                })
+            });
         
-        // } catch (emailErr) {
-        //     console.error("Email sending error");
-        // }
-
-
+        } catch (emailErr) {
+            console.error("Student cancellation email sending error.");
+        }
+        
          // reload page 
          res.redirect('/studentAppointment');
-
-
     } // end of try 
     catch(err){
         //console.error("Error cancelling appointment:", err);
         const bookedAppointments = await Appointment.find({
             studentId: req.session.user._id
         });
-
-        
-            res.render("studentAppointment", {
-                title: "Booked Appointments",
-                cssStylesheet: "studentStyle.css",
-                jsFile: "studentScript.js",
-                error: "Could not cancel appointment.",
-                user: req.session.user,
-                bookedAppointments
-
-            });
-
+        res.render("studentAppointment", {
+            title: "Booked Appointments",
+            cssStylesheet: "studentStyle.css",
+            jsFile: "studentScript.js",
+            error: "Could not cancel appointment.",
+            user: req.session.user,
+            bookedAppointments
+        });
     }
 }
