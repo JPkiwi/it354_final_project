@@ -47,4 +47,7 @@ route.post("/adminTutorIndex/viewSchedule", controller.adminViewTutorShedule);
 
 route.post("/adminIndex/cancelAppointment", controller.adminCancelAppointment);
 
+// Handles admin marking notification on adminIndex Notifications modal as "read"
+route.post("/adminIndex/markNotificationsRead", controller.markNotificationsRead);
+
 module.exports = route;

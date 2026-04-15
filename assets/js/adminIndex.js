@@ -95,12 +95,12 @@ if (notifBtn && modal && closeBtn){
   };
 
   // if anywhere outside of modal is clicked, modal closes
-  window.onclick = function (event) {
+  window.addEventListener("click", function (event) {
   if (event.target === modal) {
     modal.style.display = "none";
   }
-}; 
-}
+}); 
+} // end of if (notifBtn && modal && closeBtn)
 
 if (rows) {
   sortAppointments();

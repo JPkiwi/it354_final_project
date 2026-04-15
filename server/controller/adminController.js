@@ -8,12 +8,25 @@ const AuditLog = require("../model/auditLog");
 const bcrypt = require("bcrypt");
 const { trusted } = require("mongoose");
 const mongoose = require("mongoose");
-<<<<<<< HEAD
 const NotificationLog = require("../model/notificationLog");
 const { deleteCalendarEvent } = require('../services/calendarService');
-=======
-const { deleteCalendarEvent } = require("../services/calendarService");
->>>>>>> main
+
+
+
+
+// helper function (will update later to remove repeat of this func/only call from here )
+function formatTo12Hour(timeStr) {
+  const [hourStr, minute] = timeStr.split(":");
+  let hour = parseInt(hourStr, 10);
+  const ampm = hour >= 12 ? "PM" : "AM";
+
+  hour = hour % 12;
+  if (hour === 0) hour = 12;
+
+  return `${hour}:${minute} ${ampm}`;
+}
+
+
 
 //-----------------------------------------------
 
@@ -89,19 +102,17 @@ exports.getAdminIndex = async (req, res) => {
     // find all courses in db
     const courses = await Course.find();
 
-<<<<<<< HEAD
     // get notification logs for admin modal
     const notificationLogs = await NotificationLog.find({
-    notificationType: "ADMIN_NOTIF"
+    notificationType: "ADMIN_NOTIF",
+    isRead: false,
   })
   .populate("recipientUserId", "fname lname")
   .populate("appointmentId")
   .sort({ timestamp: -1 });
 
     // render adminIndex view 
-=======
     // render adminIndex view
->>>>>>> main
     res.render("adminIndex", {
       error: null,
       title: "Admin Page",
@@ -116,10 +127,7 @@ exports.getAdminIndex = async (req, res) => {
       date: "",
       time: "",
       course: "",
-<<<<<<< HEAD
       notificationLogs
-=======
->>>>>>> main
     });
   } catch (err) {
     // render same page, with error message & empty arrays passed
@@ -139,16 +147,14 @@ exports.getAdminIndex = async (req, res) => {
       date: "",
       time: "",
       course: "",
-<<<<<<< HEAD
       notificationLogs: []
 
-=======
->>>>>>> main
     });
   }
 };
 
 // -------------------------------------------------------------------------------------------
+
 
 // POST: handle cancellation of an appointment from admin view (adminIndex)
 exports.adminCancelAppointment = async (req, res) => {
@@ -178,8 +184,16 @@ exports.adminCancelAppointment = async (req, res) => {
     const appointmentId = req.body.appointmentId;
     const appointment = await Appointment.findById(
       appointmentId,
-      "appointmentStatus tutorShiftId calendarEventId",
-    ).populate("tutorShiftId");
+      "appointmentStatus tutorShiftId calendarEventId appointmentDate startTime endTime studentId course",
+    ).populate({
+      // log
+      path: "tutorShiftId", 
+      populate: {
+        path: "tutorId", 
+        model: "User", 
+        select: "fname lname",
+      },
+    }).populate("studentId", "fname lname")
 
     if (!appointment) {
       return res.render("adminIndex", {
@@ -223,6 +237,17 @@ exports.adminCancelAppointment = async (req, res) => {
     await TutorShift.findByIdAndUpdate(appointment.tutorShiftId._id, {
       isBooked: false,
     });
+
+    // audit log for cancel appointment
+    await AuditLog.create({
+      actionUserId: req.session.user._id, 
+      actionType: "APPOINTMENT_CANCELLED",
+      appointmentId: appointment._id, 
+      targetUserId: appointment.studentId._id, 
+      details: `Appointment on ${appointment.appointmentDate.toLocaleDateString('en-US', { timeZone: 'UTC' })} cancelled for student ${appointment.studentId.fname} ${appointment.studentId.lname} with tutor ${appointment.tutorShiftId.tutorId.fname} ${appointment.tutorShiftId.tutorId.lname}; tutor shift ${formatTo12Hour(appointment.tutorShiftId.startTime)} - ${formatTo12Hour(appointment.tutorShiftId.endTime)} reopened.`
+
+    });
+      
 
     // ───────── Delete Google Calendar event ────────────────────
     try {
@@ -1653,7 +1678,6 @@ exports.clearTutorHours = async (req, res) => {
           },
         }).sort({ startTime: 1 });
 
-<<<<<<< HEAD
 return res.render("adminTutorIndex", {
         error: "Select at least one shift to remove", 
         title: "Admin Manage Tutors",
@@ -1674,7 +1698,9 @@ return res.render("adminTutorIndex", {
         openAssignTutorModal: false,
         openClearTutorModal: true
       });
-    }
+    } // end of if (!selectedShiftIds)
+
+
 
     if(!Array.isArray(selectedShiftIds)){
       selectedShiftIds = [selectedShiftIds];
@@ -1693,7 +1719,7 @@ return res.render("adminTutorIndex", {
     }
 
     // retrive shifts before deleting them 
-    const shiftsToRemove = await tutorShift.find({
+    const shiftsToRemove = await TutorShift.find({
       _id: { $in: selectedShiftIds },
       tutorId, 
       shiftDate: {
@@ -1709,38 +1735,17 @@ const removedShiftTimes = shiftsToRemove.map(shift => {
 
 
 
-    const removedShifts = await tutorShift.deleteMany({
+    const removedShifts = await TutorShift.deleteMany({
     // const removedShifts = await TutorShift.deleteMany({
       _id: { $in: selectedShiftIds },
       tutorId, 
       shiftDate: {
         $gte: startOfDay, 
-        $lte: endOfDay
-=======
-        return res.render("adminTutorIndex", {
-          error: "Select at least one shift to remove",
-          title: "Admin Manage Tutors",
-          cssStylesheet: "tutorIndex.css",
-          jsFile: "tutorIndex.js",
-          user: req.session.user,
-          tutors,
-          activeTutors,
-          courses,
-          today,
-          closedWeekdays,
-          //changed from "shifts,"
-          scheduleShifts: [],
-          clearShifts: shifts,
-          selectedTutorId: req.body.tutorId || null,
-          selectedShiftDate: req.body?.shiftDate || "",
-          availableShiftBlocks: [],
-          openAssignTutorModal: false,
-          openClearTutorModal: true,
-        });
->>>>>>> main
-      }
+        $lte: endOfDay,
+      },
+    });
 
-<<<<<<< HEAD
+    
 // double-checking removedShifts is greater than 0, then logging 
     if(removedShifts.deletedCount > 0){
       await AuditLog.create({
@@ -1752,58 +1757,41 @@ const removedShiftTimes = shiftsToRemove.map(shift => {
     }
 
 
+
     return res.redirect("/adminTutorIndex");
   } // end of remove checked shifts
 
-  // clearing full selected day 
-  if (action === "clearAll"){
-    const deletedShifts = await TutorShift.deleteMany({
-      tutorId,
-      shiftDate: {
-        $gte: startOfDay, 
-        $lte: endOfDay
-=======
-      if (!Array.isArray(selectedShiftIds)) {
-        selectedShiftIds = [selectedShiftIds];
->>>>>>> main
-      }
-
-      const removedShifts = await TutorShift.deleteMany({
-        _id: { $in: selectedShiftIds },
-        tutorId,
-        shiftDate: {
-          $gte: startOfDay,
-          $lte: endOfDay,
-        },
-      });
-
-      // double-checking removedShifts is greater than 0, then logging
-      if (removedShifts.deletedCount > 0) {
-        await AuditLog.create({
-          actionUserId: req.session.user._id,
-          actionType: "TUTOR_SHIFT_REMOVED",
-          targetUserId: tutor._id,
-          details: `Tutor ${tutor.fname} ${tutor.lname} has been removed from shift(s) on ${shiftDate}.`,
-        });
-      }
-
-      return res.redirect("/adminTutorIndex");
-    } // end of remove checked shifts
 
     // clearing full selected day
     if (action === "clearAll") {
-      const deletedShifts = await TutorShift.deleteMany({
+      
+    // helper function (12-hr formatting)
+    function formatTo12Hour(time){
+      const [hourStr, minute] = time.split(":");
+      let hour = parseInt(hourStr, 10);
+      const ampm = hour >= 12 ? "PM" : "AM";
+
+      hour = hour % 12; 
+      if( hour === 0 ) hour = 12; 
+      
+      return `${hour}:${minute} ${ampm}`;
+    }
+
+
+      const shiftsToClear = await TutorShift.find({
         tutorId,
         shiftDate: {
           $gte: startOfDay,
           $lte: endOfDay,
         },
-      });
+      }).sort({ startTime: 1 });
 
-      if (deletedShifts.deletedCount === 0) {
+
+
+      if (shiftsToClear.length === 0) {
         return res.render("adminTutorIndex", {
           error:
-            "No shift assigned for this tutor on ${shiftDate}; no shifts removed.",
+            `No shift assigned for this tutor on ${shiftDate}; no shifts removed.`,
           title: "Admin Manage Tutors",
           cssStylesheet: "tutorIndex.css",
           jsFile: "tutorIndex.js",
@@ -1823,29 +1811,36 @@ const removedShiftTimes = shiftsToRemove.map(shift => {
           openClearTutorModal: true,
         });
       }
-      return res.redirect("/adminTutorIndex");
+
+      // shift time string (for audit log) 
+    const clearedShifts = shiftsToClear.map(shift => {
+      return `${formatTo12Hour(shift.startTime)} - ${formatTo12Hour(shift.endTime)}`;
+    }).join(", ");
+
+
+    const deletedShifts = await TutorShift.deleteMany({
+      tutorId,
+      shiftDate: {
+        $gte: startOfDay, 
+        $lte: endOfDay
+      },
+    });
+
+
+    if (deletedShifts.deletedCount > 0){
+      await AuditLog.create({
+        actionUserId: req.session.user._id, 
+        actionType: "TUTOR_SHIFT_REMOVED",
+        targetUserId: tutor._id, 
+        details: `Tutor ${tutor.fname} ${tutor.lname} was removed from ALL shifts on ${shiftDate}: ${clearedShifts}.`,
+      });
     }
 
-    return res.render("adminTutorIndex", {
-      error: "Action was invalid",
-      title: "Admin Manage Tutors",
-      cssStylesheet: "tutorIndex.css",
-      jsFile: "tutorIndex.js",
-      user: req.session.user,
-      tutors,
-      activeTutors,
-      courses,
-      today,
-      closedWeekdays,
-      //changed from "shifts: []"
-      scheduleShifts: [],
-      clearShifts: [],
-      selectedTutorId: req.body.tutorId || null,
-      selectedShiftDate: req.body?.shiftDate || "",
-      availableShiftBlocks: [],
-      openAssignTutorModal: false,
-      openClearTutorModal: true,
-    });
+
+      return res.redirect("/adminTutorIndex");
+
+    } // clearing full selected day func
+
   } catch (err) {
     const closedWeekdays = [];
     const tutors = await User.find({ role: "tutor" });
@@ -1874,7 +1869,7 @@ const removedShiftTimes = shiftsToRemove.map(shift => {
       openClearTutorModal: true,
     });
   }
-};
+}; 
 
 // --------------------------------------------------------------------------------------------
 
@@ -2253,7 +2248,7 @@ exports.addUser = async (req, res) => {
   }
 };
 
-// -----------------------------------------
+// -------------------------------------------------------------------------
 
 // POST: Handles form submission to change weekday hours
 exports.changeHours = async (req, res) => {
@@ -2435,3 +2430,78 @@ exports.changeHours = async (req, res) => {
     });
   }
 };
+
+
+// ----------------------------------------------------------------
+
+// POST - handle form submission to mark notifications as read 
+
+exports.markNotificationsRead = async (req, res) => {
+try{
+// if not an auth user, send to login page
+    if (!req.session.user) {
+      return res.render("login", {
+        title: "Login Page",
+        cssStylesheet: "login.css",
+        jsFile: "login.js",
+        error: "User not logged in.",
+        user: null,
+      });
+    }
+
+    // if auth user but not a admin, send to login page
+    if (req.session.user.role !== "admin") {
+      return res.render("login", {
+        title: "Login Page",
+        cssStylesheet: "login.css",
+        jsFile: "login.js",
+        error: "Access denied. Only admins can view this page.",
+        user: null,
+      });
+    }
+  
+    let { selectedNotifications } = req.body;
+
+    // no selected Notifications/re-render page
+    if(!selectedNotifications){
+      return res.redirect("/adminIndex");
+    }
+
+    // ensure selectedNotifications is an array for logic handling 
+     if (!Array.isArray(selectedNotifications)) {
+      selectedNotifications = [selectedNotifications];
+    }
+
+    await NotificationLog.updateMany({
+      _id: { $in: selectedNotifications },
+      notificationType: "ADMIN_NOTIF"
+    },
+  {
+    $set: {
+      isRead: true, 
+      readAt: new Date(),
+    },
+  }); 
+  // end of Notificationlog.updateMany 
+
+ return res.redirect("/adminIndex");
+
+} catch (err){
+  return res.render("adminIndex", {
+      error: "Could not mark notifications as read.",
+      title: "Admin Page",
+      cssStylesheet: "adminIndex.css",
+      jsFile: "adminIndex.js",
+      user: req.session.user,
+      appointments: [],
+      courses: [],
+      eligibleTutorShifts: [],
+      studentFName: "",
+      studentLName: "",
+      date: "",
+      time: "",
+      course: "",
+      notificationLogs: [],
+    });
+}
+}
