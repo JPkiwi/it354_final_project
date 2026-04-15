@@ -1,8 +1,5 @@
 const { sendEmail } = require("../services/emailService");
-const {
-  confirmationTemplate,
-  cancellationTemplate,
-} = require("../../views/templates/appointmentEmail");
+const { confirmationTemplate } = require("../../views/templates/appointmentEmail");
 const Appointment = require("../model/appointmentModel");
 const TutorShift = require("../model/tutorShiftModel");
 const mongoose = require("mongoose");
@@ -137,13 +134,13 @@ exports.bookAppointment = async (req, res) => {
         subject: "Appointment Confirmation",
         html: confirmationTemplate({
           studentName: req.session.user.fname,
-          tutorName: shift.tutorId.fname + " " + shift.tutorId.lname,
-          date: shift.shiftDate.toLocaleDateString("en-US", {
+          tutorName: `${shift.tutorId.fname} ${shift.tutorId.lname}`,
+          date: appointment.appointmentDate.toLocaleDateString("en-US", {
             timeZone: "UTC",
           }),
-          time: `${shift.startTime} - ${shift.endTime}`,
-          course
-        })
+          time: `${appointment.startTime} - ${appointment.endTime}`,
+          course: appointment.course,
+        }),
       });
 
       // Admin notification log after email is sent (notification to be viewed by admin after clicking "notifications" 
@@ -157,15 +154,7 @@ exports.bookAppointment = async (req, res) => {
     });
 
     } catch (emailErr) {
-      res.render("studentAppointment", {
-        title: "Book an Appointment",
-        cssStylesheet: "studentStyle.css",
-        jsFile: "studentScript.js",
-        error: "Email sending error.",
-        user: req.session.user,
-        availableShifts: [],
-        bookedAppointments: [],
-      });
+      console.error("Student book appointment email sending error.");
     }
 
     res.redirect("/studentIndex");

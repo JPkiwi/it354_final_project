@@ -1,4 +1,6 @@
 const Appointment = require("../model/appointmentModel");
+const { sendEmail } = require("../services/emailService");
+const { adminCancellationTemplate } = require("../../views/templates/appointmentEmail");
 const User = require("../model/userModel");
 const Course = require("../model/courseModel");
 const TutorShift = require("../model/tutorShiftModel");
@@ -6,7 +8,6 @@ const CenterOpen = require("../model/centerOpenSchedule");
 const centerClosedSchedule = require("../model/centerClosedSchedule");
 const AuditLog = require("../model/auditLog");
 const bcrypt = require("bcrypt");
-const { trusted } = require("mongoose");
 const mongoose = require("mongoose");
 const NotificationLog = require("../model/notificationLog");
 const { deleteCalendarEvent } = require('../services/calendarService');
@@ -184,16 +185,17 @@ exports.adminCancelAppointment = async (req, res) => {
     const appointmentId = req.body.appointmentId;
     const appointment = await Appointment.findById(
       appointmentId,
-      "appointmentStatus tutorShiftId calendarEventId appointmentDate startTime endTime studentId course",
-    ).populate({
-      // log
-      path: "tutorShiftId", 
+      "appointmentStatus tutorShiftId calendarEventId studentId appointmentDate startTime endTime course"
+    )
+    .populate("studentId", "fname lname email") 
+    .populate({
+      path: "tutorShiftId",
       populate: {
-        path: "tutorId", 
-        model: "User", 
+        path: "tutorId",
         select: "fname lname",
       },
-    }).populate("studentId", "fname lname")
+    });
+
 
     if (!appointment) {
       return res.render("adminIndex", {
@@ -279,26 +281,24 @@ exports.adminCancelAppointment = async (req, res) => {
     }
     // ────────────────────────────────────────────────────────────
 
-    //console.log("information for email", appointment.studentId.fname, appointment.tutorShiftId.tutorId.fname, appointment.tutorShiftId.tutorId.lname, appointment.appointmentDate, appointment.startTime, appointment.endTime, appointment.course);
-
     // send cancellation notification email to student and CC admin
-    // try {
-    //   await sendEmail({
-    //     to: req.session.user.email,
-    //     cc: process.env.GMAIL_ADMIN, // CC admin
-    //     subject: "Appointment Cancellation",
-    //     html: adminCancellationTemplate({
-    //       studentName: req.session.user.fname,
-    //       tutorName: shift.tutorId.fname + " " + shift.tutorId.lname,
-    //       date: shift.shiftDate.toLocaleDateString('en-US', { timeZone: 'UTC' }),
-    //       time: `${shift.startTime} - ${shift.endTime}`,
-    //       course
-    //     })
-    //   });
+    try {
+      await sendEmail({
+        to: appointment.studentId.email,
+        cc: process.env.GMAIL_ADMIN, // CC admin
+        subject: "Appointment Cancellation",
+        html: adminCancellationTemplate({
+          studentName: appointment.studentId.fname,
+          tutorName: `${appointment.tutorShiftId.tutorId.fname} ${appointment.tutorShiftId.tutorId.lname}`,
+          date: appointment.appointmentDate.toLocaleDateString('en-US', { timeZone: 'UTC' }),
+          time: `${appointment.startTime} - ${appointment.endTime}`,
+          course: appointment.course
+        })
+      });
 
-    // } catch (emailErr) {
-    //   console.error("Email sending error");
-    // }
+    } catch (emailErr) {
+      console.error("Admin cancellation email sending error.");
+    }
 
     return res.redirect("/adminIndex");
   } catch (err) {
