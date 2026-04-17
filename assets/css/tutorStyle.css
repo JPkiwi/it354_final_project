@@ -70,4 +70,5 @@ textarea::placeholder {
     display: inline-block;
     margin-right: 15px;
     margin-bottom: 10px;
+    text-align: center;
 }

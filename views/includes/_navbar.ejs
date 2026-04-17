@@ -32,6 +32,7 @@
             </li>
         <% } else if (user && user.role === 'tutor') { %>
             <li><a href="/tutorIndex">Appointments</a></li> <!--To tutor functionality-->
+            <li><a href="/tutorCancelled">Cancelled Appointments</a></li> <!--View cancelled appointments-->
             <li>
                 <form action="/logout" method="POST"> <!--After log out action, get sent to index page-->
                     <button id="logout-tutor-button">Logout Tutor</button>
