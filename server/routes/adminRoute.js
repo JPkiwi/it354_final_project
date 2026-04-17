@@ -47,7 +47,10 @@ route.post("/adminTutorIndex/viewSchedule", controller.adminViewTutorShedule);
 
 route.post("/adminIndex/cancelAppointment", controller.adminCancelAppointment);
 
-// Handles admin marking notification on adminIndex Notifications modal as "read"
-route.post("/adminIndex/markNotificationsRead", controller.markNotificationsRead);
+// Handles admin setting a blackout (fully closing specified date(s))
+route.post("/addBlackoutDate",controller.addBlackoutDate);
+
+// // Handles admin adding a partial-day closed time block
+// route.post("/addTimeBlock", controller.addTimeBlock);
 
 module.exports = route;

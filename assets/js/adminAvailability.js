@@ -42,3 +42,74 @@ closeWeekdayDropdown.addEventListener("change", () => {
     centerCloseTimeInput.disabled = false;
   }
 });
+
+
+
+// for "Blackout Date" functionality ------------
+
+const editBlackoutButton = document.getElementById("editBlackoutButton");
+const blackoutDateForm = document.getElementById("blackoutDateForm");
+
+// displaying/hiding the blackout date feature based on if button is clicked
+if (editBlackoutButton && blackoutDateForm) {
+  editBlackoutButton.addEventListener("click", () => {
+    if (blackoutDateForm.style.display === "none") {
+      blackoutDateForm.style.display = "block";
+    } else {
+      blackoutDateForm.style.display = "none";
+    }
+  });
+}
+
+
+// // flatpickr for calendar/choosing a date for blackout date 
+// flatpickr("#blackoutStartDate", {
+//   dateFormat: "Y-m-d",
+//   minDate: "today",
+//   altInput: true,
+//   altFormat: "F j, Y"
+// });
+
+// flatpickr("#blackoutEndDate", {
+//   dateFormat: "Y-m-d",
+//   minDate: "today",
+//   altInput: true,
+//   altFormat: "F j, Y"
+// });
+
+
+
+// attach flatpickr cal to the input
+flatpickr("#blackoutStartDate", {
+  // date format to be sent to backend
+  dateFormat: "Y-m-d",
+  // admin can't choose past days for assigning hours
+  minDate: "today",
+  altInput: true,
+  altFormat: "F j, Y",
+  // disable closed weekdays 
+  // (disable date if weekday is in closed list)
+  // setting placeholder for select date box (would not work inside ejs file))
+  onReady: function(selectedDates, dateStr, instance){
+    instance.altInput.placeholder = "-- Select Start Date -- "
+  }
+});
+
+// attach flatpickr cal to the input
+flatpickr("#blackoutEndDate", {
+  // date format to be sent to backend
+  dateFormat: "Y-m-d",
+  // admin can't choose past days for assigning hours
+  minDate: "today",
+  altInput: true,
+  altFormat: "F j, Y",
+  // disable closed weekdays 
+  // (disable date if weekday is in closed list)
+  
+  // setting placeholder for select date box (would not work inside ejs file))
+  onReady: function(selectedDates, dateStr, instance){
+    instance.altInput.placeholder = "-- Select End Date -- "
+  }
+});
+
+

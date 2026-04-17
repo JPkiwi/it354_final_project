@@ -11,6 +11,7 @@ const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
 const NotificationLog = require("../model/notificationLog");
 const { deleteCalendarEvent } = require('../services/calendarService');
+const CenterTimeBlock = require("../model/centerTimeBlock");
 
 
 
@@ -445,6 +446,7 @@ exports.getAdminTutorIndex = async (req, res) => {
       availableShiftBlocks: [],
       openAssignTutorModal: false,
       openClearTutorModal: false,
+      assignTutorError: null,
     });
   } catch (err) {
     const today = new Date().toLocaleDateString("en-CA");
@@ -470,6 +472,7 @@ exports.getAdminTutorIndex = async (req, res) => {
       availableShiftBlocks: [],
       openAssignTutorModal: false,
       openClearTutorModal: false,
+      assignTutorError: null,
     });
   }
 };
@@ -604,6 +607,7 @@ exports.toggleTutorStatus = async (req, res) => {
         scheduleShifts: [],
         clearShifts: [],
         openClearTutorModal: false,
+        assignTutorError: null,
       });
     }
 
@@ -631,6 +635,7 @@ exports.toggleTutorStatus = async (req, res) => {
         availableShiftBlocks: [],
         openAssignTutorModal: false,
         openClearTutorModal: false,
+        assignTutorError: null,
       });
     }
 
@@ -683,6 +688,7 @@ exports.toggleTutorStatus = async (req, res) => {
       availableShiftBlocks: [],
       openAssignTutorModal: false,
       openClearTutorModal: false,
+      assignTutorError: null,
     });
   }
 };
@@ -944,6 +950,7 @@ exports.assignTutorHours = async (req, res) => {
         // changed from "shifts: []"
         scheduleShifts: [],
         clearShifts: [],
+        assignTutorError: null,
       });
     } // end of if(!tutorId || !shiftDate etc...)
 
@@ -970,6 +977,7 @@ exports.assignTutorHours = async (req, res) => {
         // changed from "shifts: []"
         scheduleShifts: [],
         clearShifts: [],
+        assignTutorError: null,
       });
     } // end of if(!tutor)
 
@@ -980,6 +988,44 @@ exports.assignTutorHours = async (req, res) => {
     // "month - 1" --> subtract 1 because JavaScript months are 0-indexed (0 = January)
     // form gives 03 (March), need to pass 2 in new date for finding weekday
     const selectedDate = new Date(year, month - 1, day);
+
+
+
+    // create exact start/end of selected day
+    const start = new Date(year, month - 1, day, 0, 0, 0, 0);
+    const end = new Date(year, month - 1, day, 23, 59, 59, 999);
+
+    // check whether selected date falls within any blackout date range
+    const blackoutDate = await centerClosedSchedule.findOne({
+      startDate: { $lte: end },
+      endDate: { $gte: start }
+    });
+
+    if (blackoutDate) {
+      return res.render("adminTutorIndex", {
+        error: null,
+        title: "Admin Manage Tutors",
+        cssStylesheet: "tutorIndex.css",
+        jsFile: "tutorIndex.js",
+        user: req.session.user,
+        tutors,
+        activeTutors,
+        courses,
+        today,
+        closedWeekdays,
+        selectedTutorId: tutorId || null,
+        selectedShiftDate: shiftDate || "",
+        availableShiftBlocks: [],
+        openAssignTutorModal: true,
+        scheduleShifts: [],
+        clearShifts: [],
+        openClearTutorModal: false,
+        assignTutorError: `The center is closed due to blackout date. Tutor shifts cannot be assigned.`,
+      });
+    }
+
+
+
 
     // determine weekday name from selected date
     const weekdayNames = [
@@ -1020,6 +1066,7 @@ exports.assignTutorHours = async (req, res) => {
         // changed from "shifts: []"
         scheduleShifts: [],
         clearShifts: [],
+        assignTutorError: null,
       });
     }
 
@@ -1066,6 +1113,7 @@ exports.assignTutorHours = async (req, res) => {
         selectedShiftDate: shiftDate,
         openAssignTutorModal: true,
         availableShiftBlocks: [],
+        assignTutorError: null,
       });
     }
 
@@ -1140,6 +1188,7 @@ exports.assignTutorHours = async (req, res) => {
         scheduleShifts: [],
         clearShifts: [],
         openClearTutorModal: false,
+        assignTutorError: null,
       });
     }
     // assign button
@@ -1165,6 +1214,7 @@ exports.assignTutorHours = async (req, res) => {
           scheduleShifts: [],
           clearShifts: [],
           openClearTutorModal: false,
+          assignTutorError: null,
         });
       }
 
@@ -1285,6 +1335,7 @@ exports.assignTutorHours = async (req, res) => {
         scheduleShifts: [],
         clearShifts: [],
         openClearTutorModal: false,
+        assignTutorError: null,
       });
 
       // add fallback(?)
@@ -1316,6 +1367,7 @@ exports.assignTutorHours = async (req, res) => {
       selectedShiftDate: req.body?.shiftDate || "",
       availableShiftBlocks: [],
       openClearTutorModal: false,
+      assignTutorError: null,
     });
   } // end of catch
 };
@@ -1390,6 +1442,7 @@ exports.adminViewTutorShedule = async (req, res) => {
         availableShiftBlocks: [],
         openAssignTutorModal: false,
         openClearTutorModal: false,
+        assignTutorError: null,
       });
     }
 
@@ -1430,6 +1483,7 @@ exports.adminViewTutorShedule = async (req, res) => {
       availableShiftBlocks: [],
       openAssignTutorModal: false,
       openClearTutorModal: false,
+      assignTutorError: null,
     });
   } catch (err) {
     res.render("adminTutorIndex", {
@@ -1452,6 +1506,7 @@ exports.adminViewTutorShedule = async (req, res) => {
       availableShiftBlocks: [],
       openAssignTutorModal: false,
       openClearTutorModal: false,
+      assignTutorError: null,
     });
   }
 };
@@ -1606,6 +1661,7 @@ exports.clearTutorHours = async (req, res) => {
         availableShiftBlocks: [],
         openAssignTutorModal: false,
         openClearTutorModal: true,
+        assignTutorError: null,
       });
     }
 
@@ -1664,6 +1720,7 @@ exports.clearTutorHours = async (req, res) => {
         availableShiftBlocks: [],
         openAssignTutorModal: false,
         openClearTutorModal: true,
+        assignTutorError: null,
       });
     }
 
@@ -1696,7 +1753,8 @@ return res.render("adminTutorIndex", {
         selectedShiftDate: req.body?.shiftDate || "",
         availableShiftBlocks: [],
         openAssignTutorModal: false,
-        openClearTutorModal: true
+        openClearTutorModal: true,
+        assignTutorError: null,
       });
     } // end of if (!selectedShiftIds)
 
@@ -1809,6 +1867,7 @@ const removedShiftTimes = shiftsToRemove.map(shift => {
           availableShiftBlocks: [],
           openAssignTutorModal: false,
           openClearTutorModal: true,
+          assignTutorError: null,
         });
       }
 
@@ -1867,6 +1926,7 @@ const removedShiftTimes = shiftsToRemove.map(shift => {
       availableShiftBlocks: [],
       openAssignTutorModal: false,
       openClearTutorModal: true,
+      assignTutorError: null,
     });
   }
 }; 
@@ -2147,6 +2207,7 @@ exports.addUser = async (req, res) => {
         selectedShiftDate: "",
         availableShiftBlocks: [],
         openAssignTutorModal: false,
+        assignTutorError: null,
       });
     }
 
@@ -2174,6 +2235,7 @@ exports.addUser = async (req, res) => {
           selectedShiftDate: "",
           availableShiftBlocks: [],
           openAssignTutorModal: false,
+          assignTutorError: null,
         });
       }
 
@@ -2434,11 +2496,84 @@ exports.changeHours = async (req, res) => {
 
 // ----------------------------------------------------------------
 
-// POST - handle form submission to mark notifications as read 
+// // POST - handle form submission to mark notifications as read 
 
-exports.markNotificationsRead = async (req, res) => {
-try{
-// if not an auth user, send to login page
+// exports.markNotificationsRead = async (req, res) => {
+// try{
+// // if not an auth user, send to login page
+//     if (!req.session.user) {
+//       return res.render("login", {
+//         title: "Login Page",
+//         cssStylesheet: "login.css",
+//         jsFile: "login.js",
+//         error: "User not logged in.",
+//         user: null,
+//       });
+//     }
+
+//     // if auth user but not a admin, send to login page
+//     if (req.session.user.role !== "admin") {
+//       return res.render("login", {
+//         title: "Login Page",
+//         cssStylesheet: "login.css",
+//         jsFile: "login.js",
+//         error: "Access denied. Only admins can view this page.",
+//         user: null,
+//       });
+//     }
+  
+//     let { selectedNotifications } = req.body;
+
+//     // no selected Notifications/re-render page
+//     if(!selectedNotifications){
+//       return res.redirect("/adminIndex");
+//     }
+
+//     // ensure selectedNotifications is an array for logic handling 
+//      if (!Array.isArray(selectedNotifications)) {
+//       selectedNotifications = [selectedNotifications];
+//     }
+
+//     await NotificationLog.updateMany({
+//       _id: { $in: selectedNotifications },
+//       notificationType: "ADMIN_NOTIF"
+//     },
+//   {
+//     $set: {
+//       isRead: true, 
+//       readAt: new Date(),
+//     },
+//   }); 
+//   // end of Notificationlog.updateMany 
+
+//  return res.redirect("/adminIndex");
+
+// } catch (err){
+//   return res.render("adminIndex", {
+//       error: "Could not mark notifications as read.",
+//       title: "Admin Page",
+//       cssStylesheet: "adminIndex.css",
+//       jsFile: "adminIndex.js",
+//       user: req.session.user,
+//       appointments: [],
+//       courses: [],
+//       eligibleTutorShifts: [],
+//       studentFName: "",
+//       studentLName: "",
+//       date: "",
+//       time: "",
+//       course: "",
+//       notificationLogs: [],
+//     });
+// }
+// }
+
+
+// -------------------------------------------------------------------------
+
+exports.addBlackoutDate = async (req, res) => {
+    try {
+    // if not an auth user, send to login page
     if (!req.session.user) {
       return res.render("login", {
         title: "Login Page",
@@ -2459,49 +2594,71 @@ try{
         user: null,
       });
     }
-  
-    let { selectedNotifications } = req.body;
 
-    // no selected Notifications/re-render page
-    if(!selectedNotifications){
-      return res.redirect("/adminIndex");
+
+    const { startDate, endDate, reason } = req.body;
+    const weekdays = await CenterOpen
+    .find({}, "weekday isClosed openTime closeTime")
+    .sort({ weekday: 1 })
+
+
+    // ensure all form fields are entered
+    if (!startDate || !endDate || !reason) {
+      return res.render("adminAvailabilityIndex", {
+        title: "Manage Availability",
+        cssStylesheet: "adminAvailability.css",
+        jsFile: "adminAvailabilityIndex.js",
+        error: "All blackout date fields are required.",
+        user: req.session.user,
+        weekdays,
+      });
     }
 
-    // ensure selectedNotifications is an array for logic handling 
-     if (!Array.isArray(selectedNotifications)) {
-      selectedNotifications = [selectedNotifications];
-    }
+    // preventing any timezone shifting --> retrieving exact day start time and end time to parse
+    const [startYear, startMonth, startDay] = startDate.split("-").map(Number);
+    const [endYear, endMonth, endDay] = endDate.split("-").map(Number);
+    // setting start date to beginning of day
+    const parseStart = new Date(startYear, startMonth - 1, startDay, 0, 0, 0, 0);
+    // setting end date to end of day (23:59:59.999)
+    const parseEnd = new Date(endYear, endMonth - 1, endDay, 23, 59, 59, 999);
 
-    await NotificationLog.updateMany({
-      _id: { $in: selectedNotifications },
-      notificationType: "ADMIN_NOTIF"
-    },
-  {
-    $set: {
-      isRead: true, 
-      readAt: new Date(),
-    },
-  }); 
-  // end of Notificationlog.updateMany 
+     // make end date include the whole day
+    parseEnd.setHours(23, 59, 59, 999);
 
- return res.redirect("/adminIndex");
 
-} catch (err){
-  return res.render("adminIndex", {
-      error: "Could not mark notifications as read.",
-      title: "Admin Page",
-      cssStylesheet: "adminIndex.css",
-      jsFile: "adminIndex.js",
-      user: req.session.user,
-      appointments: [],
-      courses: [],
-      eligibleTutorShifts: [],
-      studentFName: "",
-      studentLName: "",
-      date: "",
-      time: "",
-      course: "",
-      notificationLogs: [],
-    });
-}
-}
+    if(parseEnd < parseStart)
+      return res.render("adminAvailabilityIndex", {
+        title: "Manage Availability",
+        cssStylesheet: "adminAvailability.css",
+        jsFile: "adminAvailabilityIndex.js",
+        error: "End date must be on or after start date.",
+        user: req.session.user,
+        weekdays
+      });
+
+
+
+      await centerClosedSchedule.create({
+        createdByAdminId: req.session.user._id,
+        startDate: parseStart,
+        endDate: parseEnd, 
+        reason: reason.trim()
+      });
+      return res.redirect("/adminAvailabilityIndex");
+
+
+  }
+  catch(err){
+    console.error("Error adding blackout date:", err);
+
+  return res.render("adminAvailabilityIndex", {
+    title: "Manage Availability",
+    cssStylesheet: "adminAvailability.css",
+    jsFile: "adminAvailabilityIndex.js",
+    error: "Something went wrong while adding blackout date.",
+    user: req.session.user,
+    weekdays: [] // fallback so page doesn’t crash
+  });
+  }
+};
+

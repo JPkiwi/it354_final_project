@@ -65,6 +65,38 @@
       <button type="submit" id="submitHoursButton">Submit Hours</button>
     </form>
   </div>
+
+
+
+  
+<div class = "addBlackoutDate">
+  <form id="blackoutDateForm" action = "/addBlackoutDate" method = "POST" style = "display: none;">
+    <label for="blackoutStartDate">Start Date: </label>
+    <input type = "text" id = "blackoutStartDate" name = "startDate" required />
+
+    <br> 
+    <br>
+    <label for="blackoutEndDate">End Date: </label>
+    <input type = "text" id = "blackoutEndDate" name = "endDate" required />
+
+    <br> 
+    <br>
+    <label for = "blackoutReason">Reason: </label>
+    <input type = "text" id = "blackoutReason" name="reason" required /> 
+    <br>
+    <br>
+    <button type="submit">Submit Blackout Date</button>
+
+  </form>
+  
+
+
+</div> 
+
+
+
+
+
   </div>
 
   <div class="generalCenterHours">
@@ -121,6 +153,8 @@
             </h3>
         <% }) %>
   </div>
+
 </div>
+
 
 <%- include("includes/_footer") %>

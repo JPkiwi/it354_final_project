@@ -38,7 +38,8 @@ exports.bookAppointment = async (req, res) => {
     // get the selected shift
     const shift = await TutorShift.findById(tutorShiftId).populate(
       "tutorId",
-      "fname lname",
+      // populating email for notification log
+      "fname lname email",
     );
 
     // shift not available if doesn't exist or is booked
@@ -152,6 +153,7 @@ exports.bookAppointment = async (req, res) => {
       notificationType: "ADMIN_NOTIF",
       isRead: false
     });
+
 
     } catch (emailErr) {
       console.error("Student book appointment email sending error.");
