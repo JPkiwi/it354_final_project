@@ -1,4 +1,5 @@
-// this schema represents the blocks of time the center will be closed, such as holidays (blackout date)
+// this schema represents the blocks of time the center will be closed, such as holidays 
+// (USED FOR BLACKOUT DATE FUNCTIONALITY)
 const mongoose = require("mongoose");
 // add data validation to make sure an admin user is creating a record 
 const centerClosedScheduleSchema = new mongoose.Schema(

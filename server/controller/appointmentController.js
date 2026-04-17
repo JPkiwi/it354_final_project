@@ -152,8 +152,7 @@ exports.bookAppointment = async (req, res) => {
       appointmentId: appointment._id,
       recipientUserId: req.session.user._id,
       appointmentDate: appointment.appointmentDate,
-      notificationType: "ADMIN_NOTIF",
-      isRead: false
+      notificationType: "STUDENT_BOOK_APT"
     });
 
 

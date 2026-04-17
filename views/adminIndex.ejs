@@ -148,7 +148,7 @@ function formatTo12Hour(timeStr) {
             <tr>
 
                 <td>
-                 <%= notification.timestamp ? new Date(notification.timestamp).toLocaleString() : "No time" %>
+                 <%= notification.actionTime ? new Date(notification.actionTime).toLocaleString() : "No time" %>
                 </td>
 
 
@@ -156,11 +156,17 @@ function formatTo12Hour(timeStr) {
                   Confirmation email for student
                   <%= notification.recipientUserId ? notification.recipientUserId.fname + " " + notification.recipientUserId.lname + "'s" : "Unknown" %>
                   Appointment sent; Appointment details:
-                  <%= notification.appointmentDate 
-                 ? new Date(notification.appointmentDate).toLocaleDateString('en-US') + 
-                  " at " + 
-                  new Date(notification.appointmentDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
-        : "No date" %>
+                  <%= notification.appointmentId && notification.appointmentId.appointmentDate ? new Date(notification.appointmentId.appointmentDate).toISOString().split("T")[0]
+                  : "No date" %>
+                  at
+                  <%= notification.appointmentId && notification.appointmentId.startTime
+                  ? formatTo12Hour(notification.appointmentId.startTime)
+                  : "No start time" %>
+                  -
+                  <%= notification.appointmentId && notification.appointmentId.endTime
+                  ? formatTo12Hour(notification.appointmentId.endTime)
+                  : "No end time" %>
+
                   </td>
 
 

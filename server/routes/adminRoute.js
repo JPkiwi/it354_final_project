@@ -51,6 +51,6 @@ route.post("/adminIndex/cancelAppointment", controller.adminCancelAppointment);
 route.post("/addBlackoutDate",controller.addBlackoutDate);
 
 // // Handles admin adding a partial-day closed time block
-// route.post("/addTimeBlock", controller.addTimeBlock);
+route.post("/addException", controller.addException);
 
 module.exports = route;

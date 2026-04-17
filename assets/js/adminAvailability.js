@@ -5,11 +5,19 @@ const centerOpenTimeInput = document.getElementById("centerOpenTime");
 const centerCloseTimeInput = document.getElementById("centerCloseTime");
 const closeWeekdayDropdown = document.getElementById("closeWeekdayDropdown");
 
-// When editHours button is clicked
-editHoursButton.addEventListener("click", () => {
-  // form hidden, show -> otherwise, default non-display
-  editHoursForm.style.display = (editHoursForm.style.display === "none") ? "block" : "none";
-});
+// When editHours button is clicked 
+// *updated to keep other forms closed when "Edit Center Hours" is clicked
+if (editHoursButton && editHoursForm) {
+  editHoursButton.addEventListener("click", () => {
+    const isOpen = editHoursForm.style.display === "block";
+
+    closeAllAvailabilityForms();
+
+    if (!isOpen) {
+      editHoursForm.style.display = "block";
+    }
+  });
+}
 
 // Hide form when submit occurs
 editHoursForm.addEventListener("submit", () => {
@@ -43,6 +51,13 @@ closeWeekdayDropdown.addEventListener("change", () => {
   }
 });
 
+// keeping all forms closed (to start/when opening AdminAvailability page)
+function closeAllAvailabilityForms() {
+  if (editHoursForm) editHoursForm.style.display = "none";
+  if (blackoutDateForm) blackoutDateForm.style.display = "none";
+  if (exceptionForm) exceptionForm.style.display = "none";
+}
+
 
 
 // for "Blackout Date" functionality ------------
@@ -51,32 +66,18 @@ const editBlackoutButton = document.getElementById("editBlackoutButton");
 const blackoutDateForm = document.getElementById("blackoutDateForm");
 
 // displaying/hiding the blackout date feature based on if button is clicked
+// updated to keep one form open (blackout date) at a time
 if (editBlackoutButton && blackoutDateForm) {
   editBlackoutButton.addEventListener("click", () => {
-    if (blackoutDateForm.style.display === "none") {
+    const isOpen = blackoutDateForm.style.display === "block";
+
+    closeAllAvailabilityForms();
+
+    if (!isOpen) {
       blackoutDateForm.style.display = "block";
-    } else {
-      blackoutDateForm.style.display = "none";
     }
   });
 }
-
-
-// // flatpickr for calendar/choosing a date for blackout date 
-// flatpickr("#blackoutStartDate", {
-//   dateFormat: "Y-m-d",
-//   minDate: "today",
-//   altInput: true,
-//   altFormat: "F j, Y"
-// });
-
-// flatpickr("#blackoutEndDate", {
-//   dateFormat: "Y-m-d",
-//   minDate: "today",
-//   altInput: true,
-//   altFormat: "F j, Y"
-// });
-
 
 
 // attach flatpickr cal to the input
@@ -113,3 +114,53 @@ flatpickr("#blackoutEndDate", {
 });
 
 
+// opening (displaying) the "Add Exception" form based on click action 
+const editExceptionButton = document.getElementById("editExceptionButton");
+const exceptionForm = document.getElementById("exceptionForm");
+
+// if exception is open, only keep that 1 form open 
+if (editExceptionButton && exceptionForm) {
+  editExceptionButton.addEventListener("click", () => {
+    const isOpen = exceptionForm.style.display === "block";
+
+    closeAllAvailabilityForms();
+
+    if (!isOpen) {
+      exceptionForm.style.display = "block";
+    }
+  });
+}
+
+// forcing :00 for times (exceptions need to be hr on the dot for appointment/assignTutorHours validation to work)
+const exceptionStartTime = document.getElementById("exceptionStartTime");
+const exceptionEndTime = document.getElementById("exceptionEndTime");
+
+// forcing start time to end in :00
+if (exceptionStartTime) {
+  exceptionStartTime.addEventListener("change", () => {
+    if (exceptionStartTime.value) {
+      const startSplit = exceptionStartTime.value.split(":");
+      exceptionStartTime.value = `${startSplit[0]}:00`;
+    }
+  });
+}
+// forcing end time to end in :00
+if (exceptionEndTime) {
+  exceptionEndTime.addEventListener("change", () => {
+    if (exceptionEndTime.value) {
+      const endSplit = exceptionEndTime.value.split(":");
+      exceptionEndTime.value = `${endSplit[0]}:00`;
+    }
+  });
+}
+
+// flatpickr for "add exception" 
+flatpickr("#exceptionDate", {
+  dateFormat: "Y-m-d",
+  minDate: "today",
+  altInput: true,
+  altFormat: "F j, Y",
+  onReady: function (selectedDates, dateStr, instance) {
+    instance.altInput.placeholder = "-- Select Date --";
+  }
+});

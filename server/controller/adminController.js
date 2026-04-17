@@ -11,7 +11,8 @@ const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
 const NotificationLog = require("../model/notificationLog");
 const { deleteCalendarEvent } = require('../services/calendarService');
-const CenterTimeBlock = require("../model/centerTimeBlock");
+const CenterException = require("../model/centerException");
+
 
 
 
@@ -105,15 +106,13 @@ exports.getAdminIndex = async (req, res) => {
     const courses = await Course.find();
 
     // get notification logs for admin modal
-    const notificationLogs = await NotificationLog.find({
-    notificationType: "ADMIN_NOTIF",
-    isRead: false,
-  })
-  .populate("recipientUserId", "fname lname")
-  .populate("appointmentId")
-  .sort({ timestamp: -1 });
+    const notificationLogs = await NotificationLog.find({})
+    .populate("recipientUserId", "fname lname")
+    .populate("appointmentId", "appointmentDate startTime endTime")
+    .sort({ actionTime: -1 });
 
-    // render adminIndex view 
+
+
     // render adminIndex view
     res.render("adminIndex", {
       error: null,
@@ -150,7 +149,6 @@ exports.getAdminIndex = async (req, res) => {
       time: "",
       course: "",
       notificationLogs: []
-
     });
   }
 };
@@ -213,6 +211,7 @@ exports.adminCancelAppointment = async (req, res) => {
         date: "",
         time: "",
         course: "",
+        notificationLogs: []
       });
     }
     if (!appointment.tutorShiftId) {
@@ -230,6 +229,7 @@ exports.adminCancelAppointment = async (req, res) => {
         date: "",
         time: "",
         course: "",
+        notificationLogs: []
       });
     }
     // cancel appointment
@@ -278,6 +278,7 @@ exports.adminCancelAppointment = async (req, res) => {
         date: "",
         time: "",
         course: "",
+        notificationLogs: []
       });
     }
     // ────────────────────────────────────────────────────────────
@@ -320,6 +321,7 @@ exports.adminCancelAppointment = async (req, res) => {
       date: "",
       time: "",
       course: "",
+      notificationLogs: []
     });
   }
 };
@@ -1142,6 +1144,14 @@ exports.assignTutorHours = async (req, res) => {
       },
     });
 
+    // fetching the partial closures (exception blocks) for the specified day admin wants to assign hours
+    const exceptionBlocks = await CenterException.find({
+      exceptionDate: {
+        $gte: startOfDay,
+        $lte: endOfDay,
+      },
+    }).sort({ startTime: 1 });
+
     // log new Set
     const takenShiftBlocks = new Set();
 
@@ -1149,6 +1159,19 @@ exports.assignTutorHours = async (req, res) => {
     existingTutorShifts.forEach((shift) => {
       takenShiftBlocks.add(`${shift.startTime}-${shift.endTime}`);
     });
+
+    const exceptionShiftBlocks = new Set();
+
+    exceptionBlocks.forEach((block) => {
+    const startHr = parseInt(block.startTime.split(":")[0], 10);
+    const endHr = parseInt(block.endTime.split(":")[0], 10);
+
+    for (let hour = startHr; hour < endHr; hour++) {
+      const blockStart = `${String(hour).padStart(2, "0")}:00`;
+      const blockEnd = `${String(hour + 1).padStart(2, "0")}:00`;
+      exceptionShiftBlocks.add(`${blockStart}-${blockEnd}`);
+    }
+  });
 
     const availableShiftBlocks = [];
 
@@ -1158,13 +1181,40 @@ exports.assignTutorHours = async (req, res) => {
       const blockEnd = `${String(hour + 1).padStart(2, "0")}:00`;
       const blockValue = `${blockStart}-${blockEnd}`;
 
-      // only display shift block IF tutor does NOT already have it scheduled for them
-      if (!takenShiftBlocks.has(blockValue)) {
+      // only display shift block IF tutor does NOT already have it scheduled for them 
+      // & UPDATED display shift block IF it is not time-blocked off 
+      if (!takenShiftBlocks.has(blockValue) && !exceptionShiftBlocks.has(blockValue)) {
         availableShiftBlocks.push({
           value: blockValue,
           label: `${formatTo12Hour(blockStart)} - ${formatTo12Hour(blockEnd)}`,
         });
       }
+    }
+
+
+    // if there are NO available shift blocks, 
+    // describe that center is closed or shifts are taken
+    if (availableShiftBlocks.length === 0) {
+      return res.render("adminTutorIndex", {
+        error: null,
+        title: "Admin Manage Tutors",
+        cssStylesheet: "tutorIndex.css",
+        jsFile: "tutorIndex.js",
+        user: req.session.user,
+        tutors,
+        activeTutors,
+        courses,
+        today,
+        closedWeekdays,
+        selectedTutorId: tutorId,
+        selectedShiftDate: shiftDate,
+        availableShiftBlocks: [],
+        openAssignTutorModal: true,
+        scheduleShifts: [],
+        clearShifts: [],
+        openClearTutorModal: false,
+        assignTutorError: "No tutor shifts are available for that date. The center is closed during the remaining hours, or the shifts are already taken.",
+      });
     }
 
     // view button
@@ -1266,6 +1316,11 @@ exports.assignTutorHours = async (req, res) => {
           continue;
         }
 
+        // make sure blocked center hours cannot be assigned
+        if (exceptionShiftBlocks.has(block)) {
+        skippedCount++;
+        continue;
+      }
         // validation check for dpublicate shifts (making sure duplicates are not chosen)
         const existingShift = await TutorShift.findOne({
           tutorId,
@@ -1304,16 +1359,6 @@ exports.assignTutorHours = async (req, res) => {
           targetUserId: tutor._id,
           details: `Tutor ${tutor.fname} ${tutor.lname} was assigned shifts on ${shiftDate}: ${assignedShiftTimes.join(", ")}.`,
         });
-      }
-
-      // messages about shift creation amount AFTER submission
-      let message = "";
-      if (createdCount > 0 && skippedCount > 0) {
-        message = `${createdCount} shift(s) added. ${skippedCount} shift(s) skipped.`;
-      } else if (createdCount > 0) {
-        message = `${createdCount} shift(s) successfully added.`;
-      } else {
-        message = "No shifts were added.";
       }
 
       return res.render("adminTutorIndex", {
@@ -2571,6 +2616,9 @@ exports.changeHours = async (req, res) => {
 
 // -------------------------------------------------------------------------
 
+// Adding a blackout date functionality (choosing specified time range (covering entire day of dates chosen) 
+// that center is fully closed; example: Center normally open M-F, but need to close just on one specified Tuesday
+// for holiday
 exports.addBlackoutDate = async (req, res) => {
     try {
     // if not an auth user, send to login page
@@ -2662,3 +2710,234 @@ exports.addBlackoutDate = async (req, res) => {
   }
 };
 
+
+
+
+// ------------------------------------------------------------------------------
+
+// Handles admin creation of an exception window for a specific date.
+// Allows admin to mark a selected time range as closed (within normal center hours) 
+exports.addException = async (req, res) => {
+  try{
+    // if not an auth user, send to login page
+    if (!req.session.user) {
+      return res.render("login", {
+        title: "Login Page",
+        cssStylesheet: "login.css",
+        jsFile: "login.js",
+        error: "User not logged in.",
+        user: null,
+      });
+    }
+
+    // if auth user but not a admin, send to login page
+    if (req.session.user.role !== "admin") {
+      return res.render("login", {
+        title: "Login Page",
+        cssStylesheet: "login.css",
+        jsFile: "login.js",
+        error: "Access denied. Only admins can view this page.",
+        user: null,
+      });
+    }
+
+
+
+    // retrieve the date, times, & reason entered in form
+    const { exceptionDate, startTime, endTime, reason } = req.body; 
+
+    // finding regular center hours for when center is open/closed
+    const weekdays = await CenterOpen
+    .find({}, "weekday isClosed openTime closeTime")
+
+    // ensure all fields in form were filled & entered correctly 
+    if(!exceptionDate || !startTime || !endTime || !reason ){
+       return res.render("adminAvailabilityIndex", {
+        title: "Admin Availability",
+        cssStylesheet: "availabilityIndex.css",
+        jsFile: "adminAvailability.js",
+        error: "All exception fields are required.",
+        user: req.session.user,
+        weekdays,
+      });
+    }
+
+     // parse block date 
+     // same functionality as blackout date
+    const [year, month, day] = exceptionDate.split("-").map(Number);
+    const parsedExceptionDate = new Date(year, month - 1, day, 0, 0, 0, 0);
+
+    const startOfDay = new Date(year, month - 1, day, 0, 0, 0, 0);
+    const endOfDay = new Date(year, month - 1, day, 23, 59, 59, 999);
+
+    // parse times for validation checks 
+    const [startHour, startMinute] = startTime.split(":").map(Number);
+    const [endHour, endMinute] = endTime.split(":").map(Number);
+
+    // enusre that both the start minute and end minutes are :00 / on the hour
+    if (startMinute !== 0 || endMinute !== 0) {
+      return res.render("adminAvailabilityIndex", {
+        title: "Admin Availability",
+        cssStylesheet: "availabilityIndex.css",
+        jsFile: "adminAvailability.js",
+        error: "Exception range must be entered on the hour.",
+        user: req.session.user,
+        weekdays,
+      });
+    }
+
+    // ensure the start time is before the end time/can't be same times 
+    if (startHour >= endHour) {
+      return res.render("adminAvailabilityIndex", {
+        title: "Admin Availability",
+        cssStylesheet: "availabilityIndex.css",
+        jsFile: "adminAvailability.js",
+        error: "Start time must be earlier than end time.",
+        user: req.session.user,
+        weekdays,
+      });
+    }
+
+    // find the weekday for selected date of time block 
+    const weekdayNames = [
+      "Sunday", 
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday"
+    ];
+
+    const weekday = weekdayNames[parsedExceptionDate.getDay()];
+
+    // retrieve the normal center hours for specified date
+    const centerOpenDay = await CenterOpen.findOne({ weekday });
+
+    // check if the day chosen for time block is closed
+    if (!centerOpenDay || centerOpenDay.isClosed) {
+      return res.render("adminAvailabilityIndex", {
+        title: "Admin Availability",
+        cssStylesheet: "availabilityIndex.css",
+        jsFile: "adminAvailability.js",
+        error: `Center is fully closed on ${weekday}.`,
+        user: req.session.user,
+        weekdays,
+      });
+    }
+
+    // check if the selected date for time block is within a specified blackout date
+    // 
+    const blackoutDate = await centerClosedSchedule.findOne({
+      startDate: { $lte: endOfDay },
+      endDate: { $gte: startOfDay }
+    });
+
+    if(blackoutDate){
+      return res.render("adminAvailabilityIndex", {
+        title: "Admin Availability",
+        cssStylesheet: "availabilityIndex.css",
+        jsFile: "adminAvailability.js",
+        error: `Cannot add exception due to blackout date.`,
+        user: req.session.user,
+        weekdays,
+      });
+    }
+
+    // ensure the time block chosen is within the center open hours for specified date
+    const openHr = Number(centerOpenDay.openTime.split(":")[0]);
+    const closeHr = Number(centerOpenDay.closeTime.split(":")[0]);
+    const openMin = Number(centerOpenDay.openTime.split(":")[1]);
+
+    // similar func to assign tutor hours 
+    let validStartHr;
+    if (openMin === 0 ){
+      validStartHr = openHr;
+    } else {
+      validStartHr = openHr + 1; 
+    }
+
+    let validEndHr = closeHr; 
+
+    // ensuring the time block specified is within the center open schedule hours 
+    if (startHour < validStartHr || endHour > validEndHr) {
+      return res.render("adminAvailabilityIndex", {
+        title: "Admin Availability",
+        cssStylesheet: "availabilityIndex.css",
+        jsFile: "adminAvailability.js",
+        error: "Exception must be within the center's open hours.",
+        user: req.session.user,
+        weekdays,
+      });
+    }
+
+
+    // prevent duplicate time blocks (check for an exisiting time block)
+    const existingException = await CenterException.findOne({
+      exceptionDate: {
+        $gte: startOfDay,
+        $lte: endOfDay,
+      },
+      startTime,
+      endTime,
+    });
+
+
+    // if an exisiting time block for specified date already exists, then 
+    // ensure does not get blocked again/send error message
+    if (existingException) {
+      return res.render("adminAvailabilityIndex", {
+        title: "Admin Availability",
+        cssStylesheet: "availabilityIndex.css",
+        jsFile: "adminAvailability.js",
+        error: "That time exception already exists for this date.",
+        user: req.session.user,
+        weekdays,
+      });
+    }
+
+    // once passing all validation checks, create the time block 
+    // create the time block
+    await CenterException.create({
+      createdByAdminId: req.session.user._id,
+      exceptionDate: parsedExceptionDate,
+      startTime,
+      endTime,
+      reason: reason.trim(),
+    });
+
+      
+  // helper function (will update later to remove repeat of this func/only call from here )
+  function formatTo12Hour(timeStr) {
+    const [hourStr, minute] = timeStr.split(":");
+    let hour = parseInt(hourStr, 10);
+    const ampm = hour >= 12 ? "PM" : "AM";
+
+    hour = hour % 12;
+    if (hour === 0) hour = 12;
+
+    return `${hour}:${minute} ${ampm}`;
+  }
+
+
+  // audit log creation describing the time block made & redirecting to the admin availability index page
+    await AuditLog.create({
+      actionUserId: req.session.user._id,
+      actionType: "CENTER_HOURS_CHANGED",
+      details: `Exception added on ${exceptionDate}: ${formatTo12Hour(startTime)} - ${formatTo12Hour(endTime)}. Reason: ${reason.trim()}.`,
+    });
+
+    return res.redirect("/adminAvailabilityIndex");
+
+  }
+  catch(err){
+    return res.render("adminAvailabilityIndex", {
+      title: "Admin Availability",
+      cssStylesheet: "availabilityIndex.css",
+      jsFile: "adminAvailability.js",
+      error: "Something went wrong while adding exception.",
+      user: req.session.user,
+      weekdays: [],
+    });
+  }
+}; 
