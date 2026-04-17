@@ -50,6 +50,7 @@ exports.bookAppointment = async (req, res) => {
         user: req.session.user,
         availableShifts: [],
         bookedAppointments: [],
+        pastBookedAppointments: [],
       });
     }
 
@@ -121,6 +122,7 @@ exports.bookAppointment = async (req, res) => {
         user: req.session.user,
         availableShifts: [],
         bookedAppointments: [],
+        pastBookedAppointments: [],
       });
     }
     // ────────────────────────────────────────────────────────────
@@ -155,6 +157,7 @@ exports.bookAppointment = async (req, res) => {
       user: req.session.user,
       availableShifts: [],
       bookedAppointments: [],
+      pastBookedAppointments: [],
     });
   }
 };
@@ -184,13 +187,47 @@ exports.getBookedAppointments = async (req, res) => {
       });
     }
 
-    // get booked appointments that are scheduled (don't want to display cancelled status appointments)
-    const bookedAppointments = await Appointment.find({
+    // get booked appointments that are scheduled status (don't want to display cancelled status appointments)
+    let bookedAppointments = await Appointment.find({
       studentId: req.session.user._id,
       appointmentStatus: "scheduled",
     });
 
-    // render studentAppointment page with bookedAppointments
+    // update appointment status to completed if past the current date and time
+    for (let i = 0; i < bookedAppointments.length; i++) {
+       const currAppointment = bookedAppointments[i];
+       const currAppointmentDate = new Date(currAppointment.appointmentDate);
+       // set the hours for the date of the current appointment to the end time using the stored hours
+       currAppointmentDate.setHours(
+          parseInt(currAppointment.endTime.split(":")[0]),
+          parseInt(currAppointment.endTime.split(":")[1])
+       );
+
+       // update status to completed if current appointment status is set to scheduled and past the current time
+       if (currAppointment.appointmentStatus === "scheduled" && currAppointmentDate < new Date()) {
+          await Appointment.findByIdAndUpdate(currAppointment._id, { appointmentStatus: "completed" });
+          bookedAppointments[i].appointmentStatus = "completed";
+       }
+    }
+
+    // update booked appointments
+    let updatedAppointments = [];
+    for (let i = 0; i < bookedAppointments.length; i++) {
+      // add appointment to updatedAppointments if the status is not completed (scheduled)
+      if (bookedAppointments[i].appointmentStatus !== "completed") {
+        updatedAppointments.push(bookedAppointments[i]);
+      }
+    }
+    bookedAppointments = updatedAppointments;
+    
+
+    // get past booked appointments (based on completed appointment status)
+    const pastBookedAppointments = await Appointment.find({
+      studentId: req.session.user._id,
+      appointmentStatus: "completed",
+    });
+
+    // render studentAppointment page with bookedAppointments and pastBookedAppointments
     res.render("studentAppointment", {
       title: "Booked Appointments",
       cssStylesheet: "studentStyle.css",
@@ -198,16 +235,18 @@ exports.getBookedAppointments = async (req, res) => {
       error: null,
       user: req.session.user,
       bookedAppointments,
+      pastBookedAppointments,
     });
   } catch (err) {
     res.render("studentAppointment", {
       title: "Booked Appointments",
       cssStylesheet: "studentStyle.css",
       jsFile: "studentScript.js",
-      error: "Failed to book appointment.",
+      error: "Failed to view appointments.",
       user: req.session.user,
       availableShifts: [],
       bookedAppointments: [],
+      pastBookedAppointments: [],
     });
   }
 };
