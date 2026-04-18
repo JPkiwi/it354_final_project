@@ -77,7 +77,6 @@ confirmCancelModal.addEventListener("click", (e) => {
   }
 });
 
-console.log("test") 
 
 // notification button modal function
 
