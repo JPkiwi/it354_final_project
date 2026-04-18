@@ -12,9 +12,6 @@ route.get('/tutorIndex/tutorAppointment', controller.getTutorAppointments);
 // update submitted comment in MongoDB for specific tutor appointment selected
 route.post('/tutorIndex/submitComment', controller.submitComment);
 
-// display specific tutor comments in comments text area if any for appointment selected
-// route.get('/tutorIndex/viewComment', controller.viewComment);
-
 // update submitted start and end times in MongoDB for specific tutor appointment selected
 route.post('/tutorIndex/submitTimes', controller.submitTimes);
 
@@ -25,5 +22,8 @@ route.post('/tutorIndex/submitShow', controller.submitShow);
 route.post("/tutorIndex/tutorAppointment", (req, res) => {
     res.redirect("/tutorIndex/tutorAppointment");
 });
+
+// display the cancelled appointments under specific tutor
+route.get('/tutorCancelled', controller.getCancelledAppointments);
 
 module.exports = route;

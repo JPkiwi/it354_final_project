@@ -47,7 +47,6 @@
               <% } %>
 
             </div> <!-- end of tutor calendar container -->
-
       </div> <!-- end of tutor column for schedule-->
 
 
@@ -70,6 +69,7 @@
             <% } else { %>
               <% bookedAppointments.forEach(appointment => { %>
                 <div class="tutorShiftInfo">
+                  <p><b>Student: <%= appointment.student.fname %> <%= appointment.student.lname %></b></p>
                   <p><%= appointment.course %></p>
                   <!--used toUTCString() instead of .toDateString() to get the proper date and slice to look nice-->
                   <p><%= appointment.appointmentDate.toUTCString().slice(0, 16) %></p>
@@ -91,7 +91,7 @@
                     <%= startHourNum + ":" + startMinute + " " + startAMPM %> - <%= endHourNum + ":" + endMinute + " " + endAMPM %>
                   </b></p>
 
-                  <p><%= appointment.appointmentStatus %></p>
+                  <p>Attendance: <%= appointment.attendance.attendanceStatus === "noShow" ? "no-show" : appointment.attendance.attendanceStatus %></p>
                   <br />
 
                   <input type="radio" name="selectedAppointment" value="<%= appointment._id %>" data-comment='<%= JSON.stringify(appointment.tutorComments || "") %>' data-actual-start="<%= appointment.attendance?.actualStart || '' %>" data-actual-end="<%= appointment.attendance?.actualEnd || '' %>" data-show="<%= appointment.attendance?.attendanceStatus || '' %>" />
@@ -141,6 +141,7 @@
               <option value="" disabled selected hidden>-- Select an Option --</option>
               <option value="show">Show</option>
               <option value="no-show">No-Show</option>
+              <option value="pending">Pending</option>
             </select>
             <br />
             <!--Update comment in backend when submit-->
@@ -169,6 +170,7 @@
                 <% } else { %>
                   <% pastBookedAppointments.forEach(appointment => { %>
                     <div class="tutorShiftInfo">
+                      <p><b>Student: <%= appointment.student.fname %> <%= appointment.student.lname %></b></p>
                       <p><%= appointment.course %></p>
                       <!--used toUTCString() instead of .toDateString() to get the proper date and slice to look nice-->
                       <p><%= appointment.appointmentDate.toUTCString().slice(0, 16) %></p>
@@ -191,7 +193,7 @@
                         <%= startHourNum + ":" + startMinute + " " + startAMPM %> - <%= endHourNum + ":" + endMinute + " " + endAMPM %>
                       </b></p>
                       
-                      <p><%= appointment.appointmentStatus %></p>
+                      <p>Attendance: <%= appointment.attendance.attendanceStatus === "noShow" ? "no-show" : appointment.attendance.attendanceStatus %></p>
                       <br />
 
                       <input type="radio" name="selectedAppointment" value="<%= appointment._id %>" data-comment='<%= JSON.stringify(appointment.tutorComments || "") %>' data-actual-start="<%= appointment.attendance?.actualStart || '' %>" data-actual-end="<%= appointment.attendance?.actualEnd || '' %>" data-show="<%= appointment.attendance?.attendanceStatus || '' %>" />

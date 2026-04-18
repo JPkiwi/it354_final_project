@@ -112,6 +112,8 @@ showButton.addEventListener("click", ()=> {
             selectShow.value = "show";
         } else if (showValue === "noShow") {
             selectShow.value = "no-show";
+        } else if (showValue === "pending") {
+            selectShow.value = "pending";
         } else {
             selectShow.value = "";
         }
