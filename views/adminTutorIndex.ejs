@@ -7,6 +7,11 @@
   <div class="alert"><strong>Error:</strong> <%= error %></div>
 <% } %> -->
 
+<!-- to show "Please select a tutor first" error in correct spot -->
+<% if (error) { %>
+  <p><strong></strong> <%= error %></p>
+<% } %>
+
 
 <body>
 <!--Navigation Bar-->
@@ -75,7 +80,8 @@
         </form>
     
         <div class="scheduleResults">
-        <% if (error) { %>
+          <!-- changed from "error" to shiftError for correct placement of error -->
+        <% if (shiftError) { %>
           <br/><br/>
           <div class="alert"><%= error %></div>
           <!-- updated for scheduleShifts -->
