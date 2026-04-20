@@ -23,8 +23,7 @@
   <div class="availabilityFunctionality">
     <!--Admin availability button options-->
   <div class="adminAvailabilityButtons">
-    <button type="button" id="editHoursButton">Edit Hours</button>
-    <button type="button" id="addTimeButton">Add Time Block</button>
+    <button type="button" id="editHoursButton">Edit Center Hours</button>
     <button type="button" id="editExceptionButton">Add Exception</button>
     <button type="button" id="editBlackoutButton">Add Blackout Date</button>
   </div>
@@ -65,6 +64,69 @@
       <button type="submit" id="submitHoursButton">Submit Hours</button>
     </form>
   </div>
+
+
+
+  
+<div class = "addBlackoutDate">
+  <form id="blackoutDateForm" action = "/addBlackoutDate" method = "POST" style = "display: none;">
+    <label for="blackoutStartDate">Start Date: </label>
+    <input type = "text" id = "blackoutStartDate" name = "startDate" required />
+
+    <br> 
+    <br>
+    <label for="blackoutEndDate">End Date: </label>
+    <input type = "text" id = "blackoutEndDate" name = "endDate" required />
+
+    <br> 
+    <br>
+    <label for = "blackoutReason">Reason: </label>
+    <input type = "text" id = "blackoutReason" name="reason" required /> 
+    <br>
+    <br>
+    <button type="submit">Submit Blackout Date</button>
+
+  </form>
+</div> 
+
+
+<div class="addException">
+  <form id="exceptionForm" action="/addException" method="POST" style="display: none;">
+    <label for="exceptionDate">Date:</label>
+    <input type="text" id="exceptionDate" name="exceptionDate" required />
+
+    <br>
+    <br>
+
+    <label for="exceptionStartTime">Start Time:</label>
+    <input type="time" id="exceptionStartTime" name="startTime" step="3600" required />
+
+    <br>
+    <br>
+
+    <label for="exceptionEndTime">End Time:</label>
+    <input type="time" id="exceptionEndTime" name="endTime" step="3600" required />
+
+    <br>
+    <br>
+
+    <strong>Note:</strong> Enter exception times on the hour (e.g., 2:00 – 4:00 PM) to indicate when the center will be closed.
+    
+    <br>
+    <br>
+
+    <label for="exceptionReason">Reason:</label>
+    <input type="text" id="exceptionReason" name="reason" required />
+
+    <br>
+    <br>
+
+    <button type="submit">Submit Exception</button>
+  </form>
+</div>
+
+
+
   </div>
 
   <div class="generalCenterHours">
@@ -121,6 +183,8 @@
             </h3>
         <% }) %>
   </div>
+
 </div>
+
 
 <%- include("includes/_footer") %>

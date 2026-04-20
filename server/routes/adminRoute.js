@@ -47,4 +47,10 @@ route.post("/adminTutorIndex/viewSchedule", controller.adminViewTutorShedule);
 
 route.post("/adminIndex/cancelAppointment", controller.adminCancelAppointment);
 
+// Handles admin setting a blackout (fully closing specified date(s))
+route.post("/addBlackoutDate",controller.addBlackoutDate);
+
+// // Handles admin adding a partial-day closed time block
+route.post("/addException", controller.addException);
+
 module.exports = route;
