@@ -11,15 +11,13 @@
 
   <div class="loginBox">
     <h1>Login</h1>
-    <form action="/login" method="post" onsubmit="return validateForm('email')">
+    <form action="/login" method="post">
       <label for="email">Email:</label>
       <input type="text" id="email" name="email" required >
-      <span id="emailError" style="color: red; font-size: 0.8em; display: block; margin-top: 1px;"></span>
       <br><br>
 
       <label for="password">Password:</label>
       <input type="password" id="password" name="password" required >
-      <span id="passwordError" style="color: red; font-size: 0.8em; display: block; margin-top: 1px;"></span>
       <br><br>
 
       <button type="submit">Login</button><br><br>
