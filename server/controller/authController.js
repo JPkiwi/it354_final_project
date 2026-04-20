@@ -134,15 +134,17 @@ exports.loginUser = async (req, res) => {
          // make sure password is at least 8 characters long
         if (!password || password.length < 8) {
             // increment failedAttempts count (for non-admin users only)
+            let updatedUser;
             if (user && user.role !== "admin") {
-                await User.updateOne(
-                    { _id: user._id },
-                    { $inc: { failedAttempts: 1 } }
+                updatedUser = await User.findByIdAndUpdate(
+                    { _id: user._id},
+                    { $inc: { failedAttempts: 1 } },
+                    { new: true }
                 );
             }
 
             // if user fails to log in 4 times, deactivate user
-            if (user && user.failedAttempts >= 4) {
+            if (updatedUser && updatedUser.failedAttempts >= 4) {
                 await User.updateOne(
                     { _id: user._id },
                     { $set: { failedAttempts: 0, isActive: false } }
@@ -170,16 +172,17 @@ exports.loginUser = async (req, res) => {
         if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
 
             // increment failedAttempts count (for non-admin users only)
+            let updatedUser;
             if (user && user.role !== "admin") {
-                // increment failedAttempts count
-                await User.updateOne(
-                    { _id: user._id },
-                    { $inc: { failedAttempts: 1 } }
+                updatedUser = await User.findByIdAndUpdate(
+                    { _id: user._id},
+                    { $inc: { failedAttempts: 1 } },
+                    { new: true }
                 );
             }
 
             // if user fails to log in 4 times, deactivate user
-            if (user && user.failedAttempts >= 4) {
+            if (updatedUser && updatedUser.failedAttempts >= 4) {
                 await User.updateOne(
                     { _id: user._id },
                     { $set: { failedAttempts: 0, isActive: false } }
