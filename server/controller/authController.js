@@ -119,8 +119,44 @@ exports.loginUser = async (req, res) => {
     try {
         const user = await User.findOne({ email });
 
-        // make sure password is at least 8 characters long
+        // ensures email is entered and in the form of @ilstu.edu
+        const emailRegex = /^[^\s@]+@ilstu\.edu$/;
+        if (!email || !emailRegex.test(email)) {
+            return res.render('login', {
+                error: 'Email address not in the form of @ilstu.edu.',
+                title: 'Login',
+                cssStylesheet: 'login.css',
+                jsFile: 'login.js',
+                user: null
+            });
+        }
+
+         // make sure password is at least 8 characters long
         if (!password || password.length < 8) {
+            // increment failedAttempts count (for non-admin users only)
+            if (user && user.role !== "admin") {
+                await User.updateOne(
+                    { _id: user._id },
+                    { $inc: { failedAttempts: 1 } }
+                );
+            }
+
+            // if user fails to log in 4 times, deactivate user
+            if (user && user.failedAttempts >= 4) {
+                await User.updateOne(
+                    { _id: user._id },
+                    { $set: { failedAttempts: 0, isActive: false } }
+                );
+
+                return res.render('login', {
+                    error: 'Too many login attempts for this email. Account has been deactivated. Please contact admin to reactive account.',
+                    title: 'Login',
+                    cssStylesheet: 'login.css',
+                    jsFile: 'login.js',
+                    user: null
+                });
+            }
+
             return res.render('login', {
                 error: 'Password must be at least 8 characters long.',
                 title: 'Login',
@@ -132,20 +168,34 @@ exports.loginUser = async (req, res) => {
 
         // checks to see if this user exists or if password doesn't match
         if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
+
+            // increment failedAttempts count (for non-admin users only)
+            if (user && user.role !== "admin") {
+                // increment failedAttempts count
+                await User.updateOne(
+                    { _id: user._id },
+                    { $inc: { failedAttempts: 1 } }
+                );
+            }
+
+            // if user fails to log in 4 times, deactivate user
+            if (user && user.failedAttempts >= 4) {
+                await User.updateOne(
+                    { _id: user._id },
+                    { $set: { failedAttempts: 0, isActive: false } }
+                );
+
+                return res.render('login', {
+                    error: 'Too many login attempts for this email. Account has been deactivated. Please contact admin to reactive account.',
+                    title: 'Login',
+                    cssStylesheet: 'login.css',
+                    jsFile: 'login.js',
+                    user: null
+                });
+            }
+
             return res.render('login', {
                 error: 'Invalid email or password.',
-                title: 'Login',
-                cssStylesheet: 'login.css',
-                jsFile: 'login.js',
-                user: null
-            });
-        }
-
-        // ensures email is entered and in the form of @ilstu.edu
-        const emailRegex = /^[^\s@]+@ilstu\.edu$/;
-        if (!email || !emailRegex.test(email)) {
-            return res.render('login', {
-                error: 'Email address not in the form of @ilstu.edu.',
                 title: 'Login',
                 cssStylesheet: 'login.css',
                 jsFile: 'login.js',
@@ -175,6 +225,12 @@ exports.loginUser = async (req, res) => {
                 user: null
             });
         }
+
+        // successfully able to login, reset count
+        await User.updateOne(
+            { _id: user._id },
+            { $set: { failedAttempts: 0 } }
+        );
 
         // stores user in session
         req.session.user = user;
