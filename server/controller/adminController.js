@@ -695,7 +695,7 @@ exports.toggleTutorStatus = async (req, res) => {
       scheduleShifts: [],
       clearShifts: [],
       closedWeekdays: [],
-      selectedTutorId: tutorId || null,
+      selectedTutorId: req.body.selectedTutor || null,
       selectedShiftDate: req.body?.shiftDate || "",
       availableShiftBlocks: [],
       openAssignTutorModal: false,
@@ -1508,7 +1508,7 @@ exports.adminViewTutorShedule = async (req, res) => {
         courses,
         today,
         // changed from "shifts, "
-        scheduleShifts: shifts,
+        scheduleShifts: [],
         clearShifts: [],
         closedWeekdays,
         selectedTutorId: req.body.tutorId || null,
@@ -1564,7 +1564,7 @@ exports.adminViewTutorShedule = async (req, res) => {
       tutors: [],
       activeTutors: [],
       courses: [],
-      today: new Date().toISOString().split("T")[0],
+      today: new Date().toLocaleDateString("en-CA"),
       // changed from "shifts: []"
       scheduleShifts: [],
       clearShifts: [],
