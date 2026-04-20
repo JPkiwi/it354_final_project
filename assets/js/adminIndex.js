@@ -78,5 +78,30 @@ confirmCancelModal.addEventListener("click", (e) => {
 });
 
 
-sortAppointments();
+// notification button modal function
+
+ const notifBtn = document.getElementById("notifs");
+  const modal = document.getElementById("notificationsModal");
+  const closeBtn = document.getElementById("closeNotificationsBtn");
+// display modal when "Notifications" button is clicked
+if (notifBtn && modal && closeBtn){
+  notifBtn.onclick = function () {
+    modal.style.display = "block";
+  };
+// close modal when close button is clicked
+  closeBtn.onclick = function () {
+    modal.style.display = "none";
+  };
+
+  // if anywhere outside of modal is clicked, modal closes
+  window.addEventListener("click", function (event) {
+  if (event.target === modal) {
+    modal.style.display = "none";
+  }
+}); 
+} // end of if (notifBtn && modal && closeBtn)
+
+if (rows) {
+  sortAppointments();
+}
 

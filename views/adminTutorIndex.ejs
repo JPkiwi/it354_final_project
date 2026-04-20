@@ -2,9 +2,14 @@
 <!-- ADMIN "Manage Tutors" EJS -->
 
 <%- include("includes/_header") %>
-
+<!-- 
 <% if (error) { %>
   <div class="alert"><strong>Error:</strong> <%= error %></div>
+<% } %> -->
+
+<!-- to show "Please select a tutor first" error in correct spot -->
+<% if (error) { %>
+  <p><strong></strong> <%= error %></p>
 <% } %>
 
 
@@ -75,7 +80,8 @@
         </form>
     
         <div class="scheduleResults">
-        <% if (error) { %>
+          <!-- changed from "error" to shiftError for correct placement of error -->
+        <% if (shiftError) { %>
           <br/><br/>
           <div class="alert"><%= error %></div>
           <!-- updated for scheduleShifts -->
@@ -271,6 +277,15 @@
 
 <button type="submit" name="action" value="view">View Available Shifts</button>
 
+
+    <% if (assignTutorError) { %>
+      <div class="alert">
+        <br>
+       <%= assignTutorError %>
+      </div>
+      <br>
+    <% } %>
+
  <% if (openAssignTutorModal && availableShiftBlocks && availableShiftBlocks.length > 0){%>
   <h3>Available Shifts</h3>
 
@@ -292,7 +307,7 @@
 
   <button type = "submit" name ="action" value ="assign">Assign Hours</button>
 
-  <% } else if (openAssignTutorModal && availableShiftBlocks && availableShiftBlocks.length === 0) { %>
+  <% } else if (openAssignTutorModal &&  !assignTutorError && availableShiftBlocks && availableShiftBlocks.length === 0) { %>
   <p>No available shifts for date.</p>
 <% } %>
 
@@ -379,7 +394,7 @@
   </div>
 
 </div> 
-<!-- ene of modal-->
+<!-- end of modal-->
 
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">

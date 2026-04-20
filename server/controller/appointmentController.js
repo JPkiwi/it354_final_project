@@ -3,6 +3,7 @@ const { confirmationTemplate } = require("../../views/templates/appointmentEmail
 const Appointment = require("../model/appointmentModel");
 const TutorShift = require("../model/tutorShiftModel");
 const mongoose = require("mongoose");
+const NotificationLog = require("../model/notificationLog");
 const { createCalendarEvent } = require("../services/calendarService");
 const User = require("../model/userModel");
 
@@ -37,7 +38,8 @@ exports.bookAppointment = async (req, res) => {
     // get the selected shift
     const shift = await TutorShift.findById(tutorShiftId).populate(
       "tutorId",
-      "fname lname",
+      // populating email for notification log
+      "fname lname email",
     );
 
     // shift not available if doesn't exist or is booked
@@ -143,6 +145,17 @@ exports.bookAppointment = async (req, res) => {
           course: appointment.course,
         }),
       });
+
+      // Admin notification log after email is sent (notification to be viewed by admin after clicking "notifications" 
+      // on the "Manage Appointments" admin page)
+    await NotificationLog.create({
+      appointmentId: appointment._id,
+      recipientUserId: req.session.user._id,
+      appointmentDate: appointment.appointmentDate,
+      notificationType: "STUDENT_BOOK_APT"
+    });
+
+
     } catch (emailErr) {
       console.error("Student book appointment email sending error.");
     }
