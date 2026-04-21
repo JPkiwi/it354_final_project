@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema(
         passwordHash: { type: String, required: true, minlength: 8 },
         isActive: { type: Boolean, default: true },
         googleTokens: { type: Object, default: null},
+        failedAttempts: { type: Number, default: 0 },
         // only for tutors, references courses they can tutor
         tutorCourses: {
             type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }],
