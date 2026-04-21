@@ -6,6 +6,7 @@ const Appointment = require("../model/appointmentModel");
 const { sendEmail } = require("../services/emailService");
 const { studentCancellationTemplate } = require("../../views/templates/appointmentEmail");
 const { deleteCalendarEvent } = require('../services/calendarService');
+const NotificationLog = require("../model/notificationLog");
 
 // GET: load the student index page with selection for course and day to view available appointments
 exports.getStudentIndex = async (req, res) => {
@@ -300,11 +301,23 @@ exports.cancelAppointment = async (req, res) => {
                 course: appointment.course
                 })
             });
+
+
+                // Notification log for when student cancels their appointment
+                await NotificationLog.create({
+                appointmentId: appointment._id,
+                recipientUserId: appointment.studentId._id,
+                appointmentDate: appointment.appointmentDate,
+                notificationType: "STUDENT_CANCEL_APPT"
+                });
         
         } catch (emailErr) {
             console.error("Student cancellation email sending error.");
         }
         
+        
+
+
          // reload page 
          res.redirect('/studentAppointment');
     } // end of try 
