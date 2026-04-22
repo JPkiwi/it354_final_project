@@ -7,7 +7,7 @@ const controller = require('../controller/tutorController');
 route.get('/tutorIndex', controller.getTutorIndex);
 
 // display the tutor's booked appointments
-route.get('/tutorIndex/tutorAppointment', controller.getTutorAppointments);
+// route.get('/tutorIndex/tutorAppointment', controller.getTutorAppointments);
 
 // update submitted comment in MongoDB for specific tutor appointment selected
 route.post('/tutorIndex/submitComment', controller.submitComment);
@@ -19,9 +19,12 @@ route.post('/tutorIndex/submitTimes', controller.submitTimes);
 route.post('/tutorIndex/submitShow', controller.submitShow);
 
 // POST: if tutor submits any of the tutor features in form, calls post method instead of get method
-route.post("/tutorIndex/tutorAppointment", (req, res) => {
-    res.redirect("/tutorIndex/tutorAppointment");
+route.post("/tutorIndex", (req, res) => {
+    res.redirect("/tutorIndex");
 });
+// route.post("/tutorIndex/tutorAppointment", (req, res) => {
+//     res.redirect("/tutorIndex/tutorAppointment");
+// });
 
 // display the cancelled appointments under specific tutor
 route.get('/tutorCancelled', controller.getCancelledAppointments);
