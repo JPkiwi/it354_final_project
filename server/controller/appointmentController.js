@@ -108,10 +108,17 @@ exports.bookAppointment = async (req, res) => {
     }
 
     // create calendar event and send confirmation email asynchronously for faster response time 
+    //catch any errors not caught in the individual functions to prevent unhandled promise rejections
     handleAfterBookingActions({
       appointment,
       shift: reservedShift,
-      user: req.session.user,
+      user: {
+        _id: req.session.user._id,
+        fname: req.session.user.fname,
+        email: req.session.user.email
+      }
+    }).catch(() => {
+      console.error("Error in after booking actions.");
     });
 
     return res.redirect("/studentIndex");
@@ -138,82 +145,82 @@ exports.bookAppointment = async (req, res) => {
 };
 
 async function handleAfterBookingActions({ appointment, shift, user }) {
+  // ── Create Google Calendar event ────────────────────────────
   try {
-    // ── Create Google Calendar event ────────────────────────────
-    // try {
-    //   const admin = await User.findOne({ role: "admin" });
-    //   if (admin?.googleTokens) {
-    //     // checks for our admin and if the admin has tokens. returns undefined if not found
-    //     const eventId = await createCalendarEvent(admin.googleTokens, {
-    //       course: appointment.course,
-    //       appointmentDate: appointment.appointmentDate,
-    //       startTime: appointment.startTime,
-    //       endTime: appointment.endTime,
-    //       tutorFName: shift.tutorId.fname,
-    //       studentFName: req.session.user.fname,
-    //     });
-    //     // store the event ID on the appointment for deletion later
-    //     appointment.calendarEventId = eventId; // unique ID assigned by google, stored in our appointmentModel
-    //     await appointment.save();
-    //   }
-    // } catch (calendarErr) {
-    //   console.error("Calendar event creation failed.");
-    // }
-
     const admin = await User.findOne({ role: "admin" });
-
-    // ── Create Google Calendar event ────────────────────────────
     if (admin?.googleTokens) {
-      try {
-        const eventId = await createCalendarEvent(admin.googleTokens, {
-          course: appointment.course,
-          appointmentDate: appointment.appointmentDate,
-          startTime: appointment.startTime,
-          endTime: appointment.endTime,
-          tutorFName: shift.tutorId.fname,
-          studentFName: user.fname,
-        });
-
-        await Appointment.findByIdAndUpdate(appointment._id, {
-          calendarEventId: eventId,
-        });
-      } catch (err) {
-        console.error("Calendar failed:", err);
+      // checks for our admin and if the admin has tokens. returns undefined if not found
+      const eventId = await createCalendarEvent(admin.googleTokens, {
+        course: appointment.course,
+        appointmentDate: appointment.appointmentDate,
+        startTime: appointment.startTime,
+        endTime: appointment.endTime,
+        tutorFName: shift.tutorId.fname,
+        studentFName: user.fname,
+      });
+      // store the event ID on the appointment for deletion later
+      if (eventId) {
+        appointment.calendarEventId = eventId; // unique ID assigned by google, stored in our appointmentModel
+        await appointment.save();
+      } else {
+        console.error("No event ID returned from calendar API.");
       }
     }
-    // ────────────────────────────────────────────────────────────
+  } catch (calendarErr) {
+    console.error("Calendar event creation failed.");
+  }
 
-    // send confirmation email to student and CC admin
-    try {
-      await sendEmail({
-        to: user.email,
-        cc: process.env.GMAIL_ADMIN,
-        subject: "Appointment Confirmation",
-        html: confirmationTemplate({
-          studentName: user.fname,
-          tutorName: `${shift.tutorId.fname} ${shift.tutorId.lname}`,
-          date: appointment.appointmentDate.toLocaleDateString("en-US", {
-            timeZone: "UTC",
-          }),
-          time: `${appointment.startTime} - ${appointment.endTime}`,
-          course: appointment.course,
+  // ────────────────────────────────────────────────────────────
+
+  // send confirmation email to student and CC admin
+  let emailSent = false
+  try {
+    await sendEmail({
+      to: user.email,
+      cc: process.env.GMAIL_ADMIN,
+      subject: "Appointment Confirmation",
+      html: confirmationTemplate({
+        studentName: user.fname,
+        tutorName: `${shift.tutorId.fname} ${shift.tutorId.lname}`,
+        date: appointment.appointmentDate.toLocaleDateString("en-US", {
+          timeZone: "UTC",
         }),
-      });
+        time: `${appointment.startTime} - ${appointment.endTime}`,
+        course: appointment.course,
+      }),
+    });
+    emailSent = true;
 
-      // Admin notification log after email is sent (notification to be viewed by admin after clicking "notifications" 
-      // on the "Manage Appointments" admin page)
+  } catch (emailErr) {
+    console.error("Student book appointment email sending error.");
+  }
+
+  try {
+    // Admin notification log after email is sent (notification to be viewed by admin after clicking "notifications" on the "Manage Appointments" admin page)
+    // log the appointment was booked
+    await NotificationLog.create({
+      appointmentId: appointment._id,
+      recipientUserId: user._id,
+      appointmentDate: appointment.appointmentDate,
+      notificationType: "STUDENT_BOOK_APPT",
+    });
+  } catch (err) {
+    console.error("NotificationLog STUDENT_BOOK_APPT failed.");
+  }
+
+  // log if email failed to send
+  if (!emailSent) {
+    try {
       await NotificationLog.create({
         appointmentId: appointment._id,
         recipientUserId: user._id,
         appointmentDate: appointment.appointmentDate,
-        notificationType: "STUDENT_BOOK_APT",
+        notificationType: "SEND_EMAIL_FAILED",
       });
 
-    } catch (emailErr) {
-      console.error("Student book appointment email sending error.");
+    } catch (err) {
+      console.error("NotificationLog SEND_EMAIL_FAILED failed.");
     }
-  } catch (err) {
-    console.error("After booking actions failed.");
   }
 }
 
