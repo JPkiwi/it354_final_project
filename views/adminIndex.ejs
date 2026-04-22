@@ -172,7 +172,7 @@ function formatTo12Hour(timeStr) {
 
                    &nbsp;Confirmation email for student
                   <%= notification.recipientUserId ? notification.recipientUserId.fname + " " + notification.recipientUserId.lname + "'s" : "Unknown" %>
-                  appointment cancellation by admin sent; canceled appointment details:
+                  appointment cancellation by admin sent; cancelled appointment details:
                   <%= notification.appointmentId && notification.appointmentId.appointmentDate ? new Date(notification.appointmentId.appointmentDate).toISOString().split("T")[0]
                   : "No date" %>
                   at
@@ -188,7 +188,7 @@ function formatTo12Hour(timeStr) {
                     
                    &nbsp;Confirmation email for student
                   <%= notification.recipientUserId ? notification.recipientUserId.fname + " " + notification.recipientUserId.lname + "'s" : "Unknown" %>
-                  appointment cancellation sent; canceled appointment details:
+                  appointment cancellation sent; cancelled appointment details:
                   <%= notification.appointmentId && notification.appointmentId.appointmentDate ? new Date(notification.appointmentId.appointmentDate).toISOString().split("T")[0]
                   : "No date" %>
                   at
@@ -246,7 +246,7 @@ function formatTo12Hour(timeStr) {
       <table border="1" cellpadding="6" cellspacing="0" style="margin-top:10px; width:100%;">
         <thead>
           <tr>
-            <th>Canceled At</th>
+            <th>Cancelled At</th>
             <th>Date</th>
             <th>Time</th>
             <th>Student</th>
