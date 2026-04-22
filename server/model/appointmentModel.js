@@ -26,4 +26,17 @@ const appointmentSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
+// one appointment per shift
+appointmentSchema.index(
+    { tutorShiftId: 1 },
+    { unique: true, partialFilterExpression: { appointmentStatus: "scheduled" } }
+);
+
+// one appointment per student per time
+appointmentSchema.index(
+    { studentId: 1, appointmentDate: 1, startTime: 1, endTime: 1 },
+    { unique: true, partialFilterExpression: { appointmentStatus: "scheduled" } }
+);
+
+
 module.exports = mongoose.model("Appointment", appointmentSchema);

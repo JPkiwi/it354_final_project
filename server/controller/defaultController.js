@@ -19,6 +19,8 @@ exports.getLandingPage = async (req, res) => {
       courses = await Course.insertMany(DEFAULT_COURSES); 
     }
 
+    
+
     res.render("index", {
       error: null,
       title: "ISU Learning Center",
