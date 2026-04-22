@@ -1,7 +1,9 @@
 const TutorShift = require("../model/tutorShiftModel");
 const Appointment = require("../model/appointmentModel");
 const centerOpen = require("../model/centerOpenSchedule");
+const { formatTo12Hour } = require("../services/timeService");
 const mongoose = require("mongoose");
+
 
 // GET: renders tutor index
 exports.getTutorIndex = async (req, res) => {
@@ -51,6 +53,8 @@ exports.getTutorIndex = async (req, res) => {
       upcomingTutorShifts,
       pastBookedAppointments: [],
       pastAppointmentsLoaded: false,
+      formatTo12Hour
+      
     });
   } catch (err) {
     res.render("tutorIndex", {
@@ -65,6 +69,7 @@ exports.getTutorIndex = async (req, res) => {
       upcomingTutorShifts: [],
       pastBookedAppointments: [],
       pastAppointmentsLoaded: false,
+      formatTo12Hour
     });
   }
 };
@@ -229,6 +234,7 @@ exports.getTutorAppointments = async (req, res) => {
       upcomingTutorShifts,
       pastBookedAppointments,
       pastAppointmentsLoaded: true,
+      formatTo12Hour
     });
   } catch (err) {
     res.render("tutorIndex", {
@@ -243,6 +249,7 @@ exports.getTutorAppointments = async (req, res) => {
       upcomingTutorShifts: [],
       pastBookedAppointments: [],
       pastAppointmentsLoaded: true,
+      formatTo12Hour
     });
   }
 };
@@ -356,6 +363,7 @@ exports.submitComment = async (req, res) => {
         upcomingTutorShifts,
         pastBookedAppointments: [],
         pastAppointmentsLoaded: false,
+        formatTo12Hour
       });
     }
 
@@ -373,6 +381,7 @@ exports.submitComment = async (req, res) => {
         upcomingTutorShifts,
         pastBookedAppointments: [],
         pastAppointmentsLoaded: false,
+        formatTo12Hour
       });
     }
 
@@ -396,6 +405,7 @@ exports.submitComment = async (req, res) => {
         upcomingTutorShifts,
         pastBookedAppointments: [],
         pastAppointmentsLoaded: false,
+        formatTo12Hour
       });
     }
 
@@ -412,6 +422,7 @@ exports.submitComment = async (req, res) => {
       upcomingTutorShifts,
       pastBookedAppointments: [],
       pastAppointmentsLoaded: false,
+      formatTo12Hour
     });
   } catch (err) {
     res.render("tutorIndex", {
@@ -426,6 +437,7 @@ exports.submitComment = async (req, res) => {
       upcomingTutorShifts: [],
       pastBookedAppointments: [],
       pastAppointmentsLoaded: false,
+      formatTo12Hour
     });
   }
 };
@@ -485,6 +497,7 @@ exports.submitTimes = async (req, res) => {
         upcomingTutorShifts,
         pastBookedAppointments: [],
         pastAppointmentsLoaded: false,
+        formatTo12Hour
       });
     }
 
@@ -502,6 +515,7 @@ exports.submitTimes = async (req, res) => {
         upcomingTutorShifts,
         pastBookedAppointments: [],
         pastAppointmentsLoaded: false,
+        formatTo12Hour
       });
     }
 
@@ -530,6 +544,7 @@ exports.submitTimes = async (req, res) => {
         upcomingTutorShifts,
         pastBookedAppointments: [],
         pastAppointmentsLoaded: false,
+        formatTo12Hour
       });
     }
 
@@ -561,6 +576,7 @@ exports.submitTimes = async (req, res) => {
         upcomingTutorShifts,
         pastBookedAppointments: [],
         pastAppointmentsLoaded: false,
+        formatTo12Hour
       });
     }
 
@@ -581,6 +597,7 @@ exports.submitTimes = async (req, res) => {
         upcomingTutorShifts,
         pastBookedAppointments: [],
         pastAppointmentsLoaded: false,
+        formatTo12Hour
       });
     }
 
@@ -601,6 +618,7 @@ exports.submitTimes = async (req, res) => {
         upcomingTutorShifts,
         pastBookedAppointments: [],
         pastAppointmentsLoaded: false,
+        formatTo12Hour
       });
     }
 
@@ -621,6 +639,7 @@ exports.submitTimes = async (req, res) => {
         upcomingTutorShifts,
         pastBookedAppointments: [],
         pastAppointmentsLoaded: false,
+        formatTo12Hour
       });
     }
 
@@ -649,6 +668,7 @@ exports.submitTimes = async (req, res) => {
         upcomingTutorShifts,
         pastBookedAppointments: [],
         pastAppointmentsLoaded: false,
+        formatTo12Hour
       });
     }
 
@@ -665,6 +685,7 @@ exports.submitTimes = async (req, res) => {
       upcomingTutorShifts,
       pastBookedAppointments: [],
       pastAppointmentsLoaded: false,
+      formatTo12Hour
     });
   } catch (err) {
     res.render("tutorIndex", {
@@ -679,6 +700,7 @@ exports.submitTimes = async (req, res) => {
       upcomingTutorShifts: [],
       pastBookedAppointments: [],
       pastAppointmentsLoaded: false,
+      formatTo12Hour
     });
   }
 };
@@ -736,6 +758,7 @@ exports.submitShow = async (req, res) => {
         upcomingTutorShifts,
         pastBookedAppointments: [],
         pastAppointmentsLoaded: false,
+        formatTo12Hour
       });
     }
 
@@ -753,6 +776,7 @@ exports.submitShow = async (req, res) => {
         upcomingTutorShifts,
         pastBookedAppointments: [],
         pastAppointmentsLoaded: false,
+        formatTo12Hour
       });
     }
 
@@ -777,6 +801,7 @@ exports.submitShow = async (req, res) => {
         upcomingTutorShifts,
         pastBookedAppointments: [],
         pastAppointmentsLoaded: false,
+        formatTo12Hour
       });
     }
 
@@ -800,6 +825,7 @@ exports.submitShow = async (req, res) => {
         upcomingTutorShifts,
         pastBookedAppointments: [],
         pastAppointmentsLoaded: false,
+        formatTo12Hour
       });
     }
 
@@ -816,6 +842,7 @@ exports.submitShow = async (req, res) => {
       upcomingTutorShifts,
       pastBookedAppointments: [],
       pastAppointmentsLoaded: false,
+      formatTo12Hour
     });
   } catch (err) {
     res.render("tutorIndex", {
@@ -830,6 +857,7 @@ exports.submitShow = async (req, res) => {
       upcomingTutorShifts: [],
       pastBookedAppointments: [],
       pastAppointmentsLoaded: false,
+      formatTo12Hour
     });
   }
 };
@@ -909,6 +937,7 @@ exports.getCancelledAppointments = async (req, res) => {
       user: req.session.user,
       appointmentsLoaded: true,
       cancelledAppointments,
+      formatTo12Hour
     });
   } catch (err) {
     res.render("tutorCancelled", {
@@ -919,6 +948,7 @@ exports.getCancelledAppointments = async (req, res) => {
       user: req.session.user,
       appointmentsLoaded: false,
       cancelledAppointments: [],
+      formatTo12Hour
     });
   }
 };

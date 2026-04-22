@@ -24,20 +24,6 @@
   <input id="search" type="text" placeholder="Search appointments..." />
 
   <%
-
-function formatTo12Hour(timeStr) {
-  if (!timeStr) return "No time";
-
-  const [hourStr, minute] = timeStr.split(":");
-  let hour = parseInt(hourStr, 10);
-
-  const ampm = hour >= 12 ? "PM" : "AM";
-
-  hour = hour % 12;
-  if (hour === 0) hour = 12;
-
-  return `${hour}:${minute} ${ampm}`;
-}
 %>
   
   <!-- Appointments Table -->
@@ -154,9 +140,9 @@ function formatTo12Hour(timeStr) {
 
                 <td>
                   <% if (notification.notificationType === "STUDENT_BOOK_APPT") { %>
-                    &nbsp;Confirmation email for student
+                    &nbsp;Confirmation email sent for student
                     <%= notification.recipientUserId ? notification.recipientUserId.fname + " " + notification.recipientUserId.lname + "'s" : "Unknown" %>
-                    appointment booking sent; appointment details:
+                    appointment booking; appointment details:
                     <%= notification.appointmentId && notification.appointmentId.appointmentDate ? new Date(notification.appointmentId.appointmentDate).toISOString().split("T")[0]
                     : "No date" %>
                     at
@@ -169,9 +155,9 @@ function formatTo12Hour(timeStr) {
                     : "No end time" %>
 
                   <% } else if (notification.notificationType === "ADMIN_CANCEL_APPT") { %>
-                    &nbsp;Confirmation email for student
+                    &nbsp;Confirmation email sent for student
                     <%= notification.recipientUserId ? notification.recipientUserId.fname + " " + notification.recipientUserId.lname + "'s" : "Unknown" %>
-                    appointment cancellation by admin sent; cancelled appointment details:
+                    appointment cancellation by admin; cancelled appointment details:
                     <%= notification.appointmentId && notification.appointmentId.appointmentDate ? new Date(notification.appointmentId.appointmentDate).toISOString().split("T")[0]
                     : "No date" %>
                     at
@@ -184,9 +170,9 @@ function formatTo12Hour(timeStr) {
                     : "No end time" %>
 
                   <% } else if (notification.notificationType === "STUDENT_CANCEL_APPT") { %>
-                    &nbsp;Confirmation email for student
+                    &nbsp;Confirmation email sent for student
                     <%= notification.recipientUserId ? notification.recipientUserId.fname + " " + notification.recipientUserId.lname + "'s" : "Unknown" %>
-                    appointment cancellation sent; cancelled appointment details:
+                    appointment cancellation; cancelled appointment details:
                     <%= notification.appointmentId && notification.appointmentId.appointmentDate ? new Date(notification.appointmentId.appointmentDate).toISOString().split("T")[0]
                     : "No date" %>
                     at

@@ -12,24 +12,7 @@ const mongoose = require("mongoose");
 const NotificationLog = require("../model/notificationLog");
 const { deleteCalendarEvent } = require('../services/calendarService');
 const CenterException = require("../model/centerException");
-
-
-
-
-
-// helper function (will update later to remove repeat of this func/only call from here )
-function formatTo12Hour(timeStr) {
-  const [hourStr, minute] = timeStr.split(":");
-  let hour = parseInt(hourStr, 10);
-  const ampm = hour >= 12 ? "PM" : "AM";
-
-  hour = hour % 12;
-  if (hour === 0) hour = 12;
-
-  return `${hour}:${minute} ${ampm}`;
-}
-
-
+const { formatTo12Hour } = require("../services/timeService");
 
 //-----------------------------------------------
 
@@ -128,7 +111,8 @@ exports.getAdminIndex = async (req, res) => {
       date: "",
       time: "",
       course: "",
-      notificationLogs
+      notificationLogs,
+      formatTo12Hour,
     });
   } catch (err) {
     // render same page, with error message & empty arrays passed
@@ -148,7 +132,8 @@ exports.getAdminIndex = async (req, res) => {
       date: "",
       time: "",
       course: "",
-      notificationLogs: []
+      notificationLogs: [],
+      formatTo12Hour,
     });
   }
 };
@@ -211,7 +196,8 @@ exports.adminCancelAppointment = async (req, res) => {
         date: "",
         time: "",
         course: "",
-        notificationLogs: []
+        notificationLogs: [],
+        formatTo12Hour
       });
     }
     if (!appointment.tutorShiftId) {
@@ -229,7 +215,8 @@ exports.adminCancelAppointment = async (req, res) => {
         date: "",
         time: "",
         course: "",
-        notificationLogs: []
+        notificationLogs: [],
+        formatTo12Hour
       });
     }
     // cancel appointment
@@ -278,7 +265,8 @@ exports.adminCancelAppointment = async (req, res) => {
         date: "",
         time: "",
         course: "",
-        notificationLogs: []
+        notificationLogs: [],
+        formatTo12Hour
       });
     }
     // ────────────────────────────────────────────────────────────
@@ -350,7 +338,8 @@ exports.adminCancelAppointment = async (req, res) => {
       date: "",
       time: "",
       course: "",
-      notificationLogs: []
+      notificationLogs: [],
+      formatTo12Hour
     });
   }
 };
@@ -1241,18 +1230,6 @@ exports.assignTutorHours = async (req, res) => {
       });
     }
 
-    // converting 24hr format to 12hr format with the am and pm labels
-    function formatTo12Hour(timeStr) {
-      const [hourStr, minute] = timeStr.split(":");
-      let hour = parseInt(hourStr, 10);
-      const ampm = hour >= 12 ? "PM" : "AM";
-
-      hour = hour % 12;
-      if (hour === 0) hour = 12;
-
-      return `${hour}:${minute} ${ampm}`;
-    }
-
     // finding existing tutor Shifts for specified chosen date
     // log
     const startOfDay = new Date(year, month - 1, day, 0, 0, 0, 0);
@@ -1845,17 +1822,6 @@ exports.clearTutorHours = async (req, res) => {
 
     // viewing the active shifts
     if (action === "view") {
-      // function for viewing the tutor hours to clear in 12-hr format instead of military time
-      function formatTo12Hour(timeStr) {
-        const [hourStr, minute] = timeStr.split(":");
-        let hour = parseInt(hourStr, 10);
-        const ampm = hour >= 12 ? "PM" : "AM";
-
-        hour = hour % 12;
-        if (hour === 0) hour = 12;
-
-        return `${hour}:${minute} ${ampm}`;
-      }
 
       // retrieving the tutor shifts and formatting them 12-hr format
       // formatting them in controller --> when I tried to format in ejs, it affected the flatpickr/safest way here
@@ -1938,17 +1904,6 @@ return res.render("adminTutorIndex", {
       selectedShiftIds = [selectedShiftIds];
     }
 
-    // helper function (12-hr formatting)
-    function formatTo12Hour(time){
-      const [hourStr, minute] = time.split(":");
-      let hour = parseInt(hourStr, 10);
-      const ampm = hour >= 12 ? "PM" : "AM";
-
-      hour = hour % 12; 
-      if( hour === 0 ) hour = 12; 
-      
-      return `${hour}:${minute} ${ampm}`;
-    }
 
     // retrive shifts before deleting them 
     const shiftsToRemove = await TutorShift.find({
@@ -1997,17 +1952,6 @@ const removedShiftTimes = shiftsToRemove.map(shift => {
     // clearing full selected day
     if (action === "clearAll") {
       
-    // helper function (12-hr formatting)
-    function formatTo12Hour(time){
-      const [hourStr, minute] = time.split(":");
-      let hour = parseInt(hourStr, 10);
-      const ampm = hour >= 12 ? "PM" : "AM";
-
-      hour = hour % 12; 
-      if( hour === 0 ) hour = 12; 
-      
-      return `${hour}:${minute} ${ampm}`;
-    }
 
 
       const shiftsToClear = await TutorShift.find({
@@ -3050,18 +2994,6 @@ exports.addException = async (req, res) => {
       reason: reason.trim(),
     });
 
-      
-  // helper function (will update later to remove repeat of this func/only call from here )
-  function formatTo12Hour(timeStr) {
-    const [hourStr, minute] = timeStr.split(":");
-    let hour = parseInt(hourStr, 10);
-    const ampm = hour >= 12 ? "PM" : "AM";
-
-    hour = hour % 12;
-    if (hour === 0) hour = 12;
-
-    return `${hour}:${minute} ${ampm}`;
-  }
 
 
   // audit log creation describing the time block made & redirecting to the admin availability index page
