@@ -288,6 +288,7 @@ exports.cancelAppointment = async (req, res) => {
         // ────────────────────────────────────────────────────────────
 
         // send cancellation confirmation email to student and CC admin
+        let emailSent = false;
         try {
             await sendEmail({
             to: req.session.user.email,
@@ -301,21 +302,38 @@ exports.cancelAppointment = async (req, res) => {
                 course: appointment.course
                 })
             });
-
-
-                // Notification log for when student cancels their appointment
-                await NotificationLog.create({
-                appointmentId: appointment._id,
-                recipientUserId: appointment.studentId._id,
-                appointmentDate: appointment.appointmentDate,
-                notificationType: "STUDENT_CANCEL_APPT"
-                });
+            emailSent = true;
         
         } catch (emailErr) {
             console.error("Student cancellation email sending error.");
         }
         
+        try {
+            // Notification log for when student cancels their appointment
+            await NotificationLog.create({
+                appointmentId: appointment._id,
+                recipientUserId: appointment.studentId._id,
+                appointmentDate: appointment.appointmentDate,
+                notificationType: "STUDENT_CANCEL_APPT"
+            });
+        } catch (err) {
+            console.error("NotificationLog STUDENT_CANCEL_APPT failed.");
+        }
         
+        // log if email failed to send
+        if (!emailSent) {
+            try {
+                await NotificationLog.create({
+                    appointmentId: appointment._id,
+                    recipientUserId: user._id,
+                    appointmentDate: appointment.appointmentDate,
+                    notificationType: "SEND_EMAIL_FAILED",
+              });
+        
+            } catch (err) {
+              console.error("NotificationLog SEND_EMAIL_FAILED for student cancel appointment failed.");
+            }
+          }
 
 
          // reload page 

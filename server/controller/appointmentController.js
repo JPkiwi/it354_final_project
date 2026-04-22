@@ -100,11 +100,32 @@ exports.bookAppointment = async (req, res) => {
         await TutorShift.findByIdAndUpdate(reservedShift._id, {
           isBooked: false,
         });
-        req.session.error = "Failed to book appointment.";
+        req.session.error = "Failed to book appointment due to a conflict.";
         return res.redirect("/studentIndex");
       }
       // throw error to outer catch block for any other errors
       throw err;
+    }
+
+    let emailFailed = false;
+    try {
+      await sendEmail({
+        to: req.session.user.email,
+        cc: process.env.GMAIL_ADMIN,
+        subject: "Appointment Confirmation",
+        html: confirmationTemplate({
+          studentName: req.session.user.fname,
+          tutorName: `${reservedShift.tutorId.fname} ${reservedShift.tutorId.lname}`,
+          date: appointment.appointmentDate.toLocaleDateString("en-US", {
+            timeZone: "UTC",
+          }),
+          time: `${appointment.startTime} - ${appointment.endTime}`,
+          course: appointment.course,
+        }),
+      });
+
+    } catch (emailErr) {
+      emailFailed = true;
     }
 
     // create calendar event and send confirmation email asynchronously for faster response time 
@@ -116,10 +137,15 @@ exports.bookAppointment = async (req, res) => {
         _id: req.session.user._id,
         fname: req.session.user.fname,
         email: req.session.user.email
-      }
+      },
+      emailFailed,
     }).catch(() => {
       console.error("Error in after booking actions.");
     });
+
+    if (emailFailed) {
+      req.session.error = "Appointment booked, but failed to send confirmation email.";
+    }
 
     return res.redirect("/studentIndex");
 
@@ -130,7 +156,6 @@ exports.bookAppointment = async (req, res) => {
         isBooked: false,
       });
     }
-
     res.render("studentAppointment", {
       title: "Book an Appointment",
       cssStylesheet: "studentStyle.css",
@@ -144,7 +169,7 @@ exports.bookAppointment = async (req, res) => {
   }
 };
 
-async function handleAfterBookingActions({ appointment, shift, user }) {
+async function handleAfterBookingActions({ appointment, shift, user, emailFailed }) {
   // ── Create Google Calendar event ────────────────────────────
   try {
     const admin = await User.findOne({ role: "admin" });
@@ -172,29 +197,6 @@ async function handleAfterBookingActions({ appointment, shift, user }) {
 
   // ────────────────────────────────────────────────────────────
 
-  // send confirmation email to student and CC admin
-  let emailSent = false
-  try {
-    await sendEmail({
-      to: user.email,
-      cc: process.env.GMAIL_ADMIN,
-      subject: "Appointment Confirmation",
-      html: confirmationTemplate({
-        studentName: user.fname,
-        tutorName: `${shift.tutorId.fname} ${shift.tutorId.lname}`,
-        date: appointment.appointmentDate.toLocaleDateString("en-US", {
-          timeZone: "UTC",
-        }),
-        time: `${appointment.startTime} - ${appointment.endTime}`,
-        course: appointment.course,
-      }),
-    });
-    emailSent = true;
-
-  } catch (emailErr) {
-    console.error("Student book appointment email sending error.");
-  }
-
   try {
     // Admin notification log after email is sent (notification to be viewed by admin after clicking "notifications" on the "Manage Appointments" admin page)
     // log the appointment was booked
@@ -209,7 +211,7 @@ async function handleAfterBookingActions({ appointment, shift, user }) {
   }
 
   // log if email failed to send
-  if (!emailSent) {
+  if (emailFailed) {
     try {
       await NotificationLog.create({
         appointmentId: appointment._id,
@@ -219,10 +221,90 @@ async function handleAfterBookingActions({ appointment, shift, user }) {
       });
 
     } catch (err) {
-      console.error("NotificationLog SEND_EMAIL_FAILED failed.");
+      console.error("NotificationLog SEND_EMAIL_FAILED for student book appointment failed.");
     }
   }
 }
+
+// async function handleAfterBookingActions({ appointment, shift, user }) {
+//   // ── Create Google Calendar event ────────────────────────────
+//   try {
+//     const admin = await User.findOne({ role: "admin" });
+//     if (admin?.googleTokens) {
+//       // checks for our admin and if the admin has tokens. returns undefined if not found
+//       const eventId = await createCalendarEvent(admin.googleTokens, {
+//         course: appointment.course,
+//         appointmentDate: appointment.appointmentDate,
+//         startTime: appointment.startTime,
+//         endTime: appointment.endTime,
+//         tutorFName: shift.tutorId.fname,
+//         studentFName: user.fname,
+//       });
+//       // store the event ID on the appointment for deletion later
+//       if (eventId) {
+//         appointment.calendarEventId = eventId; // unique ID assigned by google, stored in our appointmentModel
+//         await appointment.save();
+//       } else {
+//         console.error("No event ID returned from calendar API.");
+//       }
+//     }
+//   } catch (calendarErr) {
+//     console.error("Calendar event creation failed.");
+//   }
+
+//   // ────────────────────────────────────────────────────────────
+
+//   // send confirmation email to student and CC admin
+//   let emailSent = false;
+//   try {
+//     await sendEmail({
+//       to: user.email,
+//       cc: process.env.GMAIL_ADMIN,
+//       subject: "Appointment Confirmation",
+//       html: confirmationTemplate({
+//         studentName: user.fname,
+//         tutorName: `${shift.tutorId.fname} ${shift.tutorId.lname}`,
+//         date: appointment.appointmentDate.toLocaleDateString("en-US", {
+//           timeZone: "UTC",
+//         }),
+//         time: `${appointment.startTime} - ${appointment.endTime}`,
+//         course: appointment.course,
+//       }),
+//     });
+//     emailSent = true;
+
+//   } catch (emailErr) {
+//     console.error("Student book appointment email sending error.");
+//   }
+
+//   try {
+//     // Admin notification log after email is sent (notification to be viewed by admin after clicking "notifications" on the "Manage Appointments" admin page)
+//     // log the appointment was booked
+//     await NotificationLog.create({
+//       appointmentId: appointment._id,
+//       recipientUserId: user._id,
+//       appointmentDate: appointment.appointmentDate,
+//       notificationType: "STUDENT_BOOK_APPT",
+//     });
+//   } catch (err) {
+//     console.error("NotificationLog STUDENT_BOOK_APPT failed.");
+//   }
+
+//   // log if email failed to send
+//   if (!emailSent) {
+//     try {
+//       await NotificationLog.create({
+//         appointmentId: appointment._id,
+//         recipientUserId: user._id,
+//         appointmentDate: appointment.appointmentDate,
+//         notificationType: "SEND_EMAIL_FAILED",
+//       });
+
+//     } catch (err) {
+//       console.error("NotificationLog SEND_EMAIL_FAILED for student book appointment failed.");
+//     }
+//   }
+// }
 
 // GET: display the student's booked appointments
 exports.getBookedAppointments = async (req, res) => {

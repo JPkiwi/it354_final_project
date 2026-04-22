@@ -284,6 +284,7 @@ exports.adminCancelAppointment = async (req, res) => {
     // ────────────────────────────────────────────────────────────
 
     // send cancellation notification email to student and CC admin
+    let emailSent = false;
     try {
       await sendEmail({
         to: appointment.studentId.email,
@@ -297,8 +298,13 @@ exports.adminCancelAppointment = async (req, res) => {
           course: appointment.course
         })
       });
+      emailSent = true;
+      
+    } catch (emailErr) {
+      console.error("Admin cancellation email sending error.");
+    }
 
-          
+    try {
         // Notification log for when admin cancels a student's appointment
         await NotificationLog.create({
           appointmentId: appointment._id,
@@ -306,11 +312,24 @@ exports.adminCancelAppointment = async (req, res) => {
           appointmentDate: appointment.appointmentDate,
           notificationType: "ADMIN_CANCEL_APPT"
         });
-        
-
-    } catch (emailErr) {
-      console.error("Admin cancellation email sending error.");
-    }
+      } catch (err) {
+        console.error("NotificationLog ADMIN_CANCEL_APPT failed.");
+      }
+    
+      // log if email failed to send
+      if (!emailSent) {
+        try {
+          await NotificationLog.create({
+            appointmentId: appointment._id,
+            recipientUserId: appointment.studentId._id,
+            appointmentDate: appointment.appointmentDate,
+            notificationType: "SEND_EMAIL_FAILED",
+          });
+    
+        } catch (err) {
+          console.error("NotificationLog SEND_EMAIL_FAILED for admin cancel appointment failed.");
+        }
+      }
 
     return res.redirect("/adminIndex");
   } catch (err) {
