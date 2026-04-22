@@ -250,7 +250,7 @@ exports.adminCancelAppointment = async (req, res) => {
       details: `Appointment on ${appointment.appointmentDate.toLocaleDateString('en-US', { timeZone: 'UTC' })} cancelled for student ${appointment.studentId.fname} ${appointment.studentId.lname} with tutor ${appointment.tutorShiftId.tutorId.fname} ${appointment.tutorShiftId.tutorId.lname}; tutor shift ${formatTo12Hour(appointment.tutorShiftId.startTime)} - ${formatTo12Hour(appointment.tutorShiftId.endTime)} reopened.`
 
     });
-      
+    
 
     // ───────── Delete Google Calendar event ────────────────────
     try {
@@ -297,6 +297,16 @@ exports.adminCancelAppointment = async (req, res) => {
           course: appointment.course
         })
       });
+
+          
+        // Notification log for when admin cancels a student's appointment
+        await NotificationLog.create({
+          appointmentId: appointment._id,
+          recipientUserId: appointment.studentId._id,
+          appointmentDate: appointment.appointmentDate,
+          notificationType: "ADMIN_CANCEL_APPT"
+        });
+        
 
     } catch (emailErr) {
       console.error("Admin cancellation email sending error.");
