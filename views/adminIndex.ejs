@@ -153,60 +153,70 @@ function formatTo12Hour(timeStr) {
 
 
                 <td>
-                  <% if (notification.notificationType === "STUDENT_BOOK_APT") { %>
-                  &nbsp;Confirmation email for student
-                  <%= notification.recipientUserId ? notification.recipientUserId.fname + " " + notification.recipientUserId.lname + "'s" : "Unknown" %>
-                  appointment booking sent; appointment details:
-                  <%= notification.appointmentId && notification.appointmentId.appointmentDate ? new Date(notification.appointmentId.appointmentDate).toISOString().split("T")[0]
-                  : "No date" %>
-                  at
-                  <%= notification.appointmentId && notification.appointmentId.startTime
-                  ? formatTo12Hour(notification.appointmentId.startTime)
-                  : "No start time" %>
-                  -
-                  <%= notification.appointmentId && notification.appointmentId.endTime
-                  ? formatTo12Hour(notification.appointmentId.endTime)
-                  : "No end time" %>
+                  <% if (notification.notificationType === "STUDENT_BOOK_APPT") { %>
+                    &nbsp;Confirmation email for student
+                    <%= notification.recipientUserId ? notification.recipientUserId.fname + " " + notification.recipientUserId.lname + "'s" : "Unknown" %>
+                    appointment booking sent; appointment details:
+                    <%= notification.appointmentId && notification.appointmentId.appointmentDate ? new Date(notification.appointmentId.appointmentDate).toISOString().split("T")[0]
+                    : "No date" %>
+                    at
+                    <%= notification.appointmentId && notification.appointmentId.startTime
+                    ? formatTo12Hour(notification.appointmentId.startTime)
+                    : "No start time" %>
+                    -
+                    <%= notification.appointmentId && notification.appointmentId.endTime
+                    ? formatTo12Hour(notification.appointmentId.endTime)
+                    : "No end time" %>
 
                   <% } else if (notification.notificationType === "ADMIN_CANCEL_APPT") { %>
-
-                   &nbsp;Confirmation email for student
-                  <%= notification.recipientUserId ? notification.recipientUserId.fname + " " + notification.recipientUserId.lname + "'s" : "Unknown" %>
-                  appointment cancellation by admin sent; cancelled appointment details:
-                  <%= notification.appointmentId && notification.appointmentId.appointmentDate ? new Date(notification.appointmentId.appointmentDate).toISOString().split("T")[0]
-                  : "No date" %>
-                  at
-                  <%= notification.appointmentId && notification.appointmentId.startTime
-                  ? formatTo12Hour(notification.appointmentId.startTime)
-                  : "No start time" %>
-                  -
-                  <%= notification.appointmentId && notification.appointmentId.endTime
-                  ? formatTo12Hour(notification.appointmentId.endTime)
-                  : "No end time" %>
+                    &nbsp;Confirmation email for student
+                    <%= notification.recipientUserId ? notification.recipientUserId.fname + " " + notification.recipientUserId.lname + "'s" : "Unknown" %>
+                    appointment cancellation by admin sent; cancelled appointment details:
+                    <%= notification.appointmentId && notification.appointmentId.appointmentDate ? new Date(notification.appointmentId.appointmentDate).toISOString().split("T")[0]
+                    : "No date" %>
+                    at
+                    <%= notification.appointmentId && notification.appointmentId.startTime
+                    ? formatTo12Hour(notification.appointmentId.startTime)
+                    : "No start time" %>
+                    -
+                    <%= notification.appointmentId && notification.appointmentId.endTime
+                    ? formatTo12Hour(notification.appointmentId.endTime)
+                    : "No end time" %>
 
                   <% } else if (notification.notificationType === "STUDENT_CANCEL_APPT") { %>
-                    
-                   &nbsp;Confirmation email for student
-                  <%= notification.recipientUserId ? notification.recipientUserId.fname + " " + notification.recipientUserId.lname + "'s" : "Unknown" %>
-                  appointment cancellation sent; cancelled appointment details:
-                  <%= notification.appointmentId && notification.appointmentId.appointmentDate ? new Date(notification.appointmentId.appointmentDate).toISOString().split("T")[0]
-                  : "No date" %>
-                  at
-                  <%= notification.appointmentId && notification.appointmentId.startTime
-                  ? formatTo12Hour(notification.appointmentId.startTime)
-                  : "No start time" %>
-                  -
-                  <%= notification.appointmentId && notification.appointmentId.endTime
-                  ? formatTo12Hour(notification.appointmentId.endTime)
-                  : "No end time" %>
+                    &nbsp;Confirmation email for student
+                    <%= notification.recipientUserId ? notification.recipientUserId.fname + " " + notification.recipientUserId.lname + "'s" : "Unknown" %>
+                    appointment cancellation sent; cancelled appointment details:
+                    <%= notification.appointmentId && notification.appointmentId.appointmentDate ? new Date(notification.appointmentId.appointmentDate).toISOString().split("T")[0]
+                    : "No date" %>
+                    at
+                    <%= notification.appointmentId && notification.appointmentId.startTime
+                    ? formatTo12Hour(notification.appointmentId.startTime)
+                    : "No start time" %>
+                    -
+                    <%= notification.appointmentId && notification.appointmentId.endTime
+                    ? formatTo12Hour(notification.appointmentId.endTime)
+                    : "No end time" %>
 
+                  <% } else if (notification.notificationType === "SEND_EMAIL_FAILED") { %>
+                    &nbsp;Error occurred when sending email for
+                    <%= notification.recipientUserId ? notification.recipientUserId.fname + " " + notification.recipientUserId.lname + "'s" : "Unknown" %>
+                    appointment; appointment details:
+                    <%= notification.appointmentId && notification.appointmentId.appointmentDate ? new Date(notification.appointmentId.appointmentDate).toISOString().split("T")[0]
+                    : "No date" %>
+                    at
+                    <%= notification.appointmentId && notification.appointmentId.startTime
+                    ? formatTo12Hour(notification.appointmentId.startTime)
+                    : "No start time" %>
+                    -
+                    <%= notification.appointmentId && notification.appointmentId.endTime
+                    ? formatTo12Hour(notification.appointmentId.endTime)
+                    : "No end time" %>
 
                   <% } else { %>
-                  Unknown notification type
+                    Unknown notification type
                   <% } %>
                 </td>
-
-
 
                 </tr>
                 <% }) %>
@@ -223,14 +233,6 @@ function formatTo12Hour(timeStr) {
 
   </div>
 </div>
- 
-
-
-
-
-
-
-
 
 
   <!-- Cancellation History Modal -->

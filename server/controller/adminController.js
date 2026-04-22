@@ -284,6 +284,7 @@ exports.adminCancelAppointment = async (req, res) => {
     // ────────────────────────────────────────────────────────────
 
     // send cancellation notification email to student and CC admin
+    let emailSent = false;
     try {
       await sendEmail({
         to: appointment.studentId.email,
@@ -297,8 +298,13 @@ exports.adminCancelAppointment = async (req, res) => {
           course: appointment.course
         })
       });
+      emailSent = true;
+      
+    } catch (emailErr) {
+      console.error("Admin cancellation email sending error.");
+    }
 
-          
+    try {
         // Notification log for when admin cancels a student's appointment
         await NotificationLog.create({
           appointmentId: appointment._id,
@@ -306,11 +312,24 @@ exports.adminCancelAppointment = async (req, res) => {
           appointmentDate: appointment.appointmentDate,
           notificationType: "ADMIN_CANCEL_APPT"
         });
-        
-
-    } catch (emailErr) {
-      console.error("Admin cancellation email sending error.");
-    }
+      } catch (err) {
+        console.error("NotificationLog ADMIN_CANCEL_APPT failed.");
+      }
+    
+      // log if email failed to send
+      if (!emailSent) {
+        try {
+          await NotificationLog.create({
+            appointmentId: appointment._id,
+            recipientUserId: appointment.studentId._id,
+            appointmentDate: appointment.appointmentDate,
+            notificationType: "SEND_EMAIL_FAILED",
+          });
+    
+        } catch (err) {
+          console.error("NotificationLog SEND_EMAIL_FAILED for admin cancel appointment failed.");
+        }
+      }
 
     return res.redirect("/adminIndex");
   } catch (err) {
@@ -363,8 +382,8 @@ exports.getAdminAvailabilityIndex = async (req, res) => {
       });
     }
 
-    const weekdays = await CenterOpen.find();
-
+    const weekdays = await updateCenterExceptions();
+    
     res.render("adminAvailabilityIndex", {
       error: null,
       title: "Admin Manage Availability",
@@ -384,6 +403,80 @@ exports.getAdminAvailabilityIndex = async (req, res) => {
     });
   }
 };
+
+
+// -------------------------------------------------------------------------------------------
+
+// get the week range (Monday-Sunday) for a given date, standardized to midnight to avoid timezone issues
+function getWeekRange(date) {
+  const currDate = new Date(date);
+
+  const day = (currDate.getDay() + 6) % 7;
+
+  const monday = new Date(currDate);
+  monday.setDate(currDate.getDate() - day);
+  monday.setHours(0, 0, 0, 0);
+
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  sunday.setHours(23, 59, 59, 999);
+
+  return { monday, sunday };
+}
+
+// standardize the time to midnight to avoid timezone issues
+function standardizeTime(date) {
+  const updatedDate = new Date(date);
+  updatedDate.setHours(0, 0, 0, 0);
+  return updatedDate;
+}
+
+// check if a date falls within a blackout range
+function isWeeklyBlock(date, start, end) {
+  const currDate = standardizeTime(date);
+  const startDate = standardizeTime(start);
+  const endDate = standardizeTime(end);
+
+  return currDate >= startDate && currDate <= endDate;
+}
+
+async function updateCenterExceptions() {
+  const today = new Date();
+  const { monday, sunday } = getWeekRange(today);
+
+  // blackout ranges that for the current week
+  const blackoutDates = await centerClosedSchedule.find({
+    startDate: { $lte: sunday },
+    endDate: { $gte: monday }
+  }).lean();
+
+  // get regular center hours for the week
+  const weekdays = await CenterOpen.find().lean(); // assume Mon–Sun order
+
+  // if there is an exception for a given day, override the regular hours with the exception hours and reason
+  const exceptionWeek = weekdays.map((day, index) => {
+    const currentDate = new Date(monday);
+    currentDate.setDate(monday.getDate() + index);
+
+    const blackout = blackoutDates.find(blackoutDate =>
+      isWeeklyBlock(currentDate, blackoutDate.startDate, blackoutDate.endDate)
+    );
+
+    const isClosed = blackout ? true : day.isClosed;
+
+    return {
+      weekday: day.weekday,
+      date: currentDate,
+      openTime: isClosed ? null : day.openTime,
+      closeTime: isClosed ? null : day.closeTime,
+      isClosed,
+      reason: blackout?.reason || ""
+    };
+  });
+
+  return exceptionWeek;
+}
+
 
 // -------------------------------------------------------------------------------------------
 
@@ -2686,9 +2779,7 @@ exports.addBlackoutDate = async (req, res) => {
 
 
     const { startDate, endDate, reason } = req.body;
-    const weekdays = await CenterOpen
-    .find({}, "weekday isClosed openTime closeTime")
-    .sort({ weekday: 1 })
+    const weekdays = await updateCenterExceptions();
 
 
     // ensure all form fields are entered
@@ -2834,6 +2925,18 @@ exports.addException = async (req, res) => {
         cssStylesheet: "availabilityIndex.css",
         jsFile: "adminAvailability.js",
         error: "Start time must be earlier than end time.",
+        user: req.session.user,
+        weekdays,
+      });
+    }
+
+    // ensure the exception is at least one hour long
+    if (endHour - startHour >= 1) { 
+      return res.render("adminAvailabilityIndex", {
+        title: "Admin Manage Availability",
+        cssStylesheet: "availabilityIndex.css",
+        jsFile: "adminAvailability.js",
+        error: "The exception must be at least one hour long.",
         user: req.session.user,
         weekdays,
       });
