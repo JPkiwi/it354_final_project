@@ -163,23 +163,6 @@ exports.getTutorIndex = async (req, res) => {
       pastBookedAppointments,
       pastAppointmentsLoaded: true,
     });
-
-
-
-    // // render tutor page
-    // res.render("tutorIndex", {
-    //   error: null,
-    //   shiftError,
-    //   title: "Tutor Appointments",
-    //   cssStylesheet: "tutorStyle.css",
-    //   jsFile: "tutorScript.js",
-    //   user: req.session.user,
-    //   bookedAppointments: [],
-    //   appointmentsLoaded: false,
-    //   upcomingTutorShifts,
-    //   pastBookedAppointments: [],
-    //   pastAppointmentsLoaded: false,
-    // });
   } catch (err) {
     res.render("tutorIndex", {
       error: "Failed to load appointments.",
@@ -531,20 +514,6 @@ exports.submitComment = async (req, res) => {
     // redirect to tutorIndex page
     return res.redirect("/tutorIndex");
 
-    // re-render tutor page
-    // res.render("tutorIndex", {
-    //   error: null,
-    //   shiftError,
-    //   title: "Tutor Appointments",
-    //   cssStylesheet: "tutorStyle.css",
-    //   jsFile: "tutorScript.js",
-    //   user: req.session.user,
-    //   bookedAppointments: [],
-    //   appointmentsLoaded: false,
-    //   upcomingTutorShifts,
-    //   pastBookedAppointments: [],
-    //   pastAppointmentsLoaded: false,
-    // });
   } catch (err) {
     res.render("tutorIndex", {
       error: "Failed to load tutor index page.",
@@ -788,20 +757,6 @@ exports.submitTimes = async (req, res) => {
     // redirect to tutorIndex page
     return res.redirect("/tutorIndex");
 
-    // re-render tutor page
-    // res.render("tutorIndex", {
-    //   error: null,
-    //   shiftError,
-    //   title: "Tutor Appointments",
-    //   cssStylesheet: "tutorStyle.css",
-    //   jsFile: "tutorScript.js",
-    //   user: req.session.user,
-    //   bookedAppointments: [],
-    //   appointmentsLoaded: false,
-    //   upcomingTutorShifts,
-    //   pastBookedAppointments: [],
-    //   pastAppointmentsLoaded: false,
-    // });
   } catch (err) {
     res.render("tutorIndex", {
       error: "Failed to load tutor index page.",
@@ -943,20 +898,6 @@ exports.submitShow = async (req, res) => {
     // redirect to tutorIndex page
     return res.redirect("/tutorIndex");
 
-    // re-render tutor page
-    // res.render("tutorIndex", {
-    //   error: null,
-    //   shiftError,
-    //   title: "Tutor Appointments",
-    //   cssStylesheet: "tutorStyle.css",
-    //   jsFile: "tutorScript.js",
-    //   user: req.session.user,
-    //   bookedAppointments: [],
-    //   appointmentsLoaded: false,
-    //   upcomingTutorShifts,
-    //   pastBookedAppointments: [],
-    //   pastAppointmentsLoaded: false,
-    // });
   } catch (err) {
     res.render("tutorIndex", {
       error: "Failed to load tutor index page.",

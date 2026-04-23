@@ -1,19 +1,38 @@
 .tutor-container {
-    display: flex;
+    /* display: flex; */
+    align-items: center;
     justify-content: center;
     margin-top: 20px;
 }
 
 .tutor-columns {
     display: flex;
-    gap: 60px; /* space between columns */
+    align-items: flex-start;
+    gap: 20px; /* space between columns, WAS 60 */
 }
 
-.tutor-column {
+/* .tutor-column {
     display: flex;
     flex-direction: column;
     align-items: center;
     width: 600px; 
+} */
+.tutor-column {
+  flex: 1;
+  min-width: 0;
+  width: 600px; 
+  align-items: center;
+  justify-content: center;
+}
+
+.tutor-row {
+  margin-bottom: 30px;
+  align-items: center;
+  justify-content: center;
+}
+
+.tutor-full {
+  width: 100%;
 }
 
 /*Box styling to visualize where the Google Calendar is going to go (I don't think the positioning does anything but I'm not sure)*/
@@ -36,13 +55,13 @@
 }
 
 /*Styling for all the appointment features*/
-.tutor-calendar-options {
+/* .tutor-calendar-options {
     display: flex;
     justify-content: flex-start;
     text-align: center;
     align-items: center;
     gap: 10px;
-}
+} */
 
 /*Styling and alignment of the buttons selections*/
 .tutor-button-options {
@@ -50,6 +69,14 @@
     flex-direction: column;
     justify-content: space-between;
     visibility: hidden;
+    align-items: flex-start;
+}
+
+button {
+  width: auto;
+  display: inline-block;
+  padding: 8px 12px;
+  margin-bottom: 10px;
 }
 
 /*Styling for the placeholder for any textareas (comments)*/
