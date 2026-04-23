@@ -1,6 +1,8 @@
 const CenterOpen = require("../model/centerOpenSchedule");
 const Course = require("../model/courseModel");
 const { DEFAULT_WEEK_HOURS, DEFAULT_COURSES } = require("../config/defaultData");
+const { formatTo12Hour } = require("../services/timeService");
+
 
 // GET: Get the landing page of the web application, displays dynamic weekdays
 exports.getLandingPage = async (req, res) => {
@@ -27,7 +29,8 @@ exports.getLandingPage = async (req, res) => {
       cssStylesheet: "index.css",
       jsFile: "index.js",
       user: req.session.user,
-      weekdays
+      weekdays,
+      formatTo12Hour
     });
   } catch (err) {
     res.render("index", {
@@ -36,7 +39,8 @@ exports.getLandingPage = async (req, res) => {
       cssStylesheet: "index.css",
       jsFile: "index.js",
       user: req.session.user,
-      weekdays: DEFAULT_WEEK_HOURS
+      weekdays: DEFAULT_WEEK_HOURS,
+      formatTo12Hour
     });
   }
 };

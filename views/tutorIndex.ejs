@@ -28,17 +28,9 @@
                     <p><%= shift.shiftDate.toUTCString().slice(0, 16) %></p>
 
                     <% shift.timeRanges.forEach(range => { %>
-                      <% 
-                        const [startHour, startMinute] = range.shiftStart.split(":");
-                        const [endHour, endMinute] = range.shiftEnd.split(":");
-                        let startHourNum = parseInt(startHour);
-                        let endHourNum = parseInt(endHour);
-                        const startAMPM = startHourNum >= 12 ? "PM" : "AM";
-                        const endAMPM = endHourNum >= 12 ? "PM" : "AM";
-                        startHourNum = startHourNum % 12 || 12;
-                        endHourNum = endHourNum % 12 || 12;
-                      %>
-                      <p><b><%= startHourNum + ":" + startMinute + " " + startAMPM + " - " + endHourNum + ":" + endMinute + " " + endAMPM %></b></p>
+                      <p><b>
+                        <%= formatTo12Hour(range.shiftStart) %> - <%= formatTo12Hour(range.shiftEnd) %>
+                      </b></p>
                     <% }) %>
 
                     <br />
@@ -74,21 +66,9 @@
                   <!--used toUTCString() instead of .toDateString() to get the proper date and slice to look nice-->
                   <p><%= appointment.appointmentDate.toUTCString().slice(0, 16) %></p>
                   <!--Display in standard time-->
-                  <% 
-                    const [startHour, startMinute] = appointment.startTime.split(":");
-                    const [endHour, endMinute] = appointment.endTime.split(":");
 
-                    let startHourNum = parseInt(startHour);
-                    let endHourNum = parseInt(endHour);
-
-                    const startAMPM = startHourNum >= 12 ? "PM" : "AM";
-                    const endAMPM = endHourNum >= 12 ? "PM" : "AM";
-
-                    startHourNum = startHourNum % 12 || 12;
-                    endHourNum = endHourNum % 12 || 12;
-                  %> 
                   <p><b>
-                    <%= startHourNum + ":" + startMinute + " " + startAMPM %> - <%= endHourNum + ":" + endMinute + " " + endAMPM %>
+                    <%= formatTo12Hour(appointment.startTime) %> - <%= formatTo12Hour(appointment.endTime) %>
                   </b></p>
 
                   <p>Attendance: <%= appointment.attendance.attendanceStatus === "noShow" ? "no-show" : appointment.attendance.attendanceStatus %></p>
@@ -176,21 +156,8 @@
                       <p><%= appointment.appointmentDate.toUTCString().slice(0, 16) %></p>
 
                       <!--Display in standard time-->
-                      <% 
-                        const [startHour, startMinute] = appointment.startTime.split(":");
-                        const [endHour, endMinute] = appointment.endTime.split(":");
-
-                        let startHourNum = parseInt(startHour);
-                        let endHourNum = parseInt(endHour);
-
-                        const startAMPM = startHourNum >= 12 ? "PM" : "AM";
-                        const endAMPM = endHourNum >= 12 ? "PM" : "AM";
-
-                        startHourNum = startHourNum % 12 || 12;
-                        endHourNum = endHourNum % 12 || 12;
-                      %> 
                       <p><b>
-                        <%= startHourNum + ":" + startMinute + " " + startAMPM %> - <%= endHourNum + ":" + endMinute + " " + endAMPM %>
+                        <%= formatTo12Hour(appointment.startTime) %> - <%= formatTo12Hour(appointment.endTime) %>
                       </b></p>
                       
                       <p>Attendance: <%= appointment.attendance.attendanceStatus === "noShow" ? "no-show" : appointment.attendance.attendanceStatus %></p>

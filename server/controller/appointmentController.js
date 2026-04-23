@@ -6,6 +6,8 @@ const mongoose = require("mongoose");
 const NotificationLog = require("../model/notificationLog");
 const { createCalendarEvent } = require("../services/calendarService");
 const User = require("../model/userModel");
+const { formatTo12Hour } = require("../services/timeService");
+
 
 // POST: handle bookAppointment form submission
 exports.bookAppointment = async (req, res) => {
@@ -165,6 +167,8 @@ exports.bookAppointment = async (req, res) => {
       availableShifts: [],
       bookedAppointments: [],
       pastBookedAppointments: [],
+      formatTo12Hour
+      
     });
   }
 };
@@ -380,6 +384,7 @@ exports.getBookedAppointments = async (req, res) => {
       user: req.session.user,
       bookedAppointments,
       pastBookedAppointments,
+      formatTo12Hour
     });
   } catch (err) {
     res.render("studentAppointment", {
@@ -391,6 +396,7 @@ exports.getBookedAppointments = async (req, res) => {
       availableShifts: [],
       bookedAppointments: [],
       pastBookedAppointments: [],
+      formatTo12Hour
     });
   }
 };

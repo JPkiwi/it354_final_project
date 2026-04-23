@@ -7,6 +7,8 @@ const { sendEmail } = require("../services/emailService");
 const { studentCancellationTemplate } = require("../../views/templates/appointmentEmail");
 const { deleteCalendarEvent } = require('../services/calendarService');
 const NotificationLog = require("../model/notificationLog");
+const { formatTo12Hour } = require("../services/timeService");
+
 
 // GET: load the student index page with selection for course and day to view available appointments
 exports.getStudentIndex = async (req, res) => {
@@ -49,7 +51,8 @@ exports.getStudentIndex = async (req, res) => {
             form: {},
             user: req.session.user,
             courses,
-            availableShifts: []
+            availableShifts: [],
+            formatTo12Hour
         });
     } catch (err) {
         res.render("studentIndex", {
@@ -60,7 +63,9 @@ exports.getStudentIndex = async (req, res) => {
             form: {},
             user: req.session.user,
             courses: [],
-            availableShifts: []
+            availableShifts: [],
+            formatTo12Hour
+
         });
     }
 };
@@ -117,7 +122,9 @@ exports.viewAvailableAppointments = async (req, res) => {
                 form: { course, selectDay },
                 user: req.session.user,
                 courses,
-                availableShifts: []
+                availableShifts: [],
+                formatTo12Hour
+
             });
         }
         else {
@@ -163,7 +170,9 @@ exports.viewAvailableAppointments = async (req, res) => {
                     form: { course: req.body.course, selectDay: req.body.selectDay },
                     user: req.session.user,
                     courses,
-                    availableShifts: []
+                    availableShifts: [],
+                    formatTo12Hour
+
                 });
             }
             else {
@@ -175,7 +184,9 @@ exports.viewAvailableAppointments = async (req, res) => {
                     form: { course: req.body.course, selectDay: req.body.selectDay },
                     user: req.session.user,
                     courses,
-                    availableShifts
+                    availableShifts,
+                    formatTo12Hour
+
                 });
             }
         }
