@@ -1,9 +1,10 @@
 const TutorShift = require("../model/tutorShiftModel");
 const Appointment = require("../model/appointmentModel");
 const centerOpen = require("../model/centerOpenSchedule");
+const { formatTo12Hour } = require("../services/timeService");
 const mongoose = require("mongoose");
 
-// GET: renders tutor index
+// GET: renders tutor index page and display the tutor's booked appointments
 exports.getTutorIndex = async (req, res) => {
   try {
     // if not an auth user, send to login page
@@ -38,73 +39,6 @@ exports.getTutorIndex = async (req, res) => {
       shiftError = "Failed to load upcoming tutor shifts.";
     }
 
-    // render tutor page
-    res.render("tutorIndex", {
-      error: null,
-      shiftError,
-      title: "Tutor Appointments",
-      cssStylesheet: "tutorStyle.css",
-      jsFile: "tutorScript.js",
-      user: req.session.user,
-      bookedAppointments: [],
-      appointmentsLoaded: false,
-      upcomingTutorShifts,
-      pastBookedAppointments: [],
-      pastAppointmentsLoaded: false,
-    });
-  } catch (err) {
-    res.render("tutorIndex", {
-      error: "Failed to load tutor index page.",
-      shiftError: null,
-      title: "Tutor Appointments",
-      cssStylesheet: "tutorStyle.css",
-      jsFile: "tutorScript.js",
-      user: req.session.user,
-      bookedAppointments: [],
-      appointmentsLoaded: false,
-      upcomingTutorShifts: [],
-      pastBookedAppointments: [],
-      pastAppointmentsLoaded: false,
-    });
-  }
-};
-
-// GET: display the tutor's booked appointments
-exports.getTutorAppointments = async (req, res) => {
-  try {
-    // if not an auth user, send to login page
-    if (!req.session.user) {
-      return res.render("login", {
-        title: "Login Page",
-        cssStylesheet: "login.css",
-        jsFile: "login.js",
-        error: "User not logged in.",
-        user: null,
-      });
-    }
-
-    // if auth user but not a tutor, send to login page
-    if (req.session.user.role !== "tutor") {
-      return res.render("login", {
-        title: "Login Page",
-        cssStylesheet: "login.css",
-        jsFile: "login.js",
-        error: "Access denied. Only tutors can view this page.",
-        user: null,
-      });
-    }
-
-    // get current session user id and convert to ObjectId format for finding booked appointments and shifts
-    const tutorId = new mongoose.Types.ObjectId(req.session.user._id);
-
-    // function to get all shifts for the tutor and sort by date and time
-    let upcomingTutorShifts = [];
-    let shiftError = null;
-    try {
-      upcomingTutorShifts = await getUpcomingTutorShifts(tutorId);
-    } catch (err) {
-      shiftError = "Failed to load tutor shifts.";
-    }
 
     // get any booked appointments under current tutor user
     const bookedAppointments = await Appointment.aggregate([
@@ -229,23 +163,203 @@ exports.getTutorAppointments = async (req, res) => {
       upcomingTutorShifts,
       pastBookedAppointments,
       pastAppointmentsLoaded: true,
+      formatTo12Hour
     });
   } catch (err) {
     res.render("tutorIndex", {
+      error: "Failed to load appointments.",
+      shiftError: null,
       title: "Tutor Appointments",
       cssStylesheet: "tutorStyle.css",
       jsFile: "tutorScript.js",
-      error: "Failed to show appointments.",
-      shiftError: null,
       user: req.session.user,
       bookedAppointments: [],
-      appointmentsLoaded: true,
+      appointmentsLoaded: false,
       upcomingTutorShifts: [],
       pastBookedAppointments: [],
-      pastAppointmentsLoaded: true,
+      pastAppointmentsLoaded: false,
+      formatTo12Hour
     });
   }
 };
+
+// // GET: display the tutor's booked appointments
+// exports.getTutorAppointments = async (req, res) => {
+//   try {
+//     // if not an auth user, send to login page
+//     if (!req.session.user) {
+//       return res.render("login", {
+//         title: "Login Page",
+//         cssStylesheet: "login.css",
+//         jsFile: "login.js",
+//         error: "User not logged in.",
+//         user: null,
+//       });
+//     }
+
+//     // if auth user but not a tutor, send to login page
+//     if (req.session.user.role !== "tutor") {
+//       return res.render("login", {
+//         title: "Login Page",
+//         cssStylesheet: "login.css",
+//         jsFile: "login.js",
+//         error: "Access denied. Only tutors can view this page.",
+//         user: null,
+//       });
+//     }
+
+//     // get current session user id and convert to ObjectId format for finding booked appointments and shifts
+//     const tutorId = new mongoose.Types.ObjectId(req.session.user._id);
+
+//     // function to get all shifts for the tutor and sort by date and time
+//     let upcomingTutorShifts = [];
+//     let shiftError = null;
+//     try {
+//       upcomingTutorShifts = await getUpcomingTutorShifts(tutorId);
+//     } catch (err) {
+//       shiftError = "Failed to load tutor shifts.";
+//     }
+
+//     // get any booked appointments under current tutor user
+//     const bookedAppointments = await Appointment.aggregate([
+//       {
+//         $lookup: {
+//           from: "tutorshifts",
+//           localField: "tutorShiftId",
+//           foreignField: "_id",
+//           as: "tutorShift",
+//         },
+//       },
+//       { $unwind: "$tutorShift" },
+//       {
+//         $lookup: {
+//           from: "users",
+//           localField: "studentId",
+//           foreignField: "_id",
+//           as: "student",
+//         },
+//       },
+//       { $unwind: "$student" },
+//       {
+//         $match: {
+//           "tutorShift.tutorId": tutorId,
+//           "tutorShift.isBooked": true,
+//           appointmentDate: {
+//             $gte: new Date(new Date().setUTCHours(0, 0, 0, 0)),
+//           },
+//         },
+//       }, // shows appointments for today and future (not based on time)
+//       {
+//         $project: {
+//           course: 1,
+//           appointmentDate: 1,
+//           startTime: 1,
+//           endTime: 1,
+//           tutorComments: 1,
+//           attendance: 1,
+//           "student.fname": 1,
+//           "student.lname": 1,
+//         },
+//       },
+//       { $sort: { appointmentDate: 1, startTime: 1 } },
+//     ]);
+
+//     // get any past booked appointments under current tutor user
+//     let pastBookedAppointments = await Appointment.aggregate([
+//       {
+//         $lookup: {
+//           from: "tutorshifts",
+//           localField: "tutorShiftId",
+//           foreignField: "_id",
+//           as: "tutorShift",
+//         },
+//       },
+//       { $unwind: "$tutorShift" },
+//       {
+//         $lookup: {
+//           from: "users",
+//           localField: "studentId",
+//           foreignField: "_id",
+//           as: "student",
+//         },
+//       },
+//       { $unwind: "$student" },
+//       {
+//         $match: {
+//           "tutorShift.tutorId": tutorId,
+//           "tutorShift.isBooked": true,
+//           appointmentDate: {
+//             $lt: new Date(new Date().setUTCHours(0, 0, 0, 0)),
+//           },
+//         },
+//       }, // shows appointments for today and past (not based on time)
+//       {
+//         $project: {
+//           course: 1,
+//           appointmentDate: 1,
+//           startTime: 1,
+//           endTime: 1,
+//           tutorComments: 1,
+//           attendance: 1,
+//           "student.fname": 1,
+//           "student.lname": 1,
+//         },
+//       },
+//       { $sort: { appointmentDate: 1, startTime: 1 } },
+//     ]);
+
+//     // update appointment status to completed if past the current date and time (past appointments only checks date)
+//     for (let i = 0; i < pastBookedAppointments.length; i++) {
+//       const currAppointment = pastBookedAppointments[i];
+//       const currAppointmentDate = new Date(currAppointment.appointmentDate);
+//       // set the hours for the date of the current appointment to the end time using the stored hours
+//       currAppointmentDate.setHours(
+//         parseInt(currAppointment.endTime.split(":")[0]),
+//         parseInt(currAppointment.endTime.split(":")[1]),
+//       );
+
+//       // update status to completed if current appointment is set to scheduled and past the current time
+//       if (
+//         currAppointment.appointmentStatus === "scheduled" &&
+//         currAppointmentDate < new Date()
+//       ) {
+//         await Appointment.findByIdAndUpdate(currAppointment._id, {
+//           appointmentStatus: "completed",
+//         });
+//         pastBookedAppointments[i].appointmentStatus = "completed";
+//       }
+//     }
+
+//     // render tutorIndex page with bookedAppointments and pastBookedAppointments under tutor
+//     res.render("tutorIndex", {
+//       title: "Tutor Appointments",
+//       cssStylesheet: "tutorStyle.css",
+//       jsFile: "tutorScript.js",
+//       error: null,
+//       shiftError,
+//       user: req.session.user,
+//       bookedAppointments,
+//       appointmentsLoaded: true,
+//       upcomingTutorShifts,
+//       pastBookedAppointments,
+//       pastAppointmentsLoaded: true,
+//     });
+//   } catch (err) {
+//     res.render("tutorIndex", {
+//       title: "Tutor Appointments",
+//       cssStylesheet: "tutorStyle.css",
+//       jsFile: "tutorScript.js",
+//       error: "Failed to show appointments.",
+//       shiftError: null,
+//       user: req.session.user,
+//       bookedAppointments: [],
+//       appointmentsLoaded: true,
+//       upcomingTutorShifts: [],
+//       pastBookedAppointments: [],
+//       pastAppointmentsLoaded: true,
+//     });
+//   }
+// };
 
 // try to get the tutor's upcoming shifts, if error occurs render page with error message and empty shifts array
 async function getUpcomingTutorShifts(theTutorId) {
@@ -356,6 +470,7 @@ exports.submitComment = async (req, res) => {
         upcomingTutorShifts,
         pastBookedAppointments: [],
         pastAppointmentsLoaded: false,
+        formatTo12Hour
       });
     }
 
@@ -373,6 +488,7 @@ exports.submitComment = async (req, res) => {
         upcomingTutorShifts,
         pastBookedAppointments: [],
         pastAppointmentsLoaded: false,
+        formatTo12Hour
       });
     }
 
@@ -396,23 +512,14 @@ exports.submitComment = async (req, res) => {
         upcomingTutorShifts,
         pastBookedAppointments: [],
         pastAppointmentsLoaded: false,
+        formatTo12Hour
       });
     }
 
-    // re-render tutor page
-    res.render("tutorIndex", {
-      error: null,
-      shiftError,
-      title: "Tutor Appointments",
-      cssStylesheet: "tutorStyle.css",
-      jsFile: "tutorScript.js",
-      user: req.session.user,
-      bookedAppointments: [],
-      appointmentsLoaded: false,
-      upcomingTutorShifts,
-      pastBookedAppointments: [],
-      pastAppointmentsLoaded: false,
-    });
+
+    // redirect to tutorIndex page
+    return res.redirect("/tutorIndex");
+
   } catch (err) {
     res.render("tutorIndex", {
       error: "Failed to load tutor index page.",
@@ -426,6 +533,7 @@ exports.submitComment = async (req, res) => {
       upcomingTutorShifts: [],
       pastBookedAppointments: [],
       pastAppointmentsLoaded: false,
+      formatTo12Hour
     });
   }
 };
@@ -485,6 +593,7 @@ exports.submitTimes = async (req, res) => {
         upcomingTutorShifts,
         pastBookedAppointments: [],
         pastAppointmentsLoaded: false,
+        formatTo12Hour
       });
     }
 
@@ -502,6 +611,7 @@ exports.submitTimes = async (req, res) => {
         upcomingTutorShifts,
         pastBookedAppointments: [],
         pastAppointmentsLoaded: false,
+        formatTo12Hour
       });
     }
 
@@ -530,6 +640,7 @@ exports.submitTimes = async (req, res) => {
         upcomingTutorShifts,
         pastBookedAppointments: [],
         pastAppointmentsLoaded: false,
+        formatTo12Hour
       });
     }
 
@@ -561,6 +672,7 @@ exports.submitTimes = async (req, res) => {
         upcomingTutorShifts,
         pastBookedAppointments: [],
         pastAppointmentsLoaded: false,
+        formatTo12Hour
       });
     }
 
@@ -581,6 +693,7 @@ exports.submitTimes = async (req, res) => {
         upcomingTutorShifts,
         pastBookedAppointments: [],
         pastAppointmentsLoaded: false,
+        formatTo12Hour
       });
     }
 
@@ -601,6 +714,7 @@ exports.submitTimes = async (req, res) => {
         upcomingTutorShifts,
         pastBookedAppointments: [],
         pastAppointmentsLoaded: false,
+        formatTo12Hour
       });
     }
 
@@ -621,6 +735,7 @@ exports.submitTimes = async (req, res) => {
         upcomingTutorShifts,
         pastBookedAppointments: [],
         pastAppointmentsLoaded: false,
+        formatTo12Hour
       });
     }
 
@@ -649,23 +764,14 @@ exports.submitTimes = async (req, res) => {
         upcomingTutorShifts,
         pastBookedAppointments: [],
         pastAppointmentsLoaded: false,
+        formatTo12Hour
       });
     }
 
-    // re-render tutor page
-    res.render("tutorIndex", {
-      error: null,
-      shiftError,
-      title: "Tutor Appointments",
-      cssStylesheet: "tutorStyle.css",
-      jsFile: "tutorScript.js",
-      user: req.session.user,
-      bookedAppointments: [],
-      appointmentsLoaded: false,
-      upcomingTutorShifts,
-      pastBookedAppointments: [],
-      pastAppointmentsLoaded: false,
-    });
+
+    // redirect to tutorIndex page
+    return res.redirect("/tutorIndex");
+
   } catch (err) {
     res.render("tutorIndex", {
       error: "Failed to load tutor index page.",
@@ -679,6 +785,7 @@ exports.submitTimes = async (req, res) => {
       upcomingTutorShifts: [],
       pastBookedAppointments: [],
       pastAppointmentsLoaded: false,
+      formatTo12Hour
     });
   }
 };
@@ -736,6 +843,7 @@ exports.submitShow = async (req, res) => {
         upcomingTutorShifts,
         pastBookedAppointments: [],
         pastAppointmentsLoaded: false,
+        formatTo12Hour
       });
     }
 
@@ -753,6 +861,7 @@ exports.submitShow = async (req, res) => {
         upcomingTutorShifts,
         pastBookedAppointments: [],
         pastAppointmentsLoaded: false,
+        formatTo12Hour
       });
     }
 
@@ -777,6 +886,7 @@ exports.submitShow = async (req, res) => {
         upcomingTutorShifts,
         pastBookedAppointments: [],
         pastAppointmentsLoaded: false,
+        formatTo12Hour
       });
     }
 
@@ -800,23 +910,14 @@ exports.submitShow = async (req, res) => {
         upcomingTutorShifts,
         pastBookedAppointments: [],
         pastAppointmentsLoaded: false,
+        formatTo12Hour
       });
     }
 
-    // re-render tutor page
-    res.render("tutorIndex", {
-      error: null,
-      shiftError,
-      title: "Tutor Appointments",
-      cssStylesheet: "tutorStyle.css",
-      jsFile: "tutorScript.js",
-      user: req.session.user,
-      bookedAppointments: [],
-      appointmentsLoaded: false,
-      upcomingTutorShifts,
-      pastBookedAppointments: [],
-      pastAppointmentsLoaded: false,
-    });
+
+    // redirect to tutorIndex page
+    return res.redirect("/tutorIndex");
+
   } catch (err) {
     res.render("tutorIndex", {
       error: "Failed to load tutor index page.",
@@ -830,6 +931,7 @@ exports.submitShow = async (req, res) => {
       upcomingTutorShifts: [],
       pastBookedAppointments: [],
       pastAppointmentsLoaded: false,
+      formatTo12Hour
     });
   }
 };
@@ -909,6 +1011,7 @@ exports.getCancelledAppointments = async (req, res) => {
       user: req.session.user,
       appointmentsLoaded: true,
       cancelledAppointments,
+      formatTo12Hour
     });
   } catch (err) {
     res.render("tutorCancelled", {
@@ -919,6 +1022,7 @@ exports.getCancelledAppointments = async (req, res) => {
       user: req.session.user,
       appointmentsLoaded: false,
       cancelledAppointments: [],
+      formatTo12Hour
     });
   }
 };

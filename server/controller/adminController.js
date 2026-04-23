@@ -12,24 +12,7 @@ const mongoose = require("mongoose");
 const NotificationLog = require("../model/notificationLog");
 const { deleteCalendarEvent } = require('../services/calendarService');
 const CenterException = require("../model/centerException");
-
-
-
-
-
-// helper function (will update later to remove repeat of this func/only call from here )
-function formatTo12Hour(timeStr) {
-  const [hourStr, minute] = timeStr.split(":");
-  let hour = parseInt(hourStr, 10);
-  const ampm = hour >= 12 ? "PM" : "AM";
-
-  hour = hour % 12;
-  if (hour === 0) hour = 12;
-
-  return `${hour}:${minute} ${ampm}`;
-}
-
-
+const { formatTo12Hour } = require("../services/timeService");
 
 //-----------------------------------------------
 
@@ -128,7 +111,8 @@ exports.getAdminIndex = async (req, res) => {
       date: "",
       time: "",
       course: "",
-      notificationLogs
+      notificationLogs,
+      formatTo12Hour,
     });
   } catch (err) {
     // render same page, with error message & empty arrays passed
@@ -148,7 +132,8 @@ exports.getAdminIndex = async (req, res) => {
       date: "",
       time: "",
       course: "",
-      notificationLogs: []
+      notificationLogs: [],
+      formatTo12Hour,
     });
   }
 };
@@ -211,7 +196,8 @@ exports.adminCancelAppointment = async (req, res) => {
         date: "",
         time: "",
         course: "",
-        notificationLogs: []
+        notificationLogs: [],
+        formatTo12Hour
       });
     }
     if (!appointment.tutorShiftId) {
@@ -229,7 +215,8 @@ exports.adminCancelAppointment = async (req, res) => {
         date: "",
         time: "",
         course: "",
-        notificationLogs: []
+        notificationLogs: [],
+        formatTo12Hour
       });
     }
     // cancel appointment
@@ -250,7 +237,7 @@ exports.adminCancelAppointment = async (req, res) => {
       details: `Appointment on ${appointment.appointmentDate.toLocaleDateString('en-US', { timeZone: 'UTC' })} cancelled for student ${appointment.studentId.fname} ${appointment.studentId.lname} with tutor ${appointment.tutorShiftId.tutorId.fname} ${appointment.tutorShiftId.tutorId.lname}; tutor shift ${formatTo12Hour(appointment.tutorShiftId.startTime)} - ${formatTo12Hour(appointment.tutorShiftId.endTime)} reopened.`
 
     });
-      
+    
 
     // ───────── Delete Google Calendar event ────────────────────
     try {
@@ -278,12 +265,14 @@ exports.adminCancelAppointment = async (req, res) => {
         date: "",
         time: "",
         course: "",
-        notificationLogs: []
+        notificationLogs: [],
+        formatTo12Hour
       });
     }
     // ────────────────────────────────────────────────────────────
 
     // send cancellation notification email to student and CC admin
+    let emailSent = false;
     try {
       await sendEmail({
         to: appointment.studentId.email,
@@ -297,10 +286,38 @@ exports.adminCancelAppointment = async (req, res) => {
           course: appointment.course
         })
       });
-
+      emailSent = true;
+      
     } catch (emailErr) {
       console.error("Admin cancellation email sending error.");
     }
+
+    try {
+        // Notification log for when admin cancels a student's appointment
+        await NotificationLog.create({
+          appointmentId: appointment._id,
+          recipientUserId: appointment.studentId._id,
+          appointmentDate: appointment.appointmentDate,
+          notificationType: "ADMIN_CANCEL_APPT"
+        });
+      } catch (err) {
+        console.error("NotificationLog ADMIN_CANCEL_APPT failed.");
+      }
+    
+      // log if email failed to send
+      if (!emailSent) {
+        try {
+          await NotificationLog.create({
+            appointmentId: appointment._id,
+            recipientUserId: appointment.studentId._id,
+            appointmentDate: appointment.appointmentDate,
+            notificationType: "SEND_EMAIL_FAILED",
+          });
+    
+        } catch (err) {
+          console.error("NotificationLog SEND_EMAIL_FAILED for admin cancel appointment failed.");
+        }
+      }
 
     return res.redirect("/adminIndex");
   } catch (err) {
@@ -321,7 +338,8 @@ exports.adminCancelAppointment = async (req, res) => {
       date: "",
       time: "",
       course: "",
-      notificationLogs: []
+      notificationLogs: [],
+      formatTo12Hour
     });
   }
 };
@@ -353,8 +371,8 @@ exports.getAdminAvailabilityIndex = async (req, res) => {
       });
     }
 
-    const weekdays = await CenterOpen.find();
-
+    const weekdays = await updateCenterExceptions();
+    
     res.render("adminAvailabilityIndex", {
       error: null,
       title: "Admin Manage Availability",
@@ -374,6 +392,80 @@ exports.getAdminAvailabilityIndex = async (req, res) => {
     });
   }
 };
+
+
+// -------------------------------------------------------------------------------------------
+
+// get the week range (Monday-Sunday) for a given date, standardized to midnight to avoid timezone issues
+function getWeekRange(date) {
+  const currDate = new Date(date);
+
+  const day = (currDate.getDay() + 6) % 7;
+
+  const monday = new Date(currDate);
+  monday.setDate(currDate.getDate() - day);
+  monday.setHours(0, 0, 0, 0);
+
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  sunday.setHours(23, 59, 59, 999);
+
+  return { monday, sunday };
+}
+
+// standardize the time to midnight to avoid timezone issues
+function standardizeTime(date) {
+  const updatedDate = new Date(date);
+  updatedDate.setHours(0, 0, 0, 0);
+  return updatedDate;
+}
+
+// check if a date falls within a blackout range
+function isWeeklyBlock(date, start, end) {
+  const currDate = standardizeTime(date);
+  const startDate = standardizeTime(start);
+  const endDate = standardizeTime(end);
+
+  return currDate >= startDate && currDate <= endDate;
+}
+
+async function updateCenterExceptions() {
+  const today = new Date();
+  const { monday, sunday } = getWeekRange(today);
+
+  // blackout ranges that for the current week
+  const blackoutDates = await centerClosedSchedule.find({
+    startDate: { $lte: sunday },
+    endDate: { $gte: monday }
+  }).lean();
+
+  // get regular center hours for the week
+  const weekdays = await CenterOpen.find().lean(); // assume Mon–Sun order
+
+  // if there is an exception for a given day, override the regular hours with the exception hours and reason
+  const exceptionWeek = weekdays.map((day, index) => {
+    const currentDate = new Date(monday);
+    currentDate.setDate(monday.getDate() + index);
+
+    const blackout = blackoutDates.find(blackoutDate =>
+      isWeeklyBlock(currentDate, blackoutDate.startDate, blackoutDate.endDate)
+    );
+
+    const isClosed = blackout ? true : day.isClosed;
+
+    return {
+      weekday: day.weekday,
+      date: currentDate,
+      openTime: isClosed ? null : day.openTime,
+      closeTime: isClosed ? null : day.closeTime,
+      isClosed,
+      reason: blackout?.reason || ""
+    };
+  });
+
+  return exceptionWeek;
+}
+
 
 // -------------------------------------------------------------------------------------------
 
@@ -1138,18 +1230,6 @@ exports.assignTutorHours = async (req, res) => {
       });
     }
 
-    // converting 24hr format to 12hr format with the am and pm labels
-    function formatTo12Hour(timeStr) {
-      const [hourStr, minute] = timeStr.split(":");
-      let hour = parseInt(hourStr, 10);
-      const ampm = hour >= 12 ? "PM" : "AM";
-
-      hour = hour % 12;
-      if (hour === 0) hour = 12;
-
-      return `${hour}:${minute} ${ampm}`;
-    }
-
     // finding existing tutor Shifts for specified chosen date
     // log
     const startOfDay = new Date(year, month - 1, day, 0, 0, 0, 0);
@@ -1742,17 +1822,6 @@ exports.clearTutorHours = async (req, res) => {
 
     // viewing the active shifts
     if (action === "view") {
-      // function for viewing the tutor hours to clear in 12-hr format instead of military time
-      function formatTo12Hour(timeStr) {
-        const [hourStr, minute] = timeStr.split(":");
-        let hour = parseInt(hourStr, 10);
-        const ampm = hour >= 12 ? "PM" : "AM";
-
-        hour = hour % 12;
-        if (hour === 0) hour = 12;
-
-        return `${hour}:${minute} ${ampm}`;
-      }
 
       // retrieving the tutor shifts and formatting them 12-hr format
       // formatting them in controller --> when I tried to format in ejs, it affected the flatpickr/safest way here
@@ -1835,17 +1904,6 @@ return res.render("adminTutorIndex", {
       selectedShiftIds = [selectedShiftIds];
     }
 
-    // helper function (12-hr formatting)
-    function formatTo12Hour(time){
-      const [hourStr, minute] = time.split(":");
-      let hour = parseInt(hourStr, 10);
-      const ampm = hour >= 12 ? "PM" : "AM";
-
-      hour = hour % 12; 
-      if( hour === 0 ) hour = 12; 
-      
-      return `${hour}:${minute} ${ampm}`;
-    }
 
     // retrive shifts before deleting them 
     const shiftsToRemove = await TutorShift.find({
@@ -1894,17 +1952,6 @@ const removedShiftTimes = shiftsToRemove.map(shift => {
     // clearing full selected day
     if (action === "clearAll") {
       
-    // helper function (12-hr formatting)
-    function formatTo12Hour(time){
-      const [hourStr, minute] = time.split(":");
-      let hour = parseInt(hourStr, 10);
-      const ampm = hour >= 12 ? "PM" : "AM";
-
-      hour = hour % 12; 
-      if( hour === 0 ) hour = 12; 
-      
-      return `${hour}:${minute} ${ampm}`;
-    }
 
 
       const shiftsToClear = await TutorShift.find({
@@ -2676,9 +2723,7 @@ exports.addBlackoutDate = async (req, res) => {
 
 
     const { startDate, endDate, reason } = req.body;
-    const weekdays = await CenterOpen
-    .find({}, "weekday isClosed openTime closeTime")
-    .sort({ weekday: 1 })
+    const weekdays = await updateCenterExceptions();
 
 
     // ensure all form fields are entered
@@ -2829,6 +2874,18 @@ exports.addException = async (req, res) => {
       });
     }
 
+    // ensure the exception is at least one hour long
+    if (endHour - startHour >= 1) { 
+      return res.render("adminAvailabilityIndex", {
+        title: "Admin Manage Availability",
+        cssStylesheet: "availabilityIndex.css",
+        jsFile: "adminAvailability.js",
+        error: "The exception must be at least one hour long.",
+        user: req.session.user,
+        weekdays,
+      });
+    }
+
     // find the weekday for selected date of time block 
     const weekdayNames = [
       "Sunday", 
@@ -2937,18 +2994,6 @@ exports.addException = async (req, res) => {
       reason: reason.trim(),
     });
 
-      
-  // helper function (will update later to remove repeat of this func/only call from here )
-  function formatTo12Hour(timeStr) {
-    const [hourStr, minute] = timeStr.split(":");
-    let hour = parseInt(hourStr, 10);
-    const ampm = hour >= 12 ? "PM" : "AM";
-
-    hour = hour % 12;
-    if (hour === 0) hour = 12;
-
-    return `${hour}:${minute} ${ampm}`;
-  }
 
 
   // audit log creation describing the time block made & redirecting to the admin availability index page

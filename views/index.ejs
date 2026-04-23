@@ -112,17 +112,7 @@
                 <% if(day.isClosed){ %>
                     Closed
                 <% } else { %>
-                    <% 
-                        const [openHour, openMinute] = day.openTime.split(":");
-                        const [closeHour, closeMinute] = day.closeTime.split(":");
-                        let openHourNum = parseInt(openHour);
-                        let closeHourNum = parseInt(closeHour);
-                        const openAMPM = openHourNum >= 12 ? "PM" : "AM";
-                        const closeAMPM = closeHourNum >= 12 ? "PM" : "AM";
-                        openHourNum = openHourNum % 12 || 12;
-                        closeHourNum = closeHourNum % 12 || 12;
-                    %>
-                    <%= openHourNum + ":" + openMinute + " " + openAMPM + " - " + closeHourNum + ":" + closeMinute + " " + closeAMPM %>
+                    <%= formatTo12Hour(day.openTime) %> - <%= formatTo12Hour(day.closeTime) %>
                 <% } %>
             </h3>
         <% }) %>

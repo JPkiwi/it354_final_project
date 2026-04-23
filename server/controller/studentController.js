@@ -6,6 +6,9 @@ const Appointment = require("../model/appointmentModel");
 const { sendEmail } = require("../services/emailService");
 const { studentCancellationTemplate } = require("../../views/templates/appointmentEmail");
 const { deleteCalendarEvent } = require('../services/calendarService');
+const NotificationLog = require("../model/notificationLog");
+const { formatTo12Hour } = require("../services/timeService");
+
 
 // GET: load the student index page with selection for course and day to view available appointments
 exports.getStudentIndex = async (req, res) => {
@@ -48,7 +51,8 @@ exports.getStudentIndex = async (req, res) => {
             form: {},
             user: req.session.user,
             courses,
-            availableShifts: []
+            availableShifts: [],
+            formatTo12Hour
         });
     } catch (err) {
         res.render("studentIndex", {
@@ -59,7 +63,9 @@ exports.getStudentIndex = async (req, res) => {
             form: {},
             user: req.session.user,
             courses: [],
-            availableShifts: []
+            availableShifts: [],
+            formatTo12Hour
+
         });
     }
 };
@@ -116,7 +122,9 @@ exports.viewAvailableAppointments = async (req, res) => {
                 form: { course, selectDay },
                 user: req.session.user,
                 courses,
-                availableShifts: []
+                availableShifts: [],
+                formatTo12Hour
+
             });
         }
         else {
@@ -162,7 +170,9 @@ exports.viewAvailableAppointments = async (req, res) => {
                     form: { course: req.body.course, selectDay: req.body.selectDay },
                     user: req.session.user,
                     courses,
-                    availableShifts: []
+                    availableShifts: [],
+                    formatTo12Hour
+
                 });
             }
             else {
@@ -174,7 +184,9 @@ exports.viewAvailableAppointments = async (req, res) => {
                     form: { course: req.body.course, selectDay: req.body.selectDay },
                     user: req.session.user,
                     courses,
-                    availableShifts
+                    availableShifts,
+                    formatTo12Hour
+
                 });
             }
         }
@@ -287,6 +299,7 @@ exports.cancelAppointment = async (req, res) => {
         // ────────────────────────────────────────────────────────────
 
         // send cancellation confirmation email to student and CC admin
+        let emailSent = false;
         try {
             await sendEmail({
             to: req.session.user.email,
@@ -300,11 +313,40 @@ exports.cancelAppointment = async (req, res) => {
                 course: appointment.course
                 })
             });
+            emailSent = true;
         
         } catch (emailErr) {
             console.error("Student cancellation email sending error.");
         }
         
+        try {
+            // Notification log for when student cancels their appointment
+            await NotificationLog.create({
+                appointmentId: appointment._id,
+                recipientUserId: appointment.studentId._id,
+                appointmentDate: appointment.appointmentDate,
+                notificationType: "STUDENT_CANCEL_APPT"
+            });
+        } catch (err) {
+            console.error("NotificationLog STUDENT_CANCEL_APPT failed.");
+        }
+        
+        // log if email failed to send
+        if (!emailSent) {
+            try {
+                await NotificationLog.create({
+                    appointmentId: appointment._id,
+                    recipientUserId: user._id,
+                    appointmentDate: appointment.appointmentDate,
+                    notificationType: "SEND_EMAIL_FAILED",
+              });
+        
+            } catch (err) {
+              console.error("NotificationLog SEND_EMAIL_FAILED for student cancel appointment failed.");
+            }
+          }
+
+
          // reload page 
          res.redirect('/studentAppointment');
     } // end of try 
