@@ -1,0 +1,62 @@
+:root { 
+ --primary: #CE1126; /* Redbird Red */
+ --secondary: #7d0a17; /* Darker Red */
+ --redbird-yellow: #F9DD16; /* Redbird Yellow */
+ --gray1: #a19d9e;  /* Lightest Gray */
+ --gray2: #696868; /* Darker Gray */
+} 
+
+
+.red-button {
+  background-color: var(--primary);
+  color: white;
+  padding: 15px 25px;
+  font-size: 1.1rem;
+  border-radius: 8px;
+  border: 2px solid white;
+  transition: background-color 0.3s ease;
+  
+}
+
+.red-button-round {
+  background-color: var(--primary);
+  color: white;
+  padding: 15px 25px;
+  font-size: 1.1rem;
+  border-radius: 100px;
+  border: 2px solid white;
+  transition: background-color 0.3s ease;
+  
+}
+
+.red-button:hover, .red-button-round:hover {
+  background-color: var(--secondary);
+}
+
+
+.white-button {
+  background-color: transparent;
+  color: white;
+  padding: 15px 25px;
+  font-size: 1.1rem;
+  border-radius: 8px;
+  border: 2px solid white;
+  transition: background-color 0.5s ease;
+  
+}
+
+.white-button-round {
+  background-color: transparent;
+  color: white;
+  padding: 15px 25px;
+  font-size: 1.1rem;
+  border-radius: 100px;
+  border: 2px solid white;
+  transition: background-color 0.5s ease;
+  
+}
+
+.white-button:hover, .white-button-round:hover {
+  background-color: white;
+  color: var(--gray2);
+}
