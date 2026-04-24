@@ -43,3 +43,20 @@ footer {
     display: none;
     margin-top: 20px;
 }
+
+.modal {
+  display: none;
+}
+
+.modal-box {
+  background: white;
+  padding: 15px;
+  border: 1px solid #ccc;
+
+  /* center popup */
+  position: fixed;
+  /* top 30% (slightly higher up, 50% for center)*/
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}

@@ -6,7 +6,7 @@ const auditLogSchema = new mongoose.Schema(
         actionUserId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
         actionType: { type: String, enum: ["APPOINTMENT_CREATED", "APPOINTMENT_CANCELLED", "APPOINTMENT_COMPLETED",
             "TUTOR_ADDED", "TUTOR_STATUS_CHANGED", "TUTOR_SHIFT_ASSIGNED", "TUTOR_SHIFT_REMOVED",
-            "STUDENT_ADDED", "STUDENT_STATUS_CHANGED", "CENTER_HOURS_CHANGED", "USER_EDITED"
+            "STUDENT_ADDED", "STUDENT_STATUS_CHANGED", "CENTER_HOURS_CHANGED", "USER_EDITED", "EXCEPTION_ADDED", "BLACKOUT_DATE_ADDED"
         ], required: true },
         targetUserId: {type: mongoose.Schema.Types.ObjectId, ref: "User", default: null},
         appointmentId: { type: mongoose.Schema.Types.ObjectId, ref: "Appointment", required: null },
