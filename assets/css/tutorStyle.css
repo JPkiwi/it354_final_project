@@ -1,13 +1,87 @@
-.tutor-container {
-    /* display: flex; */
+body {
+    background-color: #dcdede;
+}
+
+.tutor-content {
+    justify-content: center;
+}
+
+.schedule-container {
+    display: flex;
+    margin-top: 20px;
+    padding-top: 10px;
+    width: 100%;
+    align-items: center;
+    text-align: center;
+    justify-content: center;
+    border: 2px solid var(--gray2);
+    border-radius: 8px;
+    background-color: white;
+}
+
+.current-and-past-app-container {
+    margin: 10px;
+    display: flex;
+    flex-direction: column;
+    border: 2px solid var(--gray2);
+}
+
+.appointment-container {
+
+}
+
+.past-appointments-container {
+}
+
+/*Box design for tutor appointments*/
+.tutorShiftInfo {
+    border: 1px solid var(--gray2);
+    padding: 10px;
+    display: inline-block;
+    margin-right: 15px;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.tutor-view-appointments {
+    border: 1px solid black;
+    padding: 10px;
+    display: inline-block;
+    margin-right: 15px;
+    margin-bottom: 10px;
+    text-align: center;
+    width: 50%;
+}
+
+.tutor-buttons {
+    justify-content: flex-end;
+    background-color: white;
+    border: 2px solid var(--gray2);
+}
+
+
+
+
+
+
+
+
+
+/* .tutor-container {
+    display: flex; 
+    /*
     align-items: center;
     justify-content: center;
     margin-top: 20px;
-}
+    width: 100%;
+}  */
+
+
+
+
 
 .tutor-columns {
-    display: flex;
-    align-items: flex-start;
+    /* align-items: flex-start; */
     gap: 20px; /* space between columns, WAS 60 */
 }
 
@@ -17,6 +91,7 @@
     align-items: center;
     width: 600px; 
 } */
+
 .tutor-column {
   flex: 1;
   min-width: 0;
@@ -35,6 +110,17 @@
   width: 100%;
 }
 
+.tutor-buttons {
+    justify-content: end;
+    visibility: hidden;
+    align-items: end;
+}
+
+/* .tutor-button-options {
+    justify-content: end;
+    visibility: hidden;
+} */
+
 /*Box styling to visualize where the Google Calendar is going to go (I don't think the positioning does anything but I'm not sure)*/
  /* .tutor-calendar-container{
     align-items: flex-start;
@@ -46,13 +132,13 @@
     width: 400px;
 } */
 
-.tutor-calendar-container, .tutor-view-appointments {
+/* .tutor-calendar-container, .tutor-view-appointments {
     width: 100%;
     border: 2px solid #e8bbed;
     padding: 10px;
     min-height: 300px;
     text-align: center;
-}
+} */
 
 /*Styling for all the appointment features*/
 /* .tutor-calendar-options {
@@ -63,14 +149,14 @@
     gap: 10px;
 } */
 
-/*Styling and alignment of the buttons selections*/
+/*Styling and alignment of the buttons selections
 .tutor-button-options {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    visibility: hidden;
+    
     align-items: flex-start;
-}
+}*/
 
 button {
   width: auto;
@@ -90,12 +176,3 @@ textarea::placeholder {
     visibility: hidden;
 }
 
-/*Box design for tutor appointments*/
-.tutorShiftInfo {
-    border: 1px solid black;
-    padding: 10px;
-    display: inline-block;
-    margin-right: 15px;
-    margin-bottom: 10px;
-    text-align: center;
-}
