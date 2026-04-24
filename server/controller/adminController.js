@@ -5,7 +5,7 @@ const User = require("../model/userModel");
 const Course = require("../model/courseModel");
 const TutorShift = require("../model/tutorShiftModel");
 const CenterOpen = require("../model/centerOpenSchedule");
-const centerClosedSchedule = require("../model/centerClosedSchedule");
+const CenterClosedSchedule = require("../model/centerClosedSchedule");
 const AuditLog = require("../model/auditLog");
 const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
@@ -380,6 +380,7 @@ exports.getAdminAvailabilityIndex = async (req, res) => {
       jsFile: "adminAvailability.js",
       user: req.session.user,
       weekdays,
+      formatTo12Hour
     });
   } catch (err) {
     res.render("adminAvailabilityIndex", {
@@ -389,82 +390,11 @@ exports.getAdminAvailabilityIndex = async (req, res) => {
       jsFile: "adminAvailability.js",
       user: req.session.user,
       weekdays: [],
+      formatTo12Hour
     });
   }
 };
 
-
-// -------------------------------------------------------------------------------------------
-
-// get the week range (Monday-Sunday) for a given date, standardized to midnight to avoid timezone issues
-function getWeekRange(date) {
-  const currDate = new Date(date);
-
-  const day = (currDate.getDay() + 6) % 7;
-
-  const monday = new Date(currDate);
-  monday.setDate(currDate.getDate() - day);
-  monday.setHours(0, 0, 0, 0);
-
-  const sunday = new Date(monday);
-  sunday.setDate(monday.getDate() + 6);
-  sunday.setHours(23, 59, 59, 999);
-
-  return { monday, sunday };
-}
-
-// standardize the time to midnight to avoid timezone issues
-function standardizeTime(date) {
-  const updatedDate = new Date(date);
-  updatedDate.setHours(0, 0, 0, 0);
-  return updatedDate;
-}
-
-// check if a date falls within a blackout range
-function isWeeklyBlock(date, start, end) {
-  const currDate = standardizeTime(date);
-  const startDate = standardizeTime(start);
-  const endDate = standardizeTime(end);
-
-  return currDate >= startDate && currDate <= endDate;
-}
-
-async function updateCenterExceptions() {
-  const today = new Date();
-  const { monday, sunday } = getWeekRange(today);
-
-  // blackout ranges that for the current week
-  const blackoutDates = await centerClosedSchedule.find({
-    startDate: { $lte: sunday },
-    endDate: { $gte: monday }
-  }).lean();
-
-  // get regular center hours for the week
-  const weekdays = await CenterOpen.find().lean(); // assume Mon–Sun order
-
-  // if there is an exception for a given day, override the regular hours with the exception hours and reason
-  const exceptionWeek = weekdays.map((day, index) => {
-    const currentDate = new Date(monday);
-    currentDate.setDate(monday.getDate() + index);
-
-    const blackout = blackoutDates.find(blackoutDate =>
-      isWeeklyBlock(currentDate, blackoutDate.startDate, blackoutDate.endDate)
-    );
-
-    const isClosed = blackout ? true : day.isClosed;
-
-    return {
-      weekday: day.weekday,
-      date: currentDate,
-      openTime: isClosed ? null : day.openTime,
-      closeTime: isClosed ? null : day.closeTime,
-      isClosed,
-      reason: blackout?.reason || ""
-    };
-  });
-
-  return exceptionWeek;
-}
 
 
 // -------------------------------------------------------------------------------------------
@@ -1104,7 +1034,7 @@ exports.assignTutorHours = async (req, res) => {
     const end = new Date(year, month - 1, day, 23, 59, 59, 999);
 
     // check whether selected date falls within any blackout date range
-    const blackoutDate = await centerClosedSchedule.findOne({
+    const blackoutDate = await CenterClosedSchedule.findOne({
       startDate: { $lte: end },
       endDate: { $gte: start }
     });
@@ -1483,7 +1413,7 @@ exports.assignTutorHours = async (req, res) => {
         availableShiftBlocks,
         openAssignTutorModal: false,
         openClearTutorModal: false,
-        assignTutorError: null,
+        assignTutorError: null
       });
 
       // add fallback(?)
@@ -1516,7 +1446,7 @@ exports.assignTutorHours = async (req, res) => {
       availableShiftBlocks: [],
       openAssignTutorModal: false,
       openClearTutorModal: false,
-      assignTutorError: null,
+      assignTutorError: null
     });
   } // end of catch
 };
@@ -1597,6 +1527,7 @@ exports.adminViewTutorShedule = async (req, res) => {
         openAssignTutorModal: false,
         openClearTutorModal: false,
         assignTutorError: null,
+        formatTo12Hour
       });
     }
 
@@ -1632,6 +1563,7 @@ exports.adminViewTutorShedule = async (req, res) => {
       openAssignTutorModal: false,
       openClearTutorModal: false,
       assignTutorError: null,
+      formatTo12Hour
     });
   } catch (err) {
     res.render("adminTutorIndex", {
@@ -1655,6 +1587,7 @@ exports.adminViewTutorShedule = async (req, res) => {
       openAssignTutorModal: false,
       openClearTutorModal: false,
       assignTutorError: null,
+      formatTo12Hour
     });
   }
 };
@@ -2045,7 +1978,7 @@ const removedShiftTimes = shiftsToRemove.map(shift => {
       availableShiftBlocks: [],
       openAssignTutorModal: false,
       openClearTutorModal: true,
-      assignTutorError: null,
+      assignTutorError: null
     });
   }
 }; 
@@ -2086,6 +2019,7 @@ exports.getAdminStudentIndex = async (req, res) => {
       user: req.session.user,
       // pass list of students into view
       students: students,
+      formatTo12Hour
     });
   } catch (err) {
     res.render("adminStudentIndex", {
@@ -2096,6 +2030,7 @@ exports.getAdminStudentIndex = async (req, res) => {
       user: req.session.user,
       // empty array when error occurs
       students: [],
+      formatTo12Hour
     });
   }
 };
@@ -2140,6 +2075,7 @@ exports.toggleStudentStatus = async (req, res) => {
         jsFile: "studentIndex.js",
         user: req.session.user,
         students: students,
+        formatTo12Hour
       });
     }
 
@@ -2158,6 +2094,7 @@ exports.toggleStudentStatus = async (req, res) => {
         jsFile: "studentIndex.js",
         user: req.session.user,
         students: [],
+        formatTo12Hour
       });
     }
 
@@ -2191,6 +2128,7 @@ exports.toggleStudentStatus = async (req, res) => {
       jsFile: "studentIndex.js",
       user: req.session.user,
       students,
+      formatTo12Hour
     });
   }
 };
@@ -2242,6 +2180,7 @@ exports.addUser = async (req, res) => {
         formData: req.body,
         user: req.session.user,
         auditLogs: [],
+        formatTo12Hour
       });
     }
 
@@ -2256,6 +2195,7 @@ exports.addUser = async (req, res) => {
         formData: req.body,
         user: req.session.user,
         auditLogs: [],
+        formatTo12Hour
       });
     }
 
@@ -2269,6 +2209,7 @@ exports.addUser = async (req, res) => {
         formData: req.body,
         user: req.session.user,
         auditLogs: [],
+        formatTo12Hour
       });
     }
 
@@ -2282,6 +2223,7 @@ exports.addUser = async (req, res) => {
         formData: req.body,
         user: req.session.user,
         auditLogs: [],
+        formatTo12Hour
       });
     }
 
@@ -2296,6 +2238,7 @@ exports.addUser = async (req, res) => {
         formData: req.body,
         user: req.session.user,
         auditLogs: [],
+        formatTo12Hour
       });
     }
 
@@ -2329,6 +2272,7 @@ exports.addUser = async (req, res) => {
         openAssignTutorModal: false,
         openClearTutorModal: false,
         assignTutorError: null,
+        formatTo12Hour
       });
     }
 
@@ -2359,6 +2303,7 @@ exports.addUser = async (req, res) => {
           openAssignTutorModal: false,
           openClearTutorModal: false,
           assignTutorError: null,
+          formatTo12Hour
         });
       }
 
@@ -2429,6 +2374,7 @@ exports.addUser = async (req, res) => {
       formData: req.body,
       user: req.session.user,
       auditLogs: [],
+      formatTo12Hour
     });
   }
 };
@@ -2477,6 +2423,7 @@ exports.changeHours = async (req, res) => {
         jsFile: "adminAvailability.js",
         user: req.session.user,
         weekdays,
+        formatTo12Hour
       });
     }
 
@@ -2523,6 +2470,7 @@ exports.changeHours = async (req, res) => {
           jsFile: "adminAvailability.js",
           user: req.session.user,
           weekdays,
+          formatTo12Hour
         });
       }
 
@@ -2535,6 +2483,7 @@ exports.changeHours = async (req, res) => {
           jsFile: "adminAvailability.js",
           user: req.session.user,
           weekdays,
+          formatTo12Hour
         });
       }
 
@@ -2547,6 +2496,7 @@ exports.changeHours = async (req, res) => {
           jsFile: "adminAvailability.js",
           user: req.session.user,
           weekdays,
+          formatTo12Hour
         });
       }
 
@@ -2603,6 +2553,7 @@ exports.changeHours = async (req, res) => {
       jsFile: "adminAvailability.js",
       user: req.session.user,
       weekdays,
+      formatTo12Hour
     });
   } catch (err) {
     res.render("adminAvailabilityIndex", {
@@ -2612,6 +2563,7 @@ exports.changeHours = async (req, res) => {
       jsFile: "adminAvailability.js",
       user: req.session.user,
       weekdays: [],
+      formatTo12Hour
     });
   }
 };
@@ -2735,6 +2687,7 @@ exports.addBlackoutDate = async (req, res) => {
         error: "All blackout date fields are required.",
         user: req.session.user,
         weekdays,
+        formatTo12Hour
       });
     }
 
@@ -2757,12 +2710,13 @@ exports.addBlackoutDate = async (req, res) => {
         jsFile: "adminAvailability.js",
         error: "End date must be on or after start date.",
         user: req.session.user,
-        weekdays
+        weekdays,
+        formatTo12Hour
       });
 
 
 
-      await centerClosedSchedule.create({
+      await CenterClosedSchedule.create({
         createdByAdminId: req.session.user._id,
         startDate: parseStart,
         endDate: parseEnd, 
@@ -2781,10 +2735,185 @@ exports.addBlackoutDate = async (req, res) => {
     jsFile: "adminAvailabilityIndex.js",
     error: "Something went wrong while adding blackout date.",
     user: req.session.user,
-    weekdays: [] // fallback so page doesn’t crash
+    weekdays: [], // fallback so page doesn’t crash
+    formatTo12Hour
   });
   }
 };
+
+
+// -------------------------------------------------------------------------------------------
+
+
+// get the week range (Monday-Sunday) for a given date, standardized to midnight to avoid timezone issues
+function getWeekRange(date) {
+  const currDate = new Date(date);
+
+  const day = (currDate.getDay() + 6) % 7;
+
+  const monday = new Date(currDate);
+  monday.setDate(currDate.getDate() - day);
+  monday.setHours(0, 0, 0, 0);
+
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  sunday.setHours(23, 59, 59, 999);
+
+  return { monday, sunday };
+}
+
+// standardize the time to midnight to avoid timezone issues
+function standardizeTime(date) {
+  const updatedDate = new Date(date);
+  updatedDate.setHours(0, 0, 0, 0);
+  return updatedDate;
+}
+
+// check if a date falls within a blackout range
+function isWeeklyBlock(date, start, end) {
+  const currDate = standardizeTime(date);
+  const startDate = standardizeTime(start);
+  const endDate = standardizeTime(end);
+
+  return currDate >= startDate && currDate <= endDate;
+}
+
+function buildTimeBlocks(day, dayExceptions) {
+  if (day.isClosed) return [];
+
+  const blocks = [];
+
+  let currentStart = day.openTime; 
+  const closeTime = day.closeTime;
+
+  // sort exceptions by start time
+  const sortedExceptions = dayExceptions.sort((a, b) =>
+    a.startTime.localeCompare(b.startTime)
+  );
+
+  for (const expect of sortedExceptions) {
+    // add open block before exception
+    if (currentStart < expect.startTime) {
+      blocks.push({
+        start: currentStart,
+        end: expect.startTime
+      });
+    }
+
+    // got to next block after the exception end time
+    currentStart = expect.endTime;
+  }
+
+  // add final block after last exception
+  if (currentStart < closeTime) {
+    blocks.push({
+      start: currentStart,
+      end: closeTime
+    });
+  }
+
+  return blocks;
+}
+
+async function updateCenterExceptions() {
+  const today = new Date();
+  const { monday, sunday } = getWeekRange(today);
+
+  // blackout ranges that for the current week
+  const blackoutDates = await CenterClosedSchedule.find({
+    startDate: { $lte: sunday },
+    endDate: { $gte: monday }
+  }).lean();
+
+  // time exceptions for the current week
+  const exceptions = await CenterException.find({
+    exceptionDate: { $gte: monday, $lte: sunday }
+  }).lean();
+
+  // get regular center hours for the week
+  const weekdays = await CenterOpen.find().lean(); // assume Mon–Sun order
+
+  // if there is an exception for a given day, override the regular hours with the exception hours and reason
+  const exceptionWeek = weekdays.map((day, index) => {
+    const currentDate = new Date(monday);
+    currentDate.setDate(monday.getDate() + index);
+
+    const blackout = blackoutDates.find(blackoutDate =>
+      isWeeklyBlock(currentDate, blackoutDate.startDate, blackoutDate.endDate)
+    );
+
+    const dayExceptions = exceptions.filter(e =>
+      standardizeTime(e.exceptionDate).getTime() === standardizeTime(currentDate).getTime()
+    );
+
+    const latestException = dayExceptions.sort(
+      (except1, except2) => new Date(except2.createdAt) - new Date(except1.createdAt)
+    )[0];
+
+    const hasException = latestException !== undefined;
+    const hasBlackout = blackout !== undefined;
+
+    // if both exist, compare timestamps
+    if (hasException && hasBlackout) {
+      if (new Date(latestException.createdAt) > new Date(blackout.createdAt)) {
+        const timeBlocks = buildTimeBlocks(day, dayExceptions);
+
+        return {
+          weekday: day.weekday,
+          date: currentDate,
+          isClosed: timeBlocks.length === 0,
+          reason: latestException.reason,
+          timeBlocks
+        };
+      }
+
+      return {
+        weekday: day.weekday,
+        date: currentDate,
+        isClosed: true,
+        reason: blackout.reason,
+        timeBlocks: []
+      };
+    }
+
+    // only exception
+    if (hasException) {
+      const timeBlocks = buildTimeBlocks(day, dayExceptions);
+
+      return {
+        weekday: day.weekday,
+        date: currentDate,
+        isClosed: timeBlocks.length === 0,
+        reason: latestException.reason,
+        timeBlocks
+      };
+    }
+
+    // only blackout
+    if (hasBlackout) {
+      return {
+        weekday: day.weekday,
+        date: currentDate,
+        isClosed: true,
+        reason: blackout.reason,
+        timeBlocks: []
+      };
+    }
+
+    // normal day
+    const timeBlocks = buildTimeBlocks(day, []);
+    return {
+      weekday: day.weekday,
+      date: currentDate,
+      isClosed: day.isClosed || timeBlocks.length === 0,
+      reason: "",
+      timeBlocks
+    };
+    
+  }); // end of map through weekdays
+
+  return exceptionWeek;
+}
 
 
 
@@ -2823,8 +2952,9 @@ exports.addException = async (req, res) => {
     const { exceptionDate, startTime, endTime, reason } = req.body; 
 
     // finding regular center hours for when center is open/closed
-    const weekdays = await CenterOpen
-    .find({}, "weekday isClosed openTime closeTime")
+    // const weekdays = await CenterOpen
+    // .find({}, "weekday isClosed openTime closeTime")
+    const weekdays = await updateCenterExceptions();
 
     // ensure all fields in form were filled & entered correctly 
     if(!exceptionDate || !startTime || !endTime || !reason ){
@@ -2835,6 +2965,7 @@ exports.addException = async (req, res) => {
         error: "All exception fields are required.",
         user: req.session.user,
         weekdays,
+        formatTo12Hour
       });
     }
 
@@ -2859,6 +2990,7 @@ exports.addException = async (req, res) => {
         error: "Exception range must be entered on the hour.",
         user: req.session.user,
         weekdays,
+        formatTo12Hour
       });
     }
 
@@ -2871,11 +3003,12 @@ exports.addException = async (req, res) => {
         error: "Start time must be earlier than end time.",
         user: req.session.user,
         weekdays,
+        formatTo12Hour
       });
     }
 
     // ensure the exception is at least one hour long
-    if (endHour - startHour >= 1) { 
+    if (endHour - startHour < 1) { 
       return res.render("adminAvailabilityIndex", {
         title: "Admin Manage Availability",
         cssStylesheet: "availabilityIndex.css",
@@ -2883,6 +3016,7 @@ exports.addException = async (req, res) => {
         error: "The exception must be at least one hour long.",
         user: req.session.user,
         weekdays,
+        formatTo12Hour
       });
     }
 
@@ -2911,24 +3045,7 @@ exports.addException = async (req, res) => {
         error: `Center is fully closed on ${weekday}.`,
         user: req.session.user,
         weekdays,
-      });
-    }
-
-    // check if the selected date for time block is within a specified blackout date
-    // 
-    const blackoutDate = await centerClosedSchedule.findOne({
-      startDate: { $lte: endOfDay },
-      endDate: { $gte: startOfDay }
-    });
-
-    if(blackoutDate){
-      return res.render("adminAvailabilityIndex", {
-        title: "Admin Manage Availability",
-        cssStylesheet: "availabilityIndex.css",
-        jsFile: "adminAvailability.js",
-        error: `Cannot add exception due to blackout date.`,
-        user: req.session.user,
-        weekdays,
+        formatTo12Hour
       });
     }
 
@@ -2956,31 +3073,30 @@ exports.addException = async (req, res) => {
         error: "Exception must be within the center's open hours.",
         user: req.session.user,
         weekdays,
+        formatTo12Hour
       });
     }
 
 
-    // prevent duplicate time blocks (check for an exisiting time block)
+    // only allow one exception block per day
     const existingException = await CenterException.findOne({
       exceptionDate: {
         $gte: startOfDay,
         $lte: endOfDay,
-      },
-      startTime,
-      endTime,
+      }
     });
 
 
-    // if an exisiting time block for specified date already exists, then 
-    // ensure does not get blocked again/send error message
+    // if there is an exisiting expection on a day, then ensure it does not get blocked/send error message
     if (existingException) {
       return res.render("adminAvailabilityIndex", {
         title: "Admin Manage Availability",
         cssStylesheet: "availabilityIndex.css",
         jsFile: "adminAvailability.js",
-        error: "That time exception already exists for this date.",
+        error: "An exception already exists for this date. Only one exception per day is allowed.",
         user: req.session.user,
         weekdays,
+        formatTo12Hour
       });
     }
 
@@ -3014,6 +3130,83 @@ exports.addException = async (req, res) => {
       jsFile: "adminAvailability.js",
       user: req.session.user,
       weekdays: [],
+      formatTo12Hour
     });
   }
 }; 
+
+// POST: handle form submission to remove all exceptions on a specific date 
+exports.removeExceptions = async (req, res) => {
+  try{
+    // if not an auth user, send to login page
+    if (!req.session.user) {
+      return res.render("login", {
+        title: "Login Page",
+        cssStylesheet: "login.css",
+        jsFile: "login.js",
+        error: "User not logged in.",
+        user: null,
+      });
+    }
+
+    // if auth user but not a admin, send to login page
+    if (req.session.user.role !== "admin") {
+      return res.render("login", {
+        title: "Login Page",
+        cssStylesheet: "login.css",
+        jsFile: "login.js",
+        error: "Access denied. Only admins can view this page.",
+        user: null,
+      });
+    }
+
+    
+    const weekdays = await updateCenterExceptions();
+
+    const { removeExceptionDate } = req.body;
+    console.log(req.body);
+
+    // ensure date field in form filled
+    if(!removeExceptionDate){
+       return res.render("adminAvailabilityIndex", {
+        title: "Admin Manage Availability",
+        cssStylesheet: "availabilityIndex.css",
+        jsFile: "adminAvailability.js",
+        error: "Date is required.",
+        user: req.session.user,
+        weekdays,
+        formatTo12Hour
+      });
+    }
+
+    const [year, month, day] = removeExceptionDate.split("-").map(Number);
+    const startOfDay = new Date(year, month - 1, day, 0, 0, 0, 0);
+    const endOfDay = new Date(year, month - 1, day, 23, 59, 59, 999);
+
+    await CenterException.deleteMany({
+      exceptionDate: {
+        $gte: startOfDay,
+        $lte: endOfDay
+      }
+    });
+
+    await CenterClosedSchedule.deleteMany({
+      startDate: { $lte: endOfDay },
+      endDate: { $gte: startOfDay }
+    });
+
+    return res.redirect("/adminAvailabilityIndex");
+
+  }
+  catch(err){
+    return res.render("adminAvailabilityIndex", {
+      error: "Something went wrong while removing exception.",
+      title: "Admin Manage Availability",
+      cssStylesheet: "availabilityIndex.css",
+      jsFile: "adminAvailability.js",
+      user: req.session.user,
+      weekdays: [],
+      formatTo12Hour
+    });
+  }
+}
