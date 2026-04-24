@@ -25,3 +25,18 @@
 //     `;
 //     scheduleSection.appendChild(bookAppointmentSection);
 // });
+
+
+// js for when student cancels an appointment under "Upcoming Appointments"
+  const confirmCancelModal = document.getElementById("confirmCancelModal");
+  const closeConfirmBtn = document.getElementById("closeConfirmBtn");
+  const studentCancelForm = document.getElementById("studentCancelForm");
+
+  function openStudentCancelModal(appointmentId) {
+    studentCancelForm.action = `/studentAppointment/cancel/${appointmentId}`;
+    confirmCancelModal.style.display = "block";
+  }
+
+  closeConfirmBtn.addEventListener("click", function () {
+    confirmCancelModal.style.display = "none";
+  });
