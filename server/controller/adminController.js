@@ -1132,6 +1132,30 @@ exports.assignTutorHours = async (req, res) => {
     // determine last hour the center can use for shift scheduling
     let validEndHr = centerCloseHr;
 
+    // get current Date/time
+    const currentTime = new Date();
+    const todayStr = currentTime.toLocaleDateString("en-CA");
+
+    // if admin assigns shift for same/current day
+    if( shiftDate === todayStr ){
+      const currentHr = currentTime.getHours();
+      const currentMin = currentTime.getMinutes(); 
+
+      let nextAvailableHr;
+
+      // if assigning while current time is exactly on :00 
+      if(currentMin === 0){
+        nextAvailableHr = currentHr;
+      } 
+      // else, add 1 (if current time is 10:30, adding 1 to 10 for next available hr)
+      else {
+        nextAvailableHr = currentHr + 1;
+      }
+      // update valid start hr
+      validStartHr = Math.max(validStartHr, nextAvailableHr);
+      
+    }
+
     // if no valid hour block is available for admin to schedule
     if (validStartHr >= validEndHr) {
       return res.render("adminTutorIndex", {
@@ -2681,8 +2705,15 @@ exports.addBlackoutDate = async (req, res) => {
           $lte: parseEnd
         }
       });
+      
+      await AuditLog.create({
+        actionUserId: req.session.user._id, 
+        actionType: "BLACKOUT_DATE_ADDED",
+        details: `Blackout Date added from ${startDate} - ${endDate}. Reason: ${reason}.`
+      });
 
       return res.redirect("/adminAvailabilityIndex");
+
   }
   catch(err){
 
@@ -3105,7 +3136,7 @@ exports.addException = async (req, res) => {
   // audit log creation describing the time block made & redirecting to the admin availability index page
     await AuditLog.create({
       actionUserId: req.session.user._id,
-      actionType: "CENTER_HOURS_CHANGED",
+      actionType: "EXCEPTION_ADDED",
       details: `Exception added on ${exceptionDate}: ${formatTo12Hour(startTime)} - ${formatTo12Hour(endTime)}. Reason: ${reason.trim()}.`,
     });
 

@@ -34,19 +34,31 @@
                     <br> 
 
                     <!-- Cancel appointment button (shows up for each appointment)-->
-
-                    <form action = "/studentAppointment/cancel/<%= appointment._id %>" method = "POST">
-                        <button
-                        type = "submit"
-                        onclick="return confirm('Are you sure you would like to cancel this appointment?');">
-                        Cancel Appointment</button>
-                    </form>
+                    <button
+                        type = "button"
+                        onclick="openStudentCancelModal('<%= appointment._id %>')">
+                        Cancel Appointment
+                    </button>
+                
 
 
                 </div>
             <% }) %>
         <% } %>
     </div>
+
+    <div id="confirmCancelModal" style="display: none;">
+        <div class = "modal-box">
+            <h3>Confirm Cancellation</h3>
+            <p>Are you sure you want to cancel this appointment?</p>
+
+            <form id ="studentCancelForm" method="POST">
+                <button type="submit">Yes, Cancel</button>
+                <button type= "button" id = "closeConfirmBtn">No</button>
+            </form>
+        </div>
+    </div>
+
 
     <hr class="sectionDivider">
 
