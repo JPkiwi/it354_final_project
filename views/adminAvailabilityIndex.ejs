@@ -177,7 +177,7 @@
       <% weekdays.forEach(day => { %>
         <h3 style="margin: 10px 0;">
           <%= day.weekday %>:
-          <% if (day.isClosed || day.timeBlocks.length === 0) { %>
+          <% if (day.isClosed || !day.timeBlocks || day.timeBlocks.length === 0) { %>
             Closed
           <% } else { %>
             <% day.timeBlocks.forEach((block, i) => { %>

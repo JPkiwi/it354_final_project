@@ -2409,7 +2409,7 @@ exports.changeHours = async (req, res) => {
     const { weekday, centerOpenTime, centerCloseTime, closeWeekdayDropdown } =
       req.body;
 
-    let weekdays = await CenterOpen.find();
+    let weekdays = await updateCenterExceptions();
 
     // make sure all required fields were filled out if weekday is set to open
     if (
@@ -2523,7 +2523,7 @@ exports.changeHours = async (req, res) => {
       }
 
       // update MongoDB with new times and set isClosed to false
-      await CenterOpen.findOneAndUpdate(
+      const updated = await CenterOpen.findOneAndUpdate(
         { weekday: weekday },
         {
           $set: {
@@ -2543,7 +2543,7 @@ exports.changeHours = async (req, res) => {
     } // end of else (weekday time updated )
 
     // get newly updated weekdays
-    weekdays = await CenterOpen.find();
+    weekdays = await updateCenterExceptions();
 
     // re-render page once update completes
     res.render("adminAvailabilityIndex", {
@@ -2567,81 +2567,6 @@ exports.changeHours = async (req, res) => {
     });
   }
 };
-
-
-// ----------------------------------------------------------------
-
-// // POST - handle form submission to mark notifications as read 
-
-// exports.markNotificationsRead = async (req, res) => {
-// try{
-// // if not an auth user, send to login page
-//     if (!req.session.user) {
-//       return res.render("login", {
-//         title: "Login Page",
-//         cssStylesheet: "login.css",
-//         jsFile: "login.js",
-//         error: "User not logged in.",
-//         user: null,
-//       });
-//     }
-
-//     // if auth user but not a admin, send to login page
-//     if (req.session.user.role !== "admin") {
-//       return res.render("login", {
-//         title: "Login Page",
-//         cssStylesheet: "login.css",
-//         jsFile: "login.js",
-//         error: "Access denied. Only admins can view this page.",
-//         user: null,
-//       });
-//     }
-  
-//     let { selectedNotifications } = req.body;
-
-//     // no selected Notifications/re-render page
-//     if(!selectedNotifications){
-//       return res.redirect("/adminIndex");
-//     }
-
-//     // ensure selectedNotifications is an array for logic handling 
-//      if (!Array.isArray(selectedNotifications)) {
-//       selectedNotifications = [selectedNotifications];
-//     }
-
-//     await NotificationLog.updateMany({
-//       _id: { $in: selectedNotifications },
-//       notificationType: "ADMIN_NOTIF"
-//     },
-//   {
-//     $set: {
-//       isRead: true, 
-//       readAt: new Date(),
-//     },
-//   }); 
-//   // end of Notificationlog.updateMany 
-
-//  return res.redirect("/adminIndex");
-
-// } catch (err){
-//   return res.render("adminIndex", {
-//       error: "Could not mark notifications as read.",
-//       title: "Admin Page",
-//       cssStylesheet: "adminIndex.css",
-//       jsFile: "adminIndex.js",
-//       user: req.session.user,
-//       appointments: [],
-//       courses: [],
-//       eligibleTutorShifts: [],
-//       studentFName: "",
-//       studentLName: "",
-//       date: "",
-//       time: "",
-//       course: "",
-//       notificationLogs: [],
-//     });
-// }
-// }
 
 
 // -------------------------------------------------------------------------
@@ -2691,6 +2616,34 @@ exports.addBlackoutDate = async (req, res) => {
       });
     }
 
+    // send error if user tries to add a blackout date on a day that is already regularly closed (ex: if center is regularly closed on Sundays, then cannot add a blackout date on a Sunday)
+    const blackoutStart = new Date(startDate);
+    const blackoutEnd = new Date(endDate);
+    const weekdayStart = weekdays[blackoutStart.getDay()].weekday;
+    const weekdayEnd = weekdays[blackoutEnd.getDay()].weekday;
+    if (weekdays.find((day) => day.weekday === weekdayStart)?.isClosed) {
+      return res.render("adminAvailabilityIndex", {
+        title: "Admin Manage Availability",
+        cssStylesheet: "adminAvailability.css",
+        jsFile: "adminAvailabilityIndex.js",
+        error: `Cannot add blackout date on ${weekdayStart}s as the center is regularly closed on that day.`,
+        user: req.session.user,
+        weekdays,
+        formatTo12Hour
+      });
+    }
+    if (weekdays.find((day) => day.weekday === weekdayEnd)?.isClosed) {
+      return res.render("adminAvailabilityIndex", {
+        title: "Admin Manage Availability",
+        cssStylesheet: "adminAvailability.css",
+        jsFile: "adminAvailabilityIndex.js",
+        error: `Cannot add blackout date on ${weekdayEnd}s as the center is regularly closed on that day.`,
+        user: req.session.user,
+        weekdays,
+        formatTo12Hour
+      });
+    }
+
     // preventing any timezone shifting --> retrieving exact day start time and end time to parse
     const [startYear, startMonth, startDay] = startDate.split("-").map(Number);
     const [endYear, endMonth, endDay] = endDate.split("-").map(Number);
@@ -2714,20 +2667,24 @@ exports.addBlackoutDate = async (req, res) => {
         formatTo12Hour
       });
 
-
-
       await CenterClosedSchedule.create({
         createdByAdminId: req.session.user._id,
         startDate: parseStart,
         endDate: parseEnd, 
         reason: reason.trim()
       });
+
+      // if there is a blackout, delete any tutor shifts for that day since center is fully closed
+      await TutorShift.deleteMany({
+        shiftDate: {
+          $gte: parseStart,
+          $lte: parseEnd
+        }
+      });
+
       return res.redirect("/adminAvailabilityIndex");
-
-
   }
   catch(err){
-    console.error("Error adding blackout date:", err);
 
   return res.render("adminAvailabilityIndex", {
     title: "Admin Manage Availability",
@@ -2805,7 +2762,10 @@ function buildTimeBlocks(day, dayExceptions) {
   }
 
   // add final block after last exception
-  if (currentStart < closeTime) {
+  const startHour = Number(currentStart.split(":")[0]);
+  const endHour = Number(closeTime.split(":")[0]);
+
+  if (startHour < endHour) {
     blocks.push({
       start: currentStart,
       end: closeTime
@@ -2833,10 +2793,22 @@ async function updateCenterExceptions() {
   // get regular center hours for the week
   const weekdays = await CenterOpen.find().lean(); // assume Mon–Sun order
 
+  const weekdayIndexMap = {
+    Monday: 0,
+    Tuesday: 1,
+    Wednesday: 2,
+    Thursday: 3,
+    Friday: 4,
+    Saturday: 5,
+    Sunday: 6
+  };
+
+
+
   // if there is an exception for a given day, override the regular hours with the exception hours and reason
-  const exceptionWeek = weekdays.map((day, index) => {
+  const exceptionWeek = weekdays.map(day => {
     const currentDate = new Date(monday);
-    currentDate.setDate(monday.getDate() + index);
+    currentDate.setDate(monday.getDate() + weekdayIndexMap[day.weekday]);
 
     const blackout = blackoutDates.find(blackoutDate =>
       isWeeklyBlock(currentDate, blackoutDate.startDate, blackoutDate.endDate)
@@ -2952,8 +2924,6 @@ exports.addException = async (req, res) => {
     const { exceptionDate, startTime, endTime, reason } = req.body; 
 
     // finding regular center hours for when center is open/closed
-    // const weekdays = await CenterOpen
-    // .find({}, "weekday isClosed openTime closeTime")
     const weekdays = await updateCenterExceptions();
 
     // ensure all fields in form were filled & entered correctly 
@@ -3111,6 +3081,26 @@ exports.addException = async (req, res) => {
     });
 
 
+    // get all shifts within the exception date and delete any shifts that overlap with the exception time block
+    const exceptionStartMin = startHour * 60;
+    const exceptionEndMin = endHour * 60;
+
+    const shifts = await TutorShift.find({
+      shiftDate: parsedExceptionDate
+    });
+
+    const toDelete = shifts.filter(shift => {
+      const start = convertToMins(shift.startTime);
+      const end = convertToMins(shift.endTime);
+
+      return start < exceptionEndMin && end > exceptionStartMin;
+    });
+
+    await TutorShift.deleteMany({
+      _id: { $in: toDelete.map(shift => shift._id) }
+    });
+
+
 
   // audit log creation describing the time block made & redirecting to the admin availability index page
     await AuditLog.create({
@@ -3134,6 +3124,11 @@ exports.addException = async (req, res) => {
     });
   }
 }; 
+
+function convertToMins(time) {
+  const [hour, min] = time.split(":").map(Number);
+  return hour * 60 + min;
+}
 
 // POST: handle form submission to remove all exceptions on a specific date 
 exports.removeExceptions = async (req, res) => {
@@ -3164,7 +3159,6 @@ exports.removeExceptions = async (req, res) => {
     const weekdays = await updateCenterExceptions();
 
     const { removeExceptionDate } = req.body;
-    console.log(req.body);
 
     // ensure date field in form filled
     if(!removeExceptionDate){

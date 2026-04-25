@@ -56,6 +56,7 @@ function closeAllAvailabilityForms() {
   if (editHoursForm) editHoursForm.style.display = "none";
   if (blackoutDateForm) blackoutDateForm.style.display = "none";
   if (exceptionForm) exceptionForm.style.display = "none";
+  if (removeExceptionsForm) removeExceptionsForm.style.display = "none";
 }
 
 
