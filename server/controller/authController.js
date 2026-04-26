@@ -2,6 +2,8 @@ const bcrypt = require('bcrypt');
 const User = require('../model/userModel');
 const CenterOpen = require("../model/centerOpenSchedule");
 const Course = require("../model/courseModel");
+const { sendEmail } = require("../services/emailService");
+const { accountDeactivationTemplate } = require("../../views/templates/emailTemplates");
 const { DEFAULT_WEEK_HOURS, DEFAULT_COURSES } = require("../config/defaultData");
 
 const { oauth2Client, SCOPES } = require('../config/googleAuth');
@@ -112,6 +114,33 @@ exports.getLoginPage = async (req, res) => {
     }
 };
 
+
+// non-blocking function for sending account deactivation email and 
+// creating notification log on email send fail (similar to handleAfterBookingActions)
+async function handleAfterDeactivationActions({ user }) {
+  try {
+    await sendEmail({
+      to: user.email,
+      cc: process.env.GMAIL_ADMIN,
+      subject: "Account Deactivated",
+      html: accountDeactivationTemplate({
+        name: user.fname,
+        date: new Date().toLocaleString("en-US"),
+      }),
+    });
+  } catch (emailErr) {
+    try {
+      await NotificationLog.create({
+        recipientUserId: user._id,
+        appointmentDate: new Date(),
+        notificationType: "ACCT_DEACTIVATION",
+      });
+    } catch (err) {
+      console.error("NotificationLog ACCT_DEACTIVATION for suspicious activity account deactivation failed.");
+    }
+  }
+}
+
 // Functionality for Login
 exports.loginUser = async (req, res) => {
     const { email, password } = req.body;
@@ -139,7 +168,7 @@ exports.loginUser = async (req, res) => {
                 updatedUser = await User.findByIdAndUpdate(
                     { _id: user._id},
                     { $inc: { failedAttempts: 1 } },
-                    { new: true }
+                    { returnDocument: 'after' }
                 );
             }
 
@@ -149,6 +178,18 @@ exports.loginUser = async (req, res) => {
                     { _id: user._id },
                     { $set: { failedAttempts: 0, isActive: false } }
                 );
+
+                // send user a suspicious activity/account deactivation email notification
+                // create notificationLog document in the background if email fails
+                handleAfterDeactivationActions({
+                    user: {
+                        _id: updatedUser._id,
+                        fname: updatedUser.fname,
+                        email: updatedUser.email
+                    },
+                }).catch(() => {
+                    console.error("Error in after deactivation actions.");
+                });
 
                 return res.render('login', {
                     error: 'Too many login attempts for this email. Account has been deactivated. Please contact admin to reactive account.',
@@ -177,7 +218,7 @@ exports.loginUser = async (req, res) => {
                 updatedUser = await User.findByIdAndUpdate(
                     { _id: user._id},
                     { $inc: { failedAttempts: 1 } },
-                    { new: true }
+                    { returnDocument: 'after' }
                 );
             }
 
@@ -187,6 +228,18 @@ exports.loginUser = async (req, res) => {
                     { _id: user._id },
                     { $set: { failedAttempts: 0, isActive: false } }
                 );
+
+                // send user a suspicious activity/account deactivation email notification
+                // create notificationLog document in the background if email fails
+                handleAfterDeactivationActions({
+                    user: {
+                        _id: updatedUser._id,
+                        fname: updatedUser.fname,
+                        email: updatedUser.email
+                    },
+                }).catch(() => {
+                    console.error("Error in after deactivation actions.");
+                });
 
                 return res.render('login', {
                     error: 'Too many login attempts for this email. Account has been deactivated. Please contact admin to reactive account.',
