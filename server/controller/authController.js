@@ -188,7 +188,7 @@ exports.loginUser = async (req, res) => {
                         email: updatedUser.email
                     },
                 }).catch(() => {
-                    console.error("Error in after deactivation actions.");
+                    console.error("An error occurred while trying to send and log deactivation email.");
                 });
 
                 return res.render('login', {
@@ -238,7 +238,7 @@ exports.loginUser = async (req, res) => {
                         email: updatedUser.email
                     },
                 }).catch(() => {
-                    console.error("Error in after deactivation actions.");
+                    console.error("An error occurred while trying to send and log deactivation email.");
                 });
 
                 return res.render('login', {
