@@ -42,4 +42,21 @@ function adminCancellationTemplate({ studentName, tutorName, date, time, course 
   `;
 }
 
-module.exports = { confirmationTemplate, studentCancellationTemplate, adminCancellationTemplate };
+
+function accountDeactivationTemplate({ name, date }) {
+  return `
+    <p>Hi ${name},</p>
+    <p>Your account has been deactivated due to <b>suspicious login activity.</b></p>
+    <p>Please contact an administrator to reactivate your account and change your password.</p>
+
+    <p><b>Suspicious Activity Details:</b></p>
+    <p>
+        Too many login attempts.<br/>
+        <b>Date & Time:</b> ${date}<br/>
+    </p>
+
+  `;
+}
+
+
+module.exports = { confirmationTemplate, studentCancellationTemplate, adminCancellationTemplate, accountDeactivationTemplate };
