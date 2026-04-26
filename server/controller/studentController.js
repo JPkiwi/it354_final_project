@@ -251,16 +251,16 @@ exports.cancelAppointment = async (req, res) => {
 
         // check if appointment selected exists in db
         if(!appointment){
-            const bookedAppointments = await Appointment.find({ studentId: req.session.user._id });
-
             return res.render("studentAppointment", {
                 title: "Booked Appointments",
                 cssStylesheet: "studentStyle.css",
                 jsFile: "studentScript.js",
                 error: "Appointment was not found.",
                 user: req.session.user,
-                bookedAppointments
-
+                availableShifts: [],
+                bookedAppointments: [],
+                pastBookedAppointments: [],
+                formatTo12Hour
             });
         }
 
@@ -292,8 +292,10 @@ exports.cancelAppointment = async (req, res) => {
                 jsFile: "studentScript.js",
                 error: "Calendar event deletion failed.",
                 user: req.session.user,
-                bookedAppointments
-
+                availableShifts: [],
+                bookedAppointments: [],
+                pastBookedAppointments: [],
+                formatTo12Hour
             });
         }
         // ────────────────────────────────────────────────────────────
@@ -361,7 +363,10 @@ exports.cancelAppointment = async (req, res) => {
             jsFile: "studentScript.js",
             error: "Could not cancel appointment.",
             user: req.session.user,
-            bookedAppointments
+            availableShifts: [],
+            bookedAppointments: [],
+            pastBookedAppointments: [],
+            formatTo12Hour
         });
     }
 }
