@@ -3,9 +3,6 @@
 
 <%- include("includes/_header") %>
 
-<% if (error) { %>
-  <div class="alert"><strong>Error:</strong> <%= error %></div>
-<% } %>
 
 
 <!--Navigation Bar-->
@@ -13,9 +10,17 @@
   <%- include("includes/_navbar") %>
 </header>
 
-<body>
 
-  <div style="padding: 30px;">
+<body>
+  <div class = "pageContent">
+
+    
+<% if (error) { %>
+  <div class="alert"><strong>Error:</strong> <%= error %></div>
+<% } %>
+
+
+  <div style="padding: 30px;"></div>
 
 
     
@@ -23,7 +28,7 @@
 
       <table border="1" cellpadding="6" cellspacing="0">
         <thead>
-          <tr>
+          <tr class = "auditRow">
             <!-- table headings for audit log -->
             <th>Timestamp</th>
             <th>Action</th>
@@ -54,6 +59,9 @@
           <% } %>
         </tbody>
       </table>
+
+
+  </div>
 
 
   </div>

@@ -2,15 +2,6 @@
 <!-- ADMIN "Manage Tutors" EJS -->
 
 <%- include("includes/_header") %>
-<!-- 
-<% if (error) { %>
-  <div class="alert"><strong>Error:</strong> <%= error %></div>
-<% } %> -->
-
-<!-- to show "Please select a tutor first" error in correct spot -->
-<% if (error) { %>
-  <p><strong></strong> <%= error %></p>
-<% } %>
 
 
 <body>
@@ -20,21 +11,31 @@
 </header>
 
 
-  <br>
- 
+<div class = "pageContent">
+
+
+<div class="errorContainer">
+  <% if (error) { %>
+    <div class="errorMessage">
+      <%= error %>
+    </div>
+  <% } %>
+</div>
+
+
 <div class="adminTutorContainer">
   <div class="adminTutorContent">
     <div class="leftAdminTutorPanel">
       
       <form action="/adminTutorIndex/toggle" method="POST" id="tutorTableForm">
-        <input type="text" id="search" placeholder="Search tutors..." />
-        <button type="submit">Toggle Active</button>
+        <input class = "searchFunc" type="text" id="search" placeholder="Search tutors..." />
+        <button class = "small-red-button-round" type="submit">Toggle Active</button>
 
         <!-- Add tutor button -> opens Modal-->
-        <button type="button" id="openAddTutorModal">Add Tutor</button>
-        <button type="button" id="openEditTutorModal">Edit Tutor</button>
-        <button type="button" id="openAssignTutorModal">Assign Tutor Hours</button>
-        <button type="button" id="openClearTutorModal">Clear Tutor Hours</button>
+        <button class = "small-red-button-round" type="button" id="openAddTutorModal">Add Tutor</button>
+        <button class = "small-red-button-round" type="button" id="openEditTutorModal">Edit Tutor</button>
+        <button class = "small-red-button-round" type="button" id="openAssignTutorModal">Assign Hours</button>
+        <button class = "small-red-button-round" type="button" id="openClearTutorModal">Clear Hours</button>
 
         <br><br>
 
@@ -394,10 +395,13 @@
   </div>
 
 </div> 
-<!-- end of modal-->
+
+
 
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+</div>
 
 <!-- flagged as error, functions fine -->
 <script>
@@ -418,6 +422,7 @@
   window.openAssignTutorModal = <%= openAssignTutorModal ? 'true' : 'false' %>;
   </script> -->
 
+  
 </body>
 
 

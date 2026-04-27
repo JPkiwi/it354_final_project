@@ -1,6 +1,36 @@
 /* Admin:  "Manage Tutors" Page styling*/
 
 
+  body {
+  margin: 0;
+  padding: 0;
+}
+
+
+.pageContent {
+  padding-left: 20px; 
+  padding-right: 20px; 
+  padding-top: 16px;
+}
+
+.errorContainer {
+  height: 45px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.errorMessage {
+  color: #b00020;
+  background-color: #ffe5e5;
+  border: 1px solid #ffb3b3;
+  padding: 8px 12px;
+  border-radius: 6px;
+  width: fit-content;
+  box-sizing: border-box;
+  margin: 0;
+}
+
   .navbar ul {
     list-style: none;         
     margin: 0;                 
@@ -118,8 +148,7 @@ row is greyed out to indicate inactivity*/
 }
 
 .rightAdminTutorSchedulePanel {
-  flex: 1 1 40%;
-  min-width: 180px;
+    flex: 0 0 500px;
 }
 
 .rightAdminTutorSchedulePanel h3 {
@@ -134,6 +163,8 @@ row is greyed out to indicate inactivity*/
 .scheduleResults {
   border: 1px solid black;
   padding: 12px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .tutorShiftInfo {

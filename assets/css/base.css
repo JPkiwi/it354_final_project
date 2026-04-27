@@ -35,6 +35,20 @@
 }
 
 
+.small-red-button-round { 
+  background-color: var(--primary);
+  color: white;
+  padding: 8px 13px;
+  font-size: 1.1rem;
+  border-radius: 100px;
+  border: 2px solid white;
+  transition: background-color 0.3s ease;
+}
+
+.small-red-button-round:hover {
+  background-color: var(--secondary);
+}
+
 .white-button {
   background-color: transparent;
   color: white;
@@ -61,3 +75,26 @@
   background-color: white;
   color: var(--gray2);
 }
+
+
+
+.searchFunc {
+  padding: 8px 13px;
+  font-size: 1.1rem;
+  border-radius: 100px;
+  border: 2px solid #696868;
+}
+
+
+
+.errorMessage {
+  color: #b00020;
+  background-color: #ffe5e5;
+  border: 1px solid #ffb3b3;
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin: 10px 0;
+  width: fit-content;
+}
+
+

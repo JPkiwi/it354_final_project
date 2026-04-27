@@ -13,7 +13,9 @@
   <%- include("includes/_navbar") %>
 </header>
 
-  <br>
+<main class= "pageContent" >
+  
+  <h1 class="visually-hidden">Manage Availability</h1>
   
   <!-- <p>Calendar placement</p> --> <!--For later-->
 
@@ -23,9 +25,9 @@
   <div class="availabilityFunctionality">
     <!--Admin availability button options-->
   <div class="adminAvailabilityButtons">
-    <button type="button" id="editHoursButton">Edit Center Hours</button>
-    <button type="button" id="editExceptionButton">Add Exception</button>
-    <button type="button" id="editBlackoutButton">Add Blackout Date</button>
+    <button class = "small-red-button-round" type="button" id="editHoursButton">Edit Center Hours</button>
+    <button class = "small-red-button-round" type="button" id="editExceptionButton">Add Exception</button>
+    <button class = "small-red-button-round" type="button" id="editBlackoutButton">Add Blackout Date</button>
   </div>
 
   <!--Admin change general center hours hours-->
@@ -160,7 +162,7 @@
         }
     %>
 
-    <h1 style="margin-top: 0;">General Center Hours:</h1>
+    <h2 style="margin-top: 0;">General Center Hours:</h2>
         <!--Display the day of the week and the open and closed hours, in AM/PM-->
         <% weekdays.forEach(day => { %>
             <h3 style="margin: 10px 0;">
@@ -186,5 +188,8 @@
 
 </div>
 
+
+
+</main> 
 
 <%- include("includes/_footer") %>

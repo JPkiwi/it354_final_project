@@ -3,27 +3,32 @@
 
 <%- include("includes/_header") %>
 
-<% if (error) { %>
-  <div class="alert"><strong></strong> <%= error %></div>
-<% } %>
-
 <!--Navigation Bar-->
 <header>
   <%- include("includes/_navbar") %>
 </header>
+
  
-  <br>
+<div class = "pageContent">
+ 
+  
+  <div class="errorContainer">
+<% if (error) { %>
+  <div class="errorMessage"><strong></strong> <%= error %></div>
+<% } %>
+</div>
+
 
   <form action="/adminStudentIndex/toggle" method="POST">
 
   <!-- Search -->
-  <input type="text" id="search" placeholder="Search students..." />
+  <input class = "searchFunc" type="text" id="search" placeholder="Search students..." />
 <!-- toggle student status (active vs. inactive) button-->
-  <button type="submit" id="toggleActiveBtn">Toggle Active</button>
+  <button class = "small-red-button-round" type="submit" id="toggleActiveBtn">Toggle Active</button>
 <!-- Add user (student) button -> opens Modal-->
-  <button type="button" id="openAddStudentModal">Add Student</button>
+  <button class = "small-red-button-round" type="button" id="openAddStudentModal">Add Student</button>
 <!--Edit Student Button-->
-  <button type="button" id="openEditStudentModal">Edit Student</button>
+  <button class = "small-red-button-round" type="button" id="openEditStudentModal">Edit Student</button>
 
 <br><br>
 
@@ -143,7 +148,7 @@
   </div>
 </div>
 
-
+</div>
 
 
 <%- include("includes/_footer") %>
