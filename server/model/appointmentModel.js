@@ -38,5 +38,11 @@ appointmentSchema.index(
     { unique: true, partialFilterExpression: { appointmentStatus: "scheduled" } }
 );
 
+// one appointment per student per day 
+// appointmentSchema.index(
+//   { studentId: 1, appointmentDate: 1 },
+//   { unique: true, partialFilterExpression: { appointmentStatus: "scheduled" } }
+// );
+
 
 module.exports = mongoose.model("Appointment", appointmentSchema);
