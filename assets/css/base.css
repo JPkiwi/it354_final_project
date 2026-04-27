@@ -2,7 +2,8 @@
  --primary: #CE1126; /* Redbird Red */
  --secondary: #7d0a17; /* Darker Red */
  --redbird-yellow: #F9DD16; /* Redbird Yellow */
- --gray1: #a19d9e;  /* Lightest Gray */
+ --gray0: #ebebeb; /*Lightest Gray */
+ --gray1: #a19d9e;  /* Light Gray */
  --gray2: #696868; /* Darker Gray */
 } 
 
@@ -48,6 +49,24 @@
 .small-red-button-round:hover {
   background-color: var(--secondary);
 }
+
+
+
+.small-gray-button-round { 
+  background-color: var(--gray2);
+  color: white;
+  padding: 8px 13px;
+  font-size: 1.1rem;
+  border-radius: 100px;
+  border: 2px solid white;
+  transition: background-color 0.3s ease;
+}
+
+.small-gray-button-round:hover {
+  background-color: var(--gray2);
+}
+
+
 
 .white-button {
   background-color: transparent;
@@ -98,3 +117,23 @@
 }
 
 
+
+
+
+.errorContainer {
+  height: 45px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.errorMessage {
+  color: var(--secondary);
+  background-color: #ffe5e5;
+  border: 1px solid #ffb3b3;
+  padding: 8px 12px;
+  border-radius: 6px;
+  width: fit-content;
+  box-sizing: border-box;
+  margin: 0;
+}

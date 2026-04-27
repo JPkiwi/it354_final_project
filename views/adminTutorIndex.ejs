@@ -32,16 +32,16 @@
         <button class = "small-red-button-round" type="submit">Toggle Active</button>
 
         <!-- Add tutor button -> opens Modal-->
-        <button class = "small-red-button-round" type="button" id="openAddTutorModal">Add Tutor</button>
         <button class = "small-red-button-round" type="button" id="openEditTutorModal">Edit Tutor</button>
+        <button class = "small-red-button-round" type="button" id="openAddTutorModal">Add Tutor</button>
         <button class = "small-red-button-round" type="button" id="openAssignTutorModal">Assign Hours</button>
         <button class = "small-red-button-round" type="button" id="openClearTutorModal">Clear Hours</button>
 
         <br><br>
 
-        <table border="1" cellpadding="6" cellspacing="0">
+        <table class = "tutorTable" border="1" cellpadding="6" cellspacing="0">
           <thead>
-            <tr>
+            <tr class = "tableRow">
               <th>Select</th>
               <th>Name</th>
               <th>Email</th>
@@ -77,7 +77,7 @@
 
         <form action="/adminTutorIndex/viewSchedule" method="POST" id="viewScheduleForm">
           <input type="hidden" name="tutorId" id="selectedTutorInput">
-          <button type="submit" id="viewTutorScheduleBtn">View Tutor Schedule</button>
+          <button class = "small-gray-button-round" type="submit" id="viewTutorScheduleBtn">View Tutor Schedule</button>
         </form>
     
         <div class="scheduleResults">

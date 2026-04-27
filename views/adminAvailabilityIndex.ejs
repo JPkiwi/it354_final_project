@@ -3,10 +3,6 @@
 
 <%- include("includes/_header") %>
 
-<% if (error) { %>
-  <div class="alert"><strong>Error:</strong> <%= error %></div>
-<% } %>
-
 
 <!--Navigation Bar-->
 <header>
@@ -15,6 +11,16 @@
 
 <main class= "pageContent" >
   
+  
+<div class="errorContainer">
+  <% if (error) { %>
+    <div class="errorMessage">
+      <%= error %>
+    </div>
+  <% } %>
+</div>
+
+
   <h1 class="visually-hidden">Manage Availability</h1>
   
   <!-- <p>Calendar placement</p> --> <!--For later-->
@@ -76,8 +82,6 @@
     <label for="blackoutStartDate">Start Date: </label>
     <input type = "text" id = "blackoutStartDate" name = "startDate" required />
 
-    <br> 
-    <br>
     <label for="blackoutEndDate">End Date: </label>
     <input type = "text" id = "blackoutEndDate" name = "endDate" required />
 
@@ -176,7 +180,7 @@
         }
     %>
 
-    <h1 style="margin-top: 0;">General Center Hours:</h1>
+    <h2 style="margin-top: 0;">General Center Hours:</h2>
       <!--Display the day of the week and the open and closed hours, in AM/PM-->
       <% weekdays.forEach(day => { %>
         <h3 style="margin: 10px 0;">

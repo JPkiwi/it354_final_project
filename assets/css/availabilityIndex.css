@@ -66,9 +66,28 @@
     align-items: center;
   }
 
-  .generalCenterHours {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 30px;
-  }
+
+  /* Card for displaying weekly center hours */
+.generalCenterHours {
+  background-color: var(--gray0);
+  border: 1px solid var(--gray2);
+  border-radius: 8px;
+  padding: 30px 40px;
+  margin-right: 40px;
+  min-width: 350px;
+}
+
+/* General center hours title */
+.generalCenterHours h2 {
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 25px;
+}
+
+/* Each weekday line */
+.generalCenterHours h3 {
+  background-color: white;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin: 10px 0;
+}

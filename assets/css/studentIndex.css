@@ -28,7 +28,7 @@
   background-color: #ffe5e5;
   border: 1px solid #ffb3b3;
   padding: 8px 12px;
-  border-radius: 6px;
+  border-radius: 8px;
   width: fit-content;
   box-sizing: border-box;
   margin: 0;
@@ -97,4 +97,54 @@ row is greyed out to indicate inactivity*/
   float: right;
   font-size: 20px;
   cursor: pointer;
+}
+
+/* Header row of student table */
+.tableRow {
+  background-color: var(--gray2);
+}
+
+
+/* Header text color for student table */
+.studentTable th {
+  color: white;
+}
+
+.studentTable td,
+.studentTable th {
+  padding: 6px;
+  border: 1px solid black;
+}
+
+
+
+.studentTable {
+  width: 700px;
+  min-width: 700px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+/* Select */
+.studentTable th:nth-child(1),
+.studentTable td:nth-child(1) {
+  width: 30px;
+}
+
+/* Name */
+.studentTable th:nth-child(2),
+.studentTable td:nth-child(2) {
+  width: 150px;
+}
+
+/*Email */
+.studentTable th:nth-child(3),
+.studentTable td:nth-child(3) {
+  width: 150px;
+}
+
+/*Active */
+.studentTable th:nth-child(4),
+.studentTable td:nth-child(4) {
+  width: 40px;
 }
