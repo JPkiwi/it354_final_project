@@ -1,6 +1,6 @@
 const Appointment = require("../model/appointmentModel");
 const { sendEmail } = require("../services/emailService");
-const { adminCancellationTemplate } = require("../../views/templates/appointmentEmail");
+const { adminCancellationTemplate } = require("../../views/templates/emailTemplates");
 const User = require("../model/userModel");
 const Course = require("../model/courseModel");
 const TutorShift = require("../model/tutorShiftModel");
