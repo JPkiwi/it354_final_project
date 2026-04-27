@@ -1,5 +1,5 @@
 const { sendEmail } = require("../services/emailService");
-const { confirmationTemplate } = require("../../views/templates/appointmentEmail");
+const { confirmationTemplate } = require("../../views/templates/emailTemplates");
 const Appointment = require("../model/appointmentModel");
 const TutorShift = require("../model/tutorShiftModel");
 const mongoose = require("mongoose");
@@ -43,7 +43,7 @@ exports.bookAppointment = async (req, res) => {
     reservedShift = await TutorShift.findOneAndUpdate(
       { _id: tutorShiftId, isBooked: false },
       { isBooked: true },
-      { new: true }
+      { returnDocument: 'after' }
     ).populate("tutorId", "fname lname email"); // populating email for notification log
 
     if (!reservedShift) {

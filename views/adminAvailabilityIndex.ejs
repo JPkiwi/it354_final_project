@@ -28,6 +28,7 @@
     <button class = "small-red-button-round" type="button" id="editHoursButton">Edit Center Hours</button>
     <button class = "small-red-button-round" type="button" id="editExceptionButton">Add Exception</button>
     <button class = "small-red-button-round" type="button" id="editBlackoutButton">Add Blackout Date</button>
+    <button class = "small-red-button-round" type="button" id="removeExceptionsButton">Remove Blackout Date / Exception</button>
   </div>
 
   <!--Admin change general center hours hours-->
@@ -127,6 +128,18 @@
   </form>
 </div>
 
+<div class="removeExceptions">
+  <form id="removeExceptionsForm" action="/removeExceptions" method="POST" style="display: none;">
+    
+    <label for="removeExceptionDate">Date:</label>
+    <input type="text" id="removeExceptionDate" name="removeExceptionDate" required />
+
+    <br><br>
+
+    <button id="removeExceptSubmitBtn" type="submit">Submit Removal</button>
+  </form>
+</div>
+
 
 
   </div>
@@ -153,37 +166,34 @@
         let openHour, closeHour;
 
         // only split/store open and close times if the center is not closed that day
-        if (currWeekday && !currWeekday.isClosed) {
-            // get open hour as an integer
-            openHour = Number(currWeekday.openTime.split(":")[0]);
+        if (currWeekday && !currWeekday.isClosed && currWeekday.timeBlocks.length > 0) {
+            const firstBlock = currWeekday.timeBlocks[0];
+            const lastBlock = currWeekday.timeBlocks[currWeekday.timeBlocks.length - 1];
 
-            // get close hour as an integer
-            closeHour = Number(currWeekday.closeTime.split(":")[0]);
+            // get open and close hour as an integer
+            openHour = Number(firstBlock.start.split(":")[0]);
+            closeHour = Number(lastBlock.end.split(":")[0]);
         }
     %>
 
-    <h2 style="margin-top: 0;">General Center Hours:</h2>
-        <!--Display the day of the week and the open and closed hours, in AM/PM-->
-        <% weekdays.forEach(day => { %>
-            <h3 style="margin: 10px 0;">
-                <%= day.weekday %>:
-                <% if(day.isClosed){ %>
-                    Closed
-                <% } else { %>
-                    <% 
-                        const [openHour, openMinute] = day.openTime.split(":");
-                        const [closeHour, closeMinute] = day.closeTime.split(":");
-                        let openHourNum = parseInt(openHour);
-                        let closeHourNum = parseInt(closeHour);
-                        const openAMPM = openHourNum >= 12 ? "PM" : "AM";
-                        const closeAMPM = closeHourNum >= 12 ? "PM" : "AM";
-                        openHourNum = openHourNum % 12 || 12;
-                        closeHourNum = closeHourNum % 12 || 12;
-                    %>
-                    <%= openHourNum + ":" + openMinute + " " + openAMPM + " - " + closeHourNum + ":" + closeMinute + " " + closeAMPM %>
-                <% } %>
-            </h3>
-        <% }) %>
+    <h1 style="margin-top: 0;">General Center Hours:</h1>
+      <!--Display the day of the week and the open and closed hours, in AM/PM-->
+      <% weekdays.forEach(day => { %>
+        <h3 style="margin: 10px 0;">
+          <%= day.weekday %>:
+          <% if (day.isClosed || !day.timeBlocks || day.timeBlocks.length === 0) { %>
+            Closed
+          <% } else { %>
+            <% day.timeBlocks.forEach((block, i) => { %>
+              <%= formatTo12Hour(block.start) %> - <%= formatTo12Hour(block.end) %>
+              <% if (i < day.timeBlocks.length - 1) { %>
+                <br>
+              <% } %>
+            <% }) %>
+
+          <% } %>
+        </h3>
+      <% }) %>
   </div>
 
 </div>
