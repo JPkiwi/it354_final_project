@@ -51,22 +51,29 @@ exports.bookAppointment = async (req, res) => {
       return res.redirect("/studentIndex");
     }
 
-    // check if student already has an appointment at that time
-    const overlappingAppointment = await Appointment.findOne({
+    // check if student already has an appointment that day
+    const startOfDay = new Date(reservedShift.shiftDate);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(reservedShift.shiftDate);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const existingAppointment = await Appointment.findOne({
       studentId: req.session.user._id,
-      appointmentDate: reservedShift.shiftDate,
-      startTime: reservedShift.startTime,
-      endTime: reservedShift.endTime,
-      appointmentStatus: "scheduled",
+      appointmentDate: {
+        $gte: startOfDay,
+        $lte: endOfDay
+      },
+      appointmentStatus: "scheduled"
     });
 
-    if (overlappingAppointment) {
+    if (existingAppointment) {
       // rollback shift reservation
       await TutorShift.findByIdAndUpdate(reservedShift._id, {
         isBooked: false,
       });
 
-      req.session.error = "You already have an appointment at that time.";
+      req.session.error = "You can only book one appointment per day.";
       return res.redirect("/studentIndex");
     }
 

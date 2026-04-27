@@ -2751,7 +2751,7 @@ function getWeekRange(date) {
 }
 
 // standardize the time to midnight to avoid timezone issues
-function standardizeTime(date) {
+function standardizeDate(date) {
   const updatedDate = new Date(date);
   updatedDate.setHours(0, 0, 0, 0);
   return updatedDate;
@@ -2759,9 +2759,9 @@ function standardizeTime(date) {
 
 // check if a date falls within a blackout range
 function isWeeklyBlock(date, start, end) {
-  const currDate = standardizeTime(date);
-  const startDate = standardizeTime(start);
-  const endDate = standardizeTime(end);
+  const currDate = standardizeDate(date);
+  const startDate = standardizeDate(start);
+  const endDate = standardizeDate(end);
 
   return currDate >= startDate && currDate <= endDate;
 }
@@ -2846,7 +2846,7 @@ async function updateCenterExceptions() {
     );
 
     const dayExceptions = exceptions.filter(e =>
-      standardizeTime(e.exceptionDate).getTime() === standardizeTime(currentDate).getTime()
+      standardizeDate(e.exceptionDate).getTime() === standardizeDate(currentDate).getTime()
     );
 
     const latestException = dayExceptions.sort(
