@@ -10,10 +10,10 @@
 </header>
 
 <!--BEGIN REWORK-->
-
+<main>
 <div class = "tutor-container">
   <div class = "schedule-container">
-    <h1 style="text-align: center;"><u>Schedule</u></h1><br><br>
+    <h1 style="text-align: center; width: 100%;">Schedule</h1>
     <% if (shiftError) { %>
     <div class="alert"><strong>Error:</strong> <%= shiftError %></div>
   <% } %>
@@ -37,9 +37,10 @@
   </div><!-- End schedule-container-->
   
   <div class = "current-and-past-app-container">
+  <div class="appointment-wrapper">
   <div class="appointment-container">
-    <h1>Appointments</h1>
-    <form id="tutor-actions-form" method="post" action="/tutorIndex">
+  <h1 style="text-align: center;">Appointments</h1>
+    <form aria-label="select appointment" id="tutor-actions-form" method="post" action="/tutorIndex">
         <!--Tutor view appointments (upcoming and past) and tutor button features-->
         <!-- <div class="tutor-row tutor-columns"> was tutor-column -->                                                                               
         <div id="tutor-view-appointments" class="tutor-view-appointments">
@@ -64,18 +65,17 @@
               <p>Attendance: <%= appointment.attendance.attendanceStatus === "noShow" ? "no-show" : appointment.attendance.attendanceStatus %></p>
               <br />
 
-              <input type="radio" name="selectedAppointment" value="<%= appointment._id %>" data-comment='<%= JSON.stringify(appointment.tutorComments || "") %>' data-actual-start="<%= appointment.attendance?.actualStart || '' %>" data-actual-end="<%= appointment.attendance?.actualEnd || '' %>" data-show="<%= appointment.attendance?.attendanceStatus || '' %>" />
+              <input type="radio" aria-label="selected current appointment" name="selectedAppointment" value="<%= appointment._id %>" data-comment='<%= JSON.stringify(appointment.tutorComments || "") %>' data-actual-start="<%= appointment.attendance?.actualStart || '' %>" data-actual-end="<%= appointment.attendance?.actualEnd || '' %>" data-show="<%= appointment.attendance?.attendanceStatus || '' %>" />
 
             </div>
           <% }) %>
         <% } %>
         </div>
-      </form>
   </div> <!--End appointment-container -->
 
   <div class="past-appointment-container">
-  <h1>Past Appointments</h1>
   <div id="tutor-view-past-appointments" class="tutor-view-appointments">
+      <h1 style="text-align: center;">Past Appointments</h1>
     <br />
       <% if (!pastAppointmentsLoaded) { %>
         <p>Click above to view your past tutoring appointments.</p>
@@ -97,23 +97,21 @@
             <p>Attendance: <%= appointment.attendance.attendanceStatus === "noShow" ? "no-show" : appointment.attendance.attendanceStatus %></p>
             <br />
 
-            <input type="radio" name="selectedAppointment" value="<%= appointment._id %>" data-comment='<%= JSON.stringify(appointment.tutorComments || "") %>' data-actual-start="<%= appointment.attendance?.actualStart || '' %>" data-actual-end="<%= appointment.attendance?.actualEnd || '' %>" data-show="<%= appointment.attendance?.attendanceStatus || '' %>" />
+            <input type="radio" aria-label="selected past appointment" name="selectedAppointment" value="<%= appointment._id %>" data-comment='<%= JSON.stringify(appointment.tutorComments || "") %>' data-actual-start="<%= appointment.attendance?.actualStart || '' %>" data-actual-end="<%= appointment.attendance?.actualEnd || '' %>" data-show="<%= appointment.attendance?.attendanceStatus || '' %>" />
 
         </div>
       <% }) %>
     <% } %>
-    </div>
+
   </div> <!-- End past appointments container-->
-  
+  </div> <!-- End all appointments container -->
+  </div> <!-- end appointment-wrapper-->
 
   <div class = "tutor-buttons">
   <div id="tutor-button-options" class="tutor-button-options">
     <button id="comment-button" type="button" >Edit / View Comments</button>
-    <br />
     <button id="time-button" type="button" >Add Start / End Time</button>
-    <br />
     <button id="show-button" type="button" >Show / No-Show</button>
-    <br />
     <!--Can cancel tutor edit features-->
     <button id="cancel-button" type="button">Cancel</button>
   </div>
@@ -157,194 +155,13 @@
 
     <!--Update show/no show in backend when submit-->
     <button id="show-submit-button" type="submit" formaction="/tutorIndex/submitShow" >Submit Show / No-Show</button>
-  
+
   </div> <!-- end of tutor edit features -->
-  </div> <!-- End tutor buttons-->
-  </div> <!-- End all appointments container -->
-</div> <!-- End tutor-container -->
-
-<!--END REWORK--> <h1>END REWORK HERERHERJBRKSRKSEHRKHRKSEJHRKHEKJRHEKJHR</h1>
-
-  <!-- Tutor container for appointment functionality-->
-  <div class="tutor-container">
-    <!-- <div class="tutor-columns"> -->
-      
-      <!-- Tutor's schedule -->
-      <!-- <div class="tutor-column"> -->
-        <div class="tutor-row">
-          <div class="tutor-full">
-            
-            <div id="tutor-calendar-container" class="tutor-calendar-container">
-            
-              <% if (shiftError) { %>
-                <div class="alert"><strong>Error:</strong> <%= shiftError %></div>
-              <% } %>
-              <% if (!upcomingTutorShifts || upcomingTutorShifts.length === 0) { %>
-                <p>You have no upcoming shifts scheduled.</p>
-              <% } else { %>
-                <% upcomingTutorShifts.forEach(shift => { %>
-                  <div class="tutorShiftInfo">
-                    <p><%= shift.shiftDate.toUTCString().slice(0, 16) %></p>
-
-                    <% shift.timeRanges.forEach(range => { %>
-                      <p><b>
-                        <%= formatTo12Hour(range.shiftStart) %> - <%= formatTo12Hour(range.shiftEnd) %>
-                      </b></p>
-                    <% }) %>
-
-                    <br />
-                  </div>
-                <% }) %>
-              <% } %>
-          </div> <!-- end of tutor full-->
-          <!-- </div> end of tutor calendar container -->
-        </div> <!-- end of tutor row for schedule-->
-
-
-      <!-- Generate upcoming and past appointments (NEEDS TO STAY OUTSIDE TUTOR ACTIONS FORM) -->
-      <!-- <form action="/tutorIndex/tutorAppointment" method="get">
-        <button id="viewTutorAppointments" type="submit">View Upcoming and Past Appointments</button>
-      </form> -->
-
-      <!--Tutor actions form: any updates to an appointment is sent to the backend-->
-      <div class="tutor-row tutor-columns">
-        <form id="tutor-actions-form" method="post" action="/tutorIndex">
-        <!--Tutor view appointments (upcoming and past) and tutor button features-->
-        <!-- <div class="tutor-row tutor-columns"> was tutor-column -->
-          <div class="appointments">                                                                              <!---->   
-            <h1 style="text-align: center;">Appointments</h1>
-            <div id="tutor-view-appointments" class="tutor-view-appointments">
-            <br />
-            <% if (!appointmentsLoaded) { %>
-              <p>Click below to view your upcoming tutoring appointments.</p>
-            <% } else if (!bookedAppointments || bookedAppointments.length === 0) { %>
-              <p>You have no upcoming appointments.</p>
-            <% } else { %>
-              <% bookedAppointments.forEach(appointment => { %>
-                <div class="tutorShiftInfo">
-                  <p><b>Student: <%= appointment.student.fname %> <%= appointment.student.lname %></b></p>
-                  <p><%= appointment.course %></p>
-                  <!--used toUTCString() instead of .toDateString() to get the proper date and slice to look nice-->
-                  <p><%= appointment.appointmentDate.toUTCString().slice(0, 16) %></p>
-                  <!--Display in standard time-->
-
-                  <p><b>
-                    <%= formatTo12Hour(appointment.startTime) %> - <%= formatTo12Hour(appointment.endTime) %>
-                  </b></p>
-
-                  <p>Attendance: <%= appointment.attendance.attendanceStatus === "noShow" ? "no-show" : appointment.attendance.attendanceStatus %></p>
-                  <br />
-
-                  <input type="radio" name="selectedAppointment" value="<%= appointment._id %>" data-comment='<%= JSON.stringify(appointment.tutorComments || "") %>' data-actual-start="<%= appointment.attendance?.actualStart || '' %>" data-actual-end="<%= appointment.attendance?.actualEnd || '' %>" data-show="<%= appointment.attendance?.attendanceStatus || '' %>" />
-
-                </div>
-              <% }) %>
-            <% } %>
-           <!-- end of tutor view appointments and appointments class -->
-            </div>
-          <br />
-          <br />
-          </div> <!-- end of tutor column -->
-          </div>
-
-
-          <!--Tutor view past appointments column-->
-          <div class="tutor-column">
-            <h1>Past Appointments</h1>
-            <div id="tutor-view-past-appointments" class="tutor-view-appointments">
-              <br />
-                <% if (!pastAppointmentsLoaded) { %>
-                  <p>Click above to view your past tutoring appointments.</p>
-                <% } else if (!pastBookedAppointments || pastBookedAppointments.length === 0) { %>
-                  <p>You have no past appointments.</p>
-                <% } else { %>
-                  <% pastBookedAppointments.forEach(appointment => { %>
-                    <div class="tutorShiftInfo">
-                      <p><b>Student: <%= appointment.student.fname %> <%= appointment.student.lname %></b></p>
-                      <p><%= appointment.course %></p>
-                      <!--used toUTCString() instead of .toDateString() to get the proper date and slice to look nice-->
-                      <p><%= appointment.appointmentDate.toUTCString().slice(0, 16) %></p>
-
-                      <!--Display in standard time-->
-                      <p><b>
-                        <%= formatTo12Hour(appointment.startTime) %> - <%= formatTo12Hour(appointment.endTime) %>
-                      </b></p>
-                      
-                      <p>Attendance: <%= appointment.attendance.attendanceStatus === "noShow" ? "no-show" : appointment.attendance.attendanceStatus %></p>
-                      <br />
-
-                      <input type="radio" name="selectedAppointment" value="<%= appointment._id %>" data-comment='<%= JSON.stringify(appointment.tutorComments || "") %>' data-actual-start="<%= appointment.attendance?.actualStart || '' %>" data-actual-end="<%= appointment.attendance?.actualEnd || '' %>" data-show="<%= appointment.attendance?.attendanceStatus || '' %>" />
-
-                  </div>
-                <% }) %>
-              <% } %>
-            </div> <!-- end of view past tutor appointments-->
-
-          </div> <!-- end of tutor column for past appointments -->
-
-        <!-- </div> end of tutor column for appointments -->
-
-        </form> <!-- end of tutor actions form-->
-
-      </div> <!-- end of tutor columns and tutor row -->
-
-                <!--Tutor feature options-->
-           <!--<div class="tutor-column">-->
-          <div class = tutor-buttons>
-            <div id="tutor-button-options" class="tutor-button-options">
-              <button id="comment-button" type="button" >Edit / View Comments</button>
-              <br />
-              <button id="time-button" type="button" >Add Start / End Time</button>
-              <br />
-              <button id="show-button" type="button" >Show / No-Show</button>
-              <br />
-              <!--Can cancel tutor edit features-->
-              <button id="cancel-button" type="button">Cancel</button>
-            </div>
-          </div>
-
-            <!--Tutor feature selections and submit buttons-->
-            <div id="tutor-edit-features" class="tutor-edit-features">
-              <textarea
-                id="comments-textarea"
-                name="comments-textarea"
-                placeholder="Enter tutoring session comments here..."
-                rows="10"
-                cols="50"
-              ></textarea>
-              <br />
-              <label id="start-time-label" for="session-start-time">Start Time:</label>
-              <input
-                type="time"
-                id="session-start-time"
-                name="session-start-time"
-              />
-              <label id="end-time-label" for="session-end-time">End Time:</label>
-              <input
-                type="time"
-                id="session-end-time"
-                name="session-end-time"
-              />
-              <br />
-              <label id="show-label" for="select-show">Show / No-Show: </label>
-              <select id="select-show" name="select-show">
-                <option value="" disabled selected hidden>-- Select an Option --</option>
-                <option value="show">Show</option>
-                <option value="no-show">No-Show</option>
-                <option value="pending">Pending</option>
-              </select>
-              <br />
-              <!--Update comment in backend when submit-->
-              <button id="comment-submit-button" type="submit" formaction="/tutorIndex/submitComment">Submit Comment</button>
-
-              <!--Update times in backend when submit-->
-              <button id="time-submit-button" type="submit" formaction="/tutorIndex/submitTimes">Submit Time</button>
-
-              <!--Update show/no show in backend when submit-->
-              <button id="show-submit-button" type="submit" formaction="/tutorIndex/submitShow" >Submit Show / No-Show</button>
-            
-            </div> <!-- end of tutor edit features -->
-
-  </div> <!-- end of tutor container -->
+  </form>
+</div> <!-- end tutor-buttons -->
+</div> <!-- end current-and-past-app-container -->
+</div> <!-- end tutor container-->
+</main>
+<!--END REWORK-->
 
 <%- include("includes/_footer") %>

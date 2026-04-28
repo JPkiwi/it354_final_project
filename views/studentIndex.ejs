@@ -6,14 +6,16 @@
 </header>
 
     <!-- main page content-->
+    <main>
     <div class="mainContent">
         <div class="contentContainer">
             <div class="topSection">
-                <h2>Book an Appointment</h2>
+                <h1 style="text-align: center;">Book an Appointment</h1>
             </div>
             <div class="columns">
-                <div class="column">
+                <div class="column" id="course-and-day">
                     <form action="/viewAvailableAppointments" method="post">
+                        <h2>Select a Course & Day:</h2><br>
                         <label for="course">Course:</label>
                         <select id="course" name="course" required>
                             <% courses.forEach(course => { %>
@@ -24,7 +26,7 @@
                         </select><br/><br/>
                         <label for="selectDay">Select a Day:</label>
                         <input type="date" id="selectDay" name="selectDay" value="<%= form ? form.selectDay : '' %>" min = "<%= new Date().toISOString().split('T')[0] %>" required><br/><br/>
-                        <button id="viewAppointments" type="submit">View Available Appointments</button>
+                        <button id="viewAppointments" type="submit" class="red-button">View Available Appointments</button>
                         <% if (error) { %>
                             <br/><br/>
                             <div class="alert"><%= error %></div>
@@ -52,7 +54,7 @@
                                         <%= formatTo12Hour(shift.startTime) %> - <%= formatTo12Hour(shift.endTime) %>
                                     </b></p>
                                     
-                                    <button type="submit">Book</button>
+                                    <button type="submit" class="small-red-button-round">Book</button>
                                 </form>
                             </div>
                         <% }) %>
@@ -62,5 +64,6 @@
             
         </div>
     </div>
+    </main>
 
 <%- include("includes/_footer") %>

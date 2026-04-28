@@ -1,5 +1,5 @@
 body {
-    background-color: #dcdede;
+    background-color: var(--gray3);
 }
 
 .tutor-content {
@@ -8,56 +8,99 @@ body {
 
 .schedule-container {
     display: flex;
+    flex-wrap: wrap;
     margin-top: 20px;
+    margin-bottom: 20px;
     padding-top: 10px;
     width: 100%;
     align-items: center;
     text-align: center;
     justify-content: center;
-    border: 2px solid var(--gray2);
+    border: 3px solid var(--gray1);
     border-radius: 8px;
     background-color: white;
 }
 
 .current-and-past-app-container {
-    margin: 10px;
+    display: flex;
+    flex-direction: row;
+    border-radius: 8px;
+    margin-top: 20px;
+
+}
+
+.appointments-wrapper {
     display: flex;
     flex-direction: column;
-    border: 2px solid var(--gray2);
+    flex: 9;
+    min-width: 0;
 }
 
-.appointment-container {
-
+.tutor-buttons {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    flex:1;
+    background-color: #f0f2f2;
+    padding-top: 300px;
 }
 
-.past-appointments-container {
+.tutor-button-options{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
 }
 
 /*Box design for tutor appointments*/
 .tutorShiftInfo {
-    border: 1px solid var(--gray2);
+    border: 3px solid var(--gray1);
     padding: 10px;
     display: inline-block;
-    margin-right: 15px;
+
     margin-bottom: 10px;
     text-align: center;
 }
 
 .tutor-view-appointments {
-    border: 1px solid black;
     padding: 10px;
-    display: inline-block;
-    margin-right: 15px;
+    display: block;
     margin-bottom: 10px;
     text-align: center;
-    width: 50%;
+    width: 100%;
+    box-sizing: border-box;
+    background: white;
 }
 
-.tutor-buttons {
-    justify-content: flex-end;
-    background-color: white;
-    border: 2px solid var(--gray2);
+/* Copy of the red-button on base.css */
+button {
+  background-color: var(--primary);
+  color: white;
+  padding: 15px 25px;
+  font-size: 1.5rem;
+  border-radius: 8px;
+  border: 2px solid white;
+  transition: background-color 0.3s ease;
+  
 }
+
+button:hover {
+  background-color: var(--secondary);
+}
+
+.appointment-container, .past-appointment-container {
+    padding-top: 20px;
+    margin-top: 20px;
+    border: 3px solid var(--gray1);
+    border-radius: 5px;
+    background-color: white;
+}
+
 
 
 
@@ -92,29 +135,29 @@ body {
     width: 600px; 
 } */
 
-.tutor-column {
+/* .tutor-column {
   flex: 1;
   min-width: 0;
   width: 600px; 
   align-items: center;
   justify-content: center;
-}
+} */
 
-.tutor-row {
+/* .tutor-row {
   margin-bottom: 30px;
   align-items: center;
   justify-content: center;
-}
+} */
 
 .tutor-full {
   width: 100%;
 }
 
-.tutor-buttons {
+/* .tutor-buttons {
     justify-content: end;
     visibility: hidden;
     align-items: end;
-}
+} */
 
 /* .tutor-button-options {
     justify-content: end;
@@ -158,12 +201,12 @@ body {
     align-items: flex-start;
 }*/
 
-button {
+/* button {
   width: auto;
   display: inline-block;
   padding: 8px 12px;
   margin-bottom: 10px;
-}
+} */
 
 /*Styling for the placeholder for any textareas (comments)*/
 textarea::placeholder {

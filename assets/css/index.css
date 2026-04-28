@@ -3,25 +3,32 @@ body {
   background-color: var(--primary);
 }
 
-.navBar {
-  display: flex;
-  justify-content: space-between;
-}
-
-.navbarLinks {
-  padding-top: 10px;
-  padding-right: 5px;
-  color: white;
-}
 
 .headlinerContainer {
-  background-color: white;
+  background-image: url("/images/seal-simple-transparent.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: left;
+  background-color: var(--gray0);
+
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 100px;
+  padding: 130px;
 }
+
+.headlinerContainer > h1 {
+  color: var(--primary);
+  font-size: 2.3rem;
+}
+
+.headlinerContainer > h2 {
+  color: var(--secondary);
+  font-size: 1.8rem;
+}
+
+
 
 .buttonRow {
   display: flex;
@@ -38,7 +45,7 @@ body {
 }
 
 li::marker {
-  color: red;
+  color: var(--primary);
 }
 
 .slide {
@@ -92,23 +99,36 @@ li::marker {
   right: 1rem;
 }
 
-.whySection {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
+
+
+.why {
+  background-color: var(--gray0);
+  margin-top: 80px;
   padding: 20px;
 }
 
-.whySection h2 {
-  padding-top: 140px;
-  margin-left: 150px;
-  color: white;
+.why > h2 {
+  text-align: center;
+  padding-top: 20px;
+  font-size: 2.5rem;
 }
 
-.reasons {
+.whySection h3 {
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+.whySection {
   display: flex;
+  justify-content: space-between;
+  gap: 30px;
+  padding: 20px;
+}
+
+.section1, .section2, .section3 {
+  flex: 1;
   flex-direction: column;
-  width: 50%;
+  padding-left: 15px;
 }
 
 .hoursAndLocation {
@@ -140,6 +160,12 @@ li::marker {
   display: flex;
   flex-direction: column;
   padding: 20px;
+  color: white;
+}
+
+.testimonialsContainer > h2 {
+  text-align: center;
+  font-size: 2rem;
 }
 
 .testimonials {
@@ -154,12 +180,15 @@ li::marker {
 .test2,
 .test3 {
   width: 30%;
+  font-size: 1.5rem;
 }
 
 .testimonials h1 {
   color: yellow;
 }
 
-html {
-  background-color: red;
+.photo-gallery {
+  text-align: center;
+  color: white;
+  font-size: 2rem;
 }

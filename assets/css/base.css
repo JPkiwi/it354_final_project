@@ -8,7 +8,7 @@
 } 
 
 
-
+/* General use red button (ex: logout) */
 .red-button {
   background-color: var(--primary);
   color: white;
@@ -20,6 +20,7 @@
   
 }
 
+/*  */
 .red-button-round {
   background-color: var(--primary);
   color: white;
@@ -31,7 +32,18 @@
   
 }
 
-.red-button:hover, .red-button-round:hover {
+.red-button-large {
+  background-color: var(--primary);
+  color: white;
+  padding: 15px 25px;
+  font-size: 1.3rem;
+  border-radius: 8px;
+  border: 2px solid white;
+  transition: background-color 0.3s ease;
+  
+}
+
+.red-button:hover, .red-button-round:hover, .red-button-large:hover {
   background-color: var(--secondary);
 }
 
@@ -79,6 +91,7 @@
   
 }
 
+/*  */
 .white-button-round {
   background-color: transparent;
   color: white;
@@ -90,7 +103,19 @@
   
 }
 
-.white-button:hover, .white-button-round:hover {
+.white-button-large {
+  background-color: transparent;
+  display: inline-block;
+  color: white;
+  padding: 15px 25px;
+  font-size: 1.3rem;
+  border-radius: 8px;
+  border: 2px solid white;
+  transition: background-color 0.5s ease;
+  
+}
+
+.white-button:hover, .white-button-round:hover, .white-button-large:hover {
   background-color: white;
   color: var(--gray2);
 }
