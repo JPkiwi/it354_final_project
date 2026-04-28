@@ -107,7 +107,7 @@
   width: 100%;
   border-collapse: collapse;
   margin-top: 10px;
-  table-layout: fixed; 
+  /* table-layout: fixed;  */
 }
 
 /* Notif table cell styling */

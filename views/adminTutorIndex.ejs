@@ -93,7 +93,7 @@
           <!-- changed to "scheduleShifts.forEach"-->
           <% scheduleShifts.forEach(shift => { %>
             <div class="tutorShiftInfo">
-              <p><%= shift.shiftDate.toUTCString().slice(0, 16) %></p>
+              <p class = "boldText"><%= shift.shiftDate.toUTCString().slice(0, 16) %></p>
                 <!--Display in standard time-->
                 <% if (shift.timeRanges && shift.timeRanges.length > 0){ %>
                   <% shift.timeRanges.forEach(range => { %>
@@ -107,11 +107,11 @@
                         startHourNum = startHourNum % 12 || 12;
                         endHourNum = endHourNum % 12 || 12;
                         %> 
-                      <p><b><%= startHourNum + ":" + startMinute + " " + startAMPM + " - " + endHourNum + ":" + endMinute + " " + endAMPM %></b></p>
+                      <p class = "modalText"><%= startHourNum + ":" + startMinute + " " + startAMPM + " - " + endHourNum + ":" + endMinute + " " + endAMPM %></p>
                       <% }) %>
 
                       <% } else if (shift.startTime && shift.endTime) { %>
-                      <p><b><%= shift.startTime %> - <%= shift.endTime %></b></p>
+                      <p class = "modalText"><%= shift.startTime %> - <%= shift.endTime %></p>
                       <% } %>
                   </div>
                   <% }) %>
@@ -148,7 +148,7 @@
       <input type="hidden" name="sourcePage" value="adminTutorIndex">
 
 
-
+  
       <label class = "modalText" >First Name:</label>
       <input type="text" name="fname"  class = "inputFunc" required>
       <br><br>
@@ -174,7 +174,7 @@
  
  so this is a checkbox functionality where admin can select which courses the tutor will 
  be tutoring students for-->
-<br><br><label  class = "modalText" >Courses:</label><br>
+<br><br><label  class = "modalText" >Courses:</label><br><br>
 <span id="addCourseError" style="color: red; font-size: 0.8em; display: block; margin-top: 1px;"></span>
       <% courses.forEach(course => { %>
         <label  class = "modalText" >
@@ -232,7 +232,8 @@
         </label>
         <br>
       <% }) %>
-      <button type="submit">Submit Changes</button>
+      <br>
+      <button type="submit" class = "small-red-button-round">Submit Changes</button>
       </form>
   </div>
 </div>
@@ -274,7 +275,7 @@
 <br><br>
 
 <!-- choosing day from calendar (flatpickr) -->
-<input type="text" id="shiftDate" name="shiftDate" value = "<%= selectedShiftDate || '' %>" required>
+<input type="text" id="shiftDate" name="shiftDate"  class = "inputFunc"  value = "<%= selectedShiftDate || '' %>" required>
 
 <button type="submit" name="action" value="view" class = "small-gray-button-round">View Available Shifts</button>
 
@@ -288,8 +289,8 @@
     <% } %>
 
  <% if (openAssignTutorModal && availableShiftBlocks && availableShiftBlocks.length > 0){%>
-  <h3 class = "headingText">Available Shifts</h3>
-
+  <!-- <h3 class = "boldText">Available Shifts</h3> -->
+<br></br> 
   
   <div class="shift-checkbox-container">
     <% availableShiftBlocks.forEach(function(block) { %>
@@ -358,12 +359,12 @@
 <input type="text" id = "clearShiftDate" name="shiftDate" placeholder="-- Select Date --"  class = "inputFunc" required value ="<%= selectedShiftDate || '' %>" required>
 
       <br><br>
-      <button type="submit" name = "action" value = "view">View Active Shifts</button>
+      <button class="small-gray-button-round" type="submit" name = "action" value = "view">View Active Shifts</button>
       <br><br>
 <!-- updated below to reflect "clearShifts"-->
       <% if (openClearTutorModal && clearShifts && clearShifts.length > 0 ) { %>
-        <h3 class = "headingText">Active Shifts</h3> 
-
+        <!-- <h3 class = "headingText">Active Shifts</h3>  -->
+         <br>
         <div class= "shift-checkbox-container"> 
           <!-- changed from "shifts.forEach" to "clearShifts"-->
           <% clearShifts.forEach(function(shift) {%>
@@ -377,11 +378,11 @@
 
         <br>
 
-        <button type="submit" name="action" value="removeSelected">
+        <button class ="small-red-button-round" type="submit" name="action" value="removeSelected">
           Remove Selected Tutor Hours
         </button>
 
-        <button type="submit" name="action" value="clearAll">
+        <button class ="small-red-button-round" type="submit" name="action" value="clearAll">
           Fully Clear Selected Day
         </button>
 
