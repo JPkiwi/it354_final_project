@@ -40,7 +40,7 @@
   <!--Admin change general center hours hours-->
   <div class="changeHours">
     <form id="changeHoursForm" action="/changeHours" method="post" style="display: none;"> <!--Initially hidden-->
-      <label for="selectWeekday">Select Day of the Week:</label>
+      <label class ="modalText" for="selectWeekday">Select Day of the Week:</label>
       <select name="weekday" id="weekday" required>
         <option value="Monday">Monday</option>
         <option value="Tuesday">Tuesday</option>
@@ -54,15 +54,16 @@
       <br />
       <br />
       
-      <label id="center-open-label" for="centerOpenTime">Open Time:</label>
-      <input type="time" id="centerOpenTime" name="centerOpenTime" step="3600" />
-      <label id="center-close-label" for="centerCloseTime">Close Time:</label>
-      <input type="time" id="centerCloseTime" name="centerCloseTime" step="3600" />
+      <label class ="modalText" id="center-open-label" for="centerOpenTime">Open Time:</label>
+      <input class = "inputFunc"  type="time" id="centerOpenTime" name="centerOpenTime" step="3600" />
+      <label class ="modalText" id="center-close-label" for="centerCloseTime">Close Time:</label>
+      <input class = "inputFunc"  type="time" id="centerCloseTime" name="centerCloseTime" step="3600" />
+      <br /> 
+      <br>
+      <strong >Note:</strong> On the hour is required to change center hours.
       <br />
-      <strong>Note:</strong> On the hour is required to change center hours.
       <br />
-      <br />
-      <label id="close-weekday-label" for="closeWeekdayDropdown">Close this day? </label>
+      <label class ="modalText" id="close-weekday-label" for="closeWeekdayDropdown">Close this day? </label>
       <select name="closeWeekdayDropdown" id="closeWeekdayDropdown" required >
         <option value="No">No</option>
         <option value="Yes">Yes</option>
@@ -70,7 +71,7 @@
       <br />
       <br />
 
-      <button type="submit" id="submitHoursButton">Submit Hours</button>
+      <button class = "small-red-button-round" type="submit" id="submitHoursButton">Submit Hours</button>
     </form>
   </div>
 
@@ -79,19 +80,19 @@
   
 <div class = "addBlackoutDate">
   <form id="blackoutDateForm" action = "/addBlackoutDate" method = "POST" style = "display: none;">
-    <label for="blackoutStartDate">Start Date: </label>
+    <label class = "modalText" for="blackoutStartDate">Start Date: </label>
     <input type = "text" id = "blackoutStartDate" name = "startDate" required />
 
-    <label for="blackoutEndDate">End Date: </label>
+    <label class = "modalText" for="blackoutEndDate">End Date: </label>
     <input type = "text" id = "blackoutEndDate" name = "endDate" required />
 
     <br> 
     <br>
-    <label for = "blackoutReason">Reason: </label>
-    <input type = "text" id = "blackoutReason" name="reason" required /> 
+    <label class = "modalText" for = "blackoutReason">Reason: </label>
+    <input class = "inputFunc"  type = "text" id = "blackoutReason" name="reason" required /> 
     <br>
     <br>
-    <button type="submit">Submit Blackout Date</button>
+    <button class = "small-red-button-round" type="submit">Submit Blackout Date</button>
 
   </form>
 </div> 
@@ -99,20 +100,20 @@
 
 <div class="addException">
   <form id="exceptionForm" action="/addException" method="POST" style="display: none;">
-    <label for="exceptionDate">Date:</label>
+    <label class = "modalText" for="exceptionDate">Date:</label>
     <input type="text" id="exceptionDate" name="exceptionDate" required />
 
     <br>
     <br>
 
-    <label for="exceptionStartTime">Start Time:</label>
-    <input type="time" id="exceptionStartTime" name="startTime" step="3600" required />
+    <label class = "modalText" for="exceptionStartTime">Start Time:</label>
+    <input class = "inputFunc"  type="time" id="exceptionStartTime" name="startTime" step="3600" required />
 
     <br>
     <br>
 
-    <label for="exceptionEndTime">End Time:</label>
-    <input type="time" id="exceptionEndTime" name="endTime" step="3600" required />
+    <label class = "modalText" for="exceptionEndTime">End Time:</label>
+    <input class = "inputFunc"  type="time" id="exceptionEndTime" name="endTime" step="3600" required />
 
     <br>
     <br>
@@ -122,25 +123,25 @@
     <br>
     <br>
 
-    <label for="exceptionReason">Reason:</label>
-    <input type="text" id="exceptionReason" name="reason" required />
+    <label class = "modalText" for="exceptionReason">Reason:</label>
+    <input class = "inputFunc" type="text" id="exceptionReason" name="reason" required />
 
     <br>
     <br>
 
-    <button type="submit">Submit Exception</button>
+    <button class = "small-red-button-round" type="submit">Submit Exception</button>
   </form>
 </div>
 
 <div class="removeExceptions">
   <form id="removeExceptionsForm" action="/removeExceptions" method="POST" style="display: none;">
     
-    <label for="removeExceptionDate">Date:</label>
+    <label class = "modalText" for="removeExceptionDate">Date:</label>
     <input type="text" id="removeExceptionDate" name="removeExceptionDate" required />
 
     <br><br>
 
-    <button id="removeExceptSubmitBtn" type="submit">Submit Removal</button>
+    <button class = "small-red-button-round" id="removeExceptSubmitBtn" type="submit">Submit Removal</button>
   </form>
 </div>
 
@@ -180,11 +181,11 @@
         }
     %>
 
-    <h2 style="margin-top: 0;">General Center Hours:</h2>
+    <h2 class = "headingText" style="margin-top: 0;">General Center Hours:</h2>
       <!--Display the day of the week and the open and closed hours, in AM/PM-->
       <% weekdays.forEach(day => { %>
-        <h3 style="margin: 10px 0;">
-          <%= day.weekday %>:
+        <h3 class = "modalText" style="margin: 10px 0;">
+          <span class = "boldText"><%= day.weekday %>: </span>
           <% if (day.isClosed || !day.timeBlocks || day.timeBlocks.length === 0) { %>
             Closed
           <% } else { %>

@@ -129,7 +129,7 @@ row is greyed out to indicate inactivity*/
   background-color: white;
   margin: 10% auto;
   padding: 20px;
-  width: 400px;
+  max-width: 500px;
   border-radius: 8px;
 }
 
@@ -148,7 +148,7 @@ row is greyed out to indicate inactivity*/
   background-color: white;
   margin: 10% auto;
   padding: 20px;
-  width: 400px;
+  width: 500px;
   border-radius: 8px;
 }
 
@@ -201,4 +201,19 @@ row is greyed out to indicate inactivity*/
   margin-bottom: 12px;
   padding-bottom: 6px;
   border-bottom: 1px solid lightgrey;
+}
+
+
+select {
+  max-width: 330px;
+  height: 40px;
+  padding: 8px 12px;
+  font-size: 1rem;
+
+  border: 1px solid #c6ced8;
+  border-radius: 8px;
+  background-color: white;
+
+  box-sizing: border-box;
+  cursor: pointer;
 }

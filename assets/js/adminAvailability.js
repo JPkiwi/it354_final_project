@@ -94,6 +94,7 @@ flatpickr("#blackoutStartDate", {
   // setting placeholder for select date box (would not work inside ejs file))
   onReady: function(selectedDates, dateStr, instance){
     instance.altInput.placeholder = "-- Select Start Date -- "
+    instance.altInput.classList.add("datePickerInput");
   }
 });
 
@@ -111,6 +112,8 @@ flatpickr("#blackoutEndDate", {
   // setting placeholder for select date box (would not work inside ejs file))
   onReady: function(selectedDates, dateStr, instance){
     instance.altInput.placeholder = "-- Select End Date -- "
+    instance.altInput.classList.add("datePickerInput");
+
   }
 });
 
@@ -163,6 +166,8 @@ flatpickr("#exceptionDate", {
   altFormat: "F j, Y",
   onReady: function (selectedDates, dateStr, instance) {
     instance.altInput.placeholder = "-- Select Date --";
+    instance.altInput.classList.add("datePickerInput");
+
   }
 });
 
@@ -201,5 +206,7 @@ flatpickr("#removeExceptionDate", {
   altFormat: "F j, Y",
   onReady: function(selectedDates, dateStr, instance){
     instance.altInput.placeholder = "-- Select Date -- ";
+    instance.altInput.classList.add("datePickerInput");
+
   }
 });
