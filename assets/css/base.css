@@ -2,12 +2,13 @@
  --primary: #CE1126; /* Redbird Red */
  --secondary: #7d0a17; /* Darker Red */
  --redbird-yellow: #F9DD16; /* Redbird Yellow */
- --gray1: #a19d9e;  /* Lightest Gray */
- --gray2: #696868; /* Darker Gray */
+ --gray1: #a19d9e;  /* Lightest Accent Gray */
+ --gray2: #696868; /* Darker Accent Gray */
+ --gray3: #f0f2f2; /* Background Gray */
 } 
 
 
-
+/* General use red button (ex: logout) */
 .red-button {
   background-color: var(--primary);
   color: white;
@@ -19,6 +20,7 @@
   
 }
 
+/*  */
 .red-button-round {
   background-color: var(--primary);
   color: white;
@@ -30,11 +32,34 @@
   
 }
 
-.red-button:hover, .red-button-round:hover {
+/* Accent Buttons */
+.red-button-small {
+  background-color: var(--primary);
+  color: white;
+  padding: 15px 25px;
+  font-size: 0.85rem;
+  border-radius: 8px;
+  border: 2px solid white;
+  transition: background-color 0.3s ease;
+  
+}
+
+.red-button-large {
+  background-color: var(--primary);
+  color: white;
+  padding: 15px 25px;
+  font-size: 1.3rem;
+  border-radius: 8px;
+  border: 2px solid white;
+  transition: background-color 0.3s ease;
+  
+}
+
+.red-button:hover, .red-button-round:hover, .red-button-small:hover, .red-button-large:hover {
   background-color: var(--secondary);
 }
 
-
+/*  */
 .white-button {
   background-color: transparent;
   color: white;
@@ -46,6 +71,7 @@
   
 }
 
+/*  */
 .white-button-round {
   background-color: transparent;
   color: white;
@@ -57,7 +83,19 @@
   
 }
 
-.white-button:hover, .white-button-round:hover {
+.white-button-large {
+  background-color: transparent;
+  display: inline-block;
+  color: white;
+  padding: 15px 25px;
+  font-size: 1.3rem;
+  border-radius: 8px;
+  border: 2px solid white;
+  transition: background-color 0.5s ease;
+  
+}
+
+.white-button:hover, .white-button-round:hover, .white-button-large:hover {
   background-color: white;
   color: var(--gray2);
 }

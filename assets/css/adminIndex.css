@@ -1,5 +1,9 @@
 /* Admin:  "Manage Appointments" Page styling*/
 
+  body {
+    background-color: var(--gray3);
+  }
+
   .navbar ul {
     list-style: none;         
     margin: 0;                 
@@ -16,11 +20,50 @@
     font-weight: bold;         
   }
 
-  .navbar a:hover {
-    background: #ddd;          
-  }
 
   /* active link */
   .navbar a.active {
     color: #4a148c;            
   }
+
+  .appointments-table {
+    gap: 20px;
+  }
+
+  .buttons {
+    gap: 10px;
+  }
+
+  .appointments-container {
+    display: flex;
+    gap: 50px;
+  }
+
+  .appointments-table {
+    flex: 1;
+    padding: 20px;
+  }
+
+  .google-calendar-view {
+    flex: 2;
+  }
+
+.appointments-table table {
+  width: 100%;
+}
+
+.appointments-table th,
+.appointments-table td {
+  white-space: nowrap;   /* prevents text from wrapping awkwardly */
+  background-color: white;
+}
+
+.appointments-table tr {
+  height: 48px;
+}
+
+#search {
+  padding: 8px;
+  font-size: 0.8rem;
+  margin-left: 20px;
+}

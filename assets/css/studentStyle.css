@@ -1,15 +1,19 @@
+body {
+    background-color: var(--gray3);
+}
+
 header {
-    border: 2px dotted black;
+    /* border: 2px dotted black; */
     padding: 10px;
     text-align: center;
 }
 footer {
-    border: 2px dotted black;
+    /* border: 2px dotted black; */
     padding: 10px;
     text-align: center;
 }
 .mainContent {
-    background-color: lightgray;
+
     padding: 20px 0;
 }
 .contentContainer {
@@ -17,6 +21,7 @@ footer {
     width: 90%;
     margin: 0 auto;
     padding: 20px;
+    border-radius: 8px;
 }
 .topSection {
     margin-bottom: 20px;
@@ -29,10 +34,12 @@ footer {
     flex: 1;
     background-color: white;
     padding: 20px;
-    border: 1px solid black;
+    border: 2px solid black;
+    border-radius: 5px;
 }
 .tutorShiftInfo {
-    border: 1px solid black;
+    border: 2px solid black;
+    border-radius: 5px;
     padding: 10px;
     display: inline-block;
     margin-right: 15px;
@@ -42,4 +49,27 @@ footer {
 #daySchedule {
     display: none;
     margin-top: 20px;
+}
+
+.red-button {
+    font-size: 0.5rem;
+}
+
+label {
+    font-size: 1.5rem;
+}
+
+#course-and-day {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+h2 {
+    font-size: 1.75rem;
+}
+
+h1 {
+    font-size: 2rem;
 }

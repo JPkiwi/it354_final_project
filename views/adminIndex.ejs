@@ -11,25 +11,19 @@
 <header>
   <%- include("includes/_navbar") %>
 </header>
-
-  <br> 
-  <button type="button" id="notifs">Notifications</button>
-
-  <!-- Appointment/cancellation buttons -->
-  <button type="button" id="cancelBtn">Cancel Appointment</button>
-
-  <br><br>
-
+  <br>
+  <main>
+  <h1 style="text-align: center;">Current Scheduled Appointments</h1>
   <!-- Search Appointments box/search function -->
-  <input id="search" type="text" placeholder="Search appointments..." />
+  <input id="search" type="text" aria-label="Search for an Appointment" placeholder="Search appointments..." />
 
   <%
 %>
   
+<div class="appointments-container">
   <!-- Appointments Table -->
-<div style="display: flex; gap: 20px;"> <!-- BEGIN FLEX -->
-  <div style="flex: 1;">
-  <table border="1" cellpadding="6" cellspacing="0" style="margin-top:10px;">
+<div class="appointments-table"> <!-- BEGIN FLEX -->
+  <table border="1" cellpadding="9" cellspacing="0" style="margin-top:10px;">
     <thead>
       <tr>
           <!-- headers (1st row) -->
@@ -50,7 +44,7 @@
     <% appointments.forEach(function(appointment) { %>
       <tr>
         <!-- radio button instead of checkbox -> only one appt selected at a time to cancel or assign tutor-->
-    <td><input type="radio" name="selectedAppointment" value="<%= appointment._id %>"> </td> 
+    <td><input type="radio" aria-label="Selected Appointment" name="selectedAppointment" value="<%= appointment._id %>"> </td> 
     <!-- if appointment date exists, convert to string (using .split to get 00:00:000Z from mongodb date)-->
         <td><%= appointment.appointmentDate ? appointment.appointmentDate.toISOString().split('T')[0] : "No date" %></td>
         <!-- printing start time and endtime-->
@@ -95,20 +89,25 @@
     <% } %>
   </tbody>
 </table>
+<div class="buttons">
+  <button type="button" id="notifs" class="red-button-small">Notifications</button>
+
+  <!-- Appointment/cancellation buttons -->
+  <button type="button" id="cancelBtn" class="red-button-small">Cancel Appointment</button>
+</div> <!-- END BUTTONS -->
 </div>
 
 
 
 <!--Admin's Google Calendar-->
-  <div style="flex: 1;">
-  <div id="googleCalendarView">
-  <iframe src="https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=America%2FChicago&showPrint=0&src=aXN1dHV0b3JhZG1pbkBnbWFpbC5jb20&src=ZW4udXNhI2hvbGlkYXlAZ3JvdXAudi5jYWxlbmRhci5nb29nbGUuY29t&color=%23039be5&color=%230b8043" style="border:solid 1px #777" width="800" height="600" frameborder="0" scrolling="no"></iframe>
+  <div class="google-calendar-view">
+  <iframe src="https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=America%2FChicago&showPrint=0&src=aXN1dHV0b3JhZG1pbkBnbWFpbC5jb20&src=ZW4udXNhI2hvbGlkYXlAZ3JvdXAudi5jYWxlbmRhci5nb29nbGUuY29t&color=%23039be5&color=%230b8043" title="Google Calendar View" style="border:solid 1px #777" width="800" height="600" frameborder="0" scrolling="no"></iframe>
+  <a href="https://calendar.google.com/calendar/u/4?cid=aXN1dHV0b3JhZG1pbkBnbWFpbC5jb20" style="text-align: center; color: black;">Having trouble seeing the Google Calendar? Click here to view full calendar.</a>
   </div>
-  <a href="https://calendar.google.com/calendar/u/4?cid=aXN1dHV0b3JhZG1pbkBnbWFpbC5jb20" style="align-content: end;">Having trouble seeing the Google Calendar? Click here to view full calendar.</a>
   </div>
 
 
-
+</div> <!-- END APPONTMENTS CONTAINER -->
 <!-- END FLEX -->
 
 
@@ -265,5 +264,5 @@
 </div>
 
 <script src="/js/adminIndex.js"></script>
-
+</main>
 <%- include("includes/_footer") %>

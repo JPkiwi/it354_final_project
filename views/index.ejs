@@ -9,37 +9,44 @@
   <%- include("includes/_navbar") %>
 </header>
 
+<main>
 <div class = "headlinerContainer">
     <h1>Welcome to the IT Learning Center!</h1>
     <br />
-    <h2>Get ready to learn with us!</h2>
+    <h2>Get ready to learn with us.</h2>
     <div class="buttonRow">
     <div class="loginButton">
         <form action="/login" method="get">
-        <button class="red-button-round">Login</button>
+        <button class="red-button-large">Login</button>
         </form>
     </div>
     </div>
 </div>
 
 <!--Why to use IT learning center section-->
+<div class ="why">
+<h2>-- Why Use the IT Learning Center? --</h2><br>
 <div class = "whySection">
-    <h2>Why Use the IT Learning Center?</h2>
-
- <div class = "reasons">
+    <div class="section1">
     <h3>1. Personalized Support</h3>
     <p>Get one-on-one help tailored to your specific questions and learning pace, 
         so you're never left behind.</p>
+    </div>
+    <div class="section2">
     <h3>2. Flexible Scheduling</h3>
     <p>Book appointments around your schedule with available time slots that fit your day.</p>
+    </div>
+    <div class="section3">
     <h3>3. Expert Tutors</h3>
     <p>Work with knowledgeable tutors who have hands-on experience in the subject matter and 
         are here to help you succeed.</p>
- </div>
+    </div>
+</div>
 </div>
 
 <!--Photo gallery-->
-<section aria-label="Photo Gallery">
+<section aria-label="Photo Gallery" class="photo-gallery">
+    <h2>Photo Gallery</h2>
     <div class = "carousel" data-carousel>
         <button class = "carousel-button prev" data-carousel-button="prev">&#10508;</button>
         <button class = "carousel-button next" data-carousel-button="next">&#10509;</button>
@@ -104,25 +111,25 @@
     
     <div class = "hoursRow">
     <div class = "hours">
-        <h1>HOURS</h1>
+        <h1><u>HOURS</u></h1>
         <!--Display the day of the week and the open and closed hours, in AM/PM-->
         <% weekdays.forEach(day => { %>
-            <h3>
+            <h2>
                 <%= day.weekday %>:
                 <% if(day.isClosed){ %>
                     Closed
                 <% } else { %>
                     <%= formatTo12Hour(day.openTime) %> - <%= formatTo12Hour(day.closeTime) %>
                 <% } %>
-            </h3>
+            </h2>
         <% }) %>
     </div>
     <div class = "location">
-        <h1>LOCATION</h1>
-        <h3>424 S School St,<br>
+        <h1><u>LOCATION</u></h1>
+        <h2>424 S School St,<br>
         Normal, IL<br>
         61761
-        </h3>
+        </h2>
     </div>
 </div>
 </div>
@@ -148,5 +155,6 @@
         </div>
     </div>
 </div>
+</main>
 
 <%- include("includes/_footer") %>

@@ -34,7 +34,19 @@ a {                         /* For link color */
     background-color: var(--secondary);
 }
 
+.white-button-large-nav {
+  background-color: transparent;
+  display: inline-block;
+  color: white;
+  padding: 15px 25px;
+  font-size: 1.5rem;
+  border-radius: 8px;
+  border: 2px solid white;
+  transition: background-color 0.5s ease;
+  
+}
 
-
-
-
+.nav-links a.white-button-large-nav:hover {
+  background-color: white;
+  color: var(--gray2);
+}

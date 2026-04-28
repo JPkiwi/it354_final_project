@@ -9,7 +9,7 @@
             <!--Logo downloaded from ISU Website-->
             <img src="/images/ISU_Seal_1C_186.svg" alt="Illinois State University Logo" style="width: 120px; height: auto;">
         </a></div>
-        <div><a href="/">Home</a></div> <!--General Center Info for all users-->
+
 
         <!--Admin Nav-->
         <% if (user && user.role === 'admin') { %>
@@ -30,7 +30,7 @@
             <div><a href="/tutorCancelled">Cancelled Appointments</a></div> <!--View cancelled appointments-->
             <div>
                 <form action="/logout" method="POST"> <!--After log out action, get sent to index page-->
-                    <button id="logout-tutor-button">Logout</button>
+                    <button class="white-button">Logout</button>
                 </form>
             </div>
         <!--Student Nav-->
@@ -39,12 +39,12 @@
             <div><a href="/studentAppointment">My Appointments</a></div>
             <div>
                 <form action="/logout" method="POST"> <!--After log out action, get sent to index page-->
-                    <button id="logout-student-button">Logout</button>
+                    <button class="white-button">Logout</button>
                 </form>
             </div>
         <% } else { %> <!--For non-auth user-->
-            <div><a href="/login">Login</a></div> <!--Login Page-->
+            <h1 style="color: white; padding-right: 10px;">IT Learning Center</h1>
+            <a href="/login" class="white-button-large-nav">Login</a> <!--Login Page-->
         <% } %>
-    </div>
   </div>
 </nav>
