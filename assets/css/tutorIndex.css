@@ -1,38 +1,94 @@
 /* Admin:  "Manage Tutors" Page styling*/
 
 
-  .navbar ul {
-    list-style: none;         
-    margin: 0;                 
-    padding: 0;                
-    display: flex;             
-    gap: 20px;                 
-  }
+body {
+  margin: 0;
+  padding: 0;
+}
+
+
+.pageContent {
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-top: 16px;
+}
+
+.navbar ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 20px;
+}
 
 /* hyperlink styling */
-  .navbar a {
-    text-decoration: none;     
-    color: #000;               
-    padding: 8px 12px;         
-    font-weight: bold;         
-  }
+.navbar a {
+  text-decoration: none;
+  color: #000;
+  padding: 8px 12px;
+  font-weight: bold;
+}
 
-  .navbar a:hover {
-    background: #ddd;          
-  }
+.navbar a:hover {
+  background: #ddd;
+}
 
-  /* active link */
-  .navbar a.active {
-    color: #4a148c;            
-  }
+/* active link */
+.navbar a.active {
+  color: #4a148c;
+}
 
+
+.tutorTable {
+  width: 700px;
+  min-width: 700px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+/* Select */
+.tutorTable th:nth-child(1),
+.tutorTable td:nth-child(1) {
+  width: 30px;
+}
+
+/* Name */
+.tutorTable th:nth-child(2),
+.tutorTable td:nth-child(2) {
+  width: 150px;
+}
+
+/*Email */
+.tutorTable th:nth-child(3),
+.tutorTable td:nth-child(3) {
+  width: 150px;
+}
+
+/*Active */
+.tutorTable th:nth-child(4),
+.tutorTable td:nth-child(4) {
+  width: 40px;
+}
 
 /* When a tutor's status is changed to inactive, 
-row is greyed out to indicate inactivity*/ 
-  .inactive-row {
-  color: #888;
-  background-color: #f2f2f2;
+row is greyed out to indicate inactivity*/
+.inactive-row {
+  color: var(--gray2);
+  background-color: var(--gray0);
 }
+
+
+/* Header row of table */
+.tableRow {
+  background-color: var(--gray2);
+}
+
+
+/* Header text color for appointments table */
+.tutorTable th {
+  color: white;
+}
+
 
 
 /* Copied from student Modal code, same styling */
@@ -40,7 +96,7 @@ row is greyed out to indicate inactivity*/
 
 /* Modal background */
 .modal {
-  display: none; 
+  display: none;
   position: fixed;
   z-index: 1000;
   left: 0;
@@ -68,7 +124,8 @@ row is greyed out to indicate inactivity*/
 
 
 
-.assign-modal-content, .edit-modal-content {
+.assign-modal-content,
+.edit-modal-content {
   background-color: white;
   margin: 10% auto;
   padding: 20px;
@@ -76,7 +133,8 @@ row is greyed out to indicate inactivity*/
   border-radius: 8px;
 }
 
-.assign-close-btn, .edit-close-btn {
+.assign-close-btn,
+.edit-close-btn {
   float: right;
   font-size: 20px;
   cursor: pointer;
@@ -118,8 +176,7 @@ row is greyed out to indicate inactivity*/
 }
 
 .rightAdminTutorSchedulePanel {
-  flex: 1 1 40%;
-  min-width: 180px;
+  flex: 0 0 500px;
 }
 
 .rightAdminTutorSchedulePanel h3 {
@@ -131,9 +188,13 @@ row is greyed out to indicate inactivity*/
   flex-direction: column;
   gap: 12px;
 }
+
 .scheduleResults {
-  border: 1px solid black;
+  border: 1px solid var(--gray2);
   padding: 12px;
+  width: 100%;
+  border-radius: 8px;
+  box-sizing: border-box;
 }
 
 .tutorShiftInfo {

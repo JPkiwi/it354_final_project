@@ -116,6 +116,7 @@ exports.bookAppointment = async (req, res) => {
       throw err;
     }
 
+    // send booking confirmation email to student and CC admin
     let emailFailed = false;
     try {
       await sendEmail({
@@ -134,11 +135,17 @@ exports.bookAppointment = async (req, res) => {
       });
 
     } catch (emailErr) {
-      emailFailed = true;
+      emailFailed = true; // flag to indicate email sending failed
+      console.error("Student book appointment email sending error.");
     }
 
-    // create calendar event and send confirmation email asynchronously for faster response time 
-    //catch any errors not caught in the individual functions to prevent unhandled promise rejections
+    // if email failed to send, alert the user that the appointment was still booked but there was an issue sending the confirmation email
+    if (emailFailed) {
+      req.session.error = "Appointment booked, but failed to send confirmation email.";
+    }
+
+    // create calendar event and notification log activites for faster response time 
+    // catch any errors not caught in the individual functions to prevent unhandled promise rejections
     handleAfterBookingActions({
       appointment,
       shift: reservedShift,
@@ -151,10 +158,6 @@ exports.bookAppointment = async (req, res) => {
     }).catch(() => {
       console.error("Error in after booking actions.");
     });
-
-    if (emailFailed) {
-      req.session.error = "Appointment booked, but failed to send confirmation email.";
-    }
 
     return res.redirect("/studentIndex");
 
@@ -342,6 +345,9 @@ exports.getBookedAppointments = async (req, res) => {
       });
     }
 
+    const error = req.session.error || null;
+    delete req.session.error; // clear the session error after displaying it once
+
     // get booked appointments that are scheduled status (don't want to display cancelled status appointments)
     let bookedAppointments = await Appointment.find({
       studentId: req.session.user._id,
@@ -387,7 +393,7 @@ exports.getBookedAppointments = async (req, res) => {
       title: "Booked Appointments",
       cssStylesheet: "studentStyle.css",
       jsFile: "studentScript.js",
-      error: null,
+      error,
       user: req.session.user,
       bookedAppointments,
       pastBookedAppointments,

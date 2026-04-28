@@ -3,27 +3,33 @@
 
 <%- include("includes/_header") %>
 
-<% if (error) { %>
-  <div class="alert"><strong></strong> <%= error %></div>
-<% } %>
-
 <!--Navigation Bar-->
 <header>
   <%- include("includes/_navbar") %>
 </header>
+
  
-  <br>
+<main class = "pageContent">
+ 
+  
+  <div class="errorContainer">
+<% if (error) { %>
+  <div class="errorMessage" role = "alert"><strong></strong> <%= error %></div>
+<% } %>
+</div>
+
 
   <form action="/adminStudentIndex/toggle" method="POST">
 
   <!-- Search -->
-  <input type="text" id="search" placeholder="Search students..." />
+  <label for="search" class="visually-hidden">Search appointments</label>
+  <input class = "searchFunc" type="text" id="search" placeholder="Search students..." />
 <!-- toggle student status (active vs. inactive) button-->
-  <button type="submit" id="toggleActiveBtn">Toggle Active</button>
+  <button class = "small-red-button-round" type="submit" id="toggleActiveBtn">Toggle Active</button>
 <!-- Add user (student) button -> opens Modal-->
-  <button type="button" id="openAddStudentModal">Add Student</button>
+  <button class = "small-red-button-round" type="button" id="openAddStudentModal">Add Student</button>
 <!--Edit Student Button-->
-  <button type="button" id="openEditStudentModal">Edit Student</button>
+  <button class = "small-red-button-round" type="button" id="openEditStudentModal">Edit Student</button>
 
 <br><br>
 
@@ -32,9 +38,9 @@
 
 
   <!-- Students Table -->
-  <table border="1" cellpadding="6" cellspacing="0">
+  <table class = "studentTable tableHover">
     <thead>
-      <tr>
+      <tr class = "tableRow">
         <th>Select</th>
         <th>Name</th>
         <th>Email</th>
@@ -54,7 +60,7 @@
             data-isactive="<%= student.isActive %>">
 <!-- creates a radio button per student for selection (to edit student status as inactive/actvie)-->
           <td>
-            <input type="radio" name="selectedStudent" value="<%= student._id %>">
+            <input type="radio" name="selectedStudent" value="<%= student._id %>"  aria-label="Select <%= student.fname %> <%= student.lname %>" >
           </td>
           <td><%= student.fname %> <%= student.lname %></td>
           <td><%= student.email %></td>
@@ -77,31 +83,31 @@
     <!-- x to close modal-->
     <span class="close-btn" id="closeAddStudentModal">&times;</span>
 
-    <h2>Add Student</h2>
+    <h2 class = "headingText">Add Student</h2>
 <!-- connected to route, sends data to /addUser, POST req for submission-->
     <form action="/addUser" method="POST" onsubmit="return validateForm('addEmail')">
       <!-- data to be sent (first name, last name, email, password (We can just have it as a 
        temporary password set by admin for students to use to login and then student can change password after
        / be sent a link to change password? ) )-->
       <input type="hidden" name="role" value="student">
-      <label>First Name:</label>
-  <input type="text" name="fname" required>
+      <label class = "modalText">First Name:</label>
+  <input type="text" name="fname"  class = "inputFunc" required>
       <br><br>
 
-      <label>Last Name:</label>
-     <input type="text" name="lname" required>
+      <label class = "modalText">Last Name:</label>
+     <input type="text" name="lname"  class = "inputFunc" required>
       <br><br>
 
-      <label>Email:</label>
-      <input type="email" name="email" id="addEmail" required>
+      <label class = "modalText">Email:</label>
+      <input type="email" name="email" id="addEmail"  class = "inputFunc" required>
       <span id="addEmailError" style="color: red; font-size: 0.8em; display: block; margin-top: 1px;"></span>
       <br><br>
-      <label>Password:</label>
-      <input type="password" name="password" required>
+      <label class = "modalText">Password:</label>
+      <input type="password" name="password"  class = "inputFunc" required>
       <span id="passwordError" style="color: red; font-size: 0.8em; display: block; margin-top: 1px;"></span>
       <br /><br />
-      <label>Confirm Password:</label>
-      <input type="password" name="confirmPassword" required>
+      <label class = "modalText">Confirm Password:</label>
+      <input type="password" name="confirmPassword"  class = "inputFunc" required>
       <br><br>
       <button type="submit">Create Student</button>
     </form>
@@ -114,36 +120,36 @@
   <div class="modal-content">
     <span class="close-btn" id="closeEditStudentModal">&times;</span>
 
-      <h2>Edit Tutor</h2>
+      <h2 class = "headingText">Edit Tutor</h2>
       <form action="/editUser" method="POST" onsubmit="return validateForm('editEmail')">
       <input type="hidden" name="role" value="student">
       <input type="hidden" name="isActive">
-      <input type="hidden" name="userId" id="editStudentId">
-      <label>First Name:</label>
-      <input type="text" name="fname" required>
+      <input type="hidden" name="userId" id="editStudentId" >
+      <label class = "modalText" >First Name:</label>
+      <input type="text" name="fname"  class = "inputFunc" required>
       <br><br>
 
-      <label>Last Name:</label>
-     <input type="text" name="lname" required>
+      <label class = "modalText">Last Name:</label>
+     <input type="text" name="lname"  class = "inputFunc" required>
       <br><br>
 
-      <label>Email:</label>
-      <input type="email" name="email" id="editEmail" required>
+      <label class = "modalText">Email:</label>
+      <input type="email" name="email" id="editEmail" class = "inputFunc" required>
       <span id="editEmailError" style="color: red; font-size: 0.8em; display: block; margin-top: 1px;"></span>
       <br><br>
-      <label>Password:</label>
-      <input type="password" name="password">
+      <label class = "modalText">Password:</label>
+      <input type="password" name="password"  class = "inputFunc">
       <span id="passwordError" style="color: red; font-size: 0.8em; display: block; margin-top: 1px;"></span>
       <br /><br />
-      <label>Confirm Password:</label>
-      <input type="password" name="confirmPassword">
+      <label class = "modalText">Confirm Password:</label>
+      <input type="password" name="confirmPassword"  class = "inputFunc">
       <p style="color: rgb(88, 73, 73); font-style: italic;">Keep password fields blank unless changing password.</p>
-      <button type="submit">Submit Changes</button>
+      <button type="submit" class="small-red-button-round">Submit Changes</button>
       </form>
   </div>
 </div>
 
-
+</main>
 
 
 <%- include("includes/_footer") %>

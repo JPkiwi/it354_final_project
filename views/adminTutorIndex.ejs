@@ -2,15 +2,6 @@
 <!-- ADMIN "Manage Tutors" EJS -->
 
 <%- include("includes/_header") %>
-<!-- 
-<% if (error) { %>
-  <div class="alert"><strong>Error:</strong> <%= error %></div>
-<% } %> -->
-
-<!-- to show "Please select a tutor first" error in correct spot -->
-<% if (error) { %>
-  <p><strong></strong> <%= error %></p>
-<% } %>
 
 
 <body>
@@ -20,27 +11,37 @@
 </header>
 
 
-  <br>
- 
+<div class = "pageContent">
+
+
+<div class="errorContainer">
+  <% if (error) { %>
+    <div class="errorMessage">
+      <%= error %>
+    </div>
+  <% } %>
+</div>
+
+
 <div class="adminTutorContainer">
   <div class="adminTutorContent">
     <div class="leftAdminTutorPanel">
       
       <form action="/adminTutorIndex/toggle" method="POST" id="tutorTableForm">
-        <input type="text" id="search" placeholder="Search tutors..." />
-        <button type="submit">Toggle Active</button>
+        <input class = "searchFunc" type="text" id="search" placeholder="Search tutors..." />
+        <button class = "small-red-button-round" type="submit">Toggle Active</button>
 
         <!-- Add tutor button -> opens Modal-->
-        <button type="button" id="openAddTutorModal">Add Tutor</button>
-        <button type="button" id="openEditTutorModal">Edit Tutor</button>
-        <button type="button" id="openAssignTutorModal">Assign Tutor Hours</button>
-        <button type="button" id="openClearTutorModal">Clear Tutor Hours</button>
+        <button class = "small-red-button-round" type="button" id="openEditTutorModal">Edit Tutor</button>
+        <button class = "small-red-button-round" type="button" id="openAddTutorModal">Add Tutor</button>
+        <button class = "small-red-button-round" type="button" id="openAssignTutorModal">Assign Hours</button>
+        <button class = "small-red-button-round" type="button" id="openClearTutorModal">Clear Hours</button>
 
         <br><br>
 
-        <table border="1" cellpadding="6" cellspacing="0">
+        <table class = "tutorTable tableHover" border="1" cellpadding="6" cellspacing="0">
           <thead>
-            <tr>
+            <tr class = "tableRow">
               <th>Select</th>
               <th>Name</th>
               <th>Email</th>
@@ -76,7 +77,7 @@
 
         <form action="/adminTutorIndex/viewSchedule" method="POST" id="viewScheduleForm">
           <input type="hidden" name="tutorId" id="selectedTutorInput">
-          <button type="submit" id="viewTutorScheduleBtn">View Tutor Schedule</button>
+          <button class = "small-gray-button-round" type="submit" id="viewTutorScheduleBtn">View Tutor Schedule</button>
         </form>
     
         <div class="scheduleResults">
@@ -135,7 +136,7 @@
     <!-- x to close modal-->
     <span class="close-btn" id="closeAddTutorModal">&times;</span>
 
-    <h2>Add Tutor</h2>
+    <h2 class = "headingText">Add Tutor</h2>
 <!-- connected to route, sends data to /adminUsers/add, POST req for submission-->
     <form action="/addUser" method="POST" onsubmit="return validateForm('addEmail', 'addTutorModal', 'addCourseError')">
       <!-- data to be sent (first name, last name, email, password (We can just have it as a 
@@ -148,24 +149,24 @@
 
 
 
-      <label>First Name:</label>
-      <input type="text" name="fname" required>
+      <label class = "modalText" >First Name:</label>
+      <input type="text" name="fname"  class = "inputFunc" required>
       <br><br>
 
-      <label>Last Name:</label>
-     <input type="text" name="lname" required>
+      <label class = "modalText" >Last Name:</label>
+     <input type="text" name="lname"  class = "inputFunc" required>
       <br><br>
 
-      <label>Email:</label>
-      <input type="email" name="email" id="addEmail" required>
+      <label class = "modalText" >Email:</label>
+      <input type="email" name="email" id="addEmail"  class = "inputFunc" required>
       <span id="addEmailError" style="color: red; font-size: 0.8em; display: block; margin-top: 1px;"></span>
     <br><br>
-      <label>Password:</label>
-      <input type="password" name="password" required>
+      <label class = "modalText" >Password:</label>
+      <input type="password" name="password"  class = "inputFunc" required>
       <span id="passwordError" style="color: red; font-size: 0.8em; display: block; margin-top: 1px;"></span>
       <br /><br />
-      <label>Confirm Password:</label>
-      <input type="password" name="confirmPassword" required>
+      <label class = "modalText" >Confirm Password:</label>
+      <input type="password" name="confirmPassword"  class = "inputFunc" required>
 
 <!-- a tutor NEEDS to be assigned to at least one course based on User model, 
  so we need to make sure that when admin creates a tutor, they assign them to the 
@@ -173,10 +174,10 @@
  
  so this is a checkbox functionality where admin can select which courses the tutor will 
  be tutoring students for-->
-<br><br><label>Courses:</label><br>
+<br><br><label  class = "modalText" >Courses:</label><br>
 <span id="addCourseError" style="color: red; font-size: 0.8em; display: block; margin-top: 1px;"></span>
       <% courses.forEach(course => { %>
-        <label>
+        <label  class = "modalText" >
           <input type="checkbox" name="tutorCourses" value="<%= course._id %>">
          <%= course.courseName %>
         </label>
@@ -185,7 +186,7 @@
 
       <br><br>
       
-      <button type="submit">Create Tutor</button>
+      <button type="submit" class = "small-red-button-round">Create Tutor</button>
     </form>
   </div>
 </div>
@@ -196,36 +197,36 @@
   <div class="edit-modal-content">
     <span class="edit-close-btn" id="closeEditTutorModal">&times;</span>
 
-      <h2>Edit Tutor</h2>
+      <h2 class = "headingText">Edit Tutor</h2>
       <form action="/editUser" method="POST" onsubmit="return validateForm('editEmail', 'editTutorModal', 'editCourseError')">
       <input type="hidden" name="role" value="tutor">
       <input type="hidden" name="userId" id="editTutorId">
       <input type="hidden" name="isActive">
-      <label>First Name:</label>
-      <input type="text" name="fname" required>
+      <label  class = "modalText" >First Name:</label>
+      <input type="text" name="fname"  class = "inputFunc" required>
       <br><br>
 
-      <label>Last Name:</label>
-     <input type="text" name="lname" required>
+      <label  class = "modalText" >Last Name:</label>
+     <input type="text" name="lname"  class = "inputFunc" required>
       <br><br>
 
-      <label>Email:</label>
-      <input type="email" name="email" id="editEmail" required>
+      <label  class = "modalText" >Email:</label>
+      <input type="email" name="email" id="editEmail"  class = "inputFunc" required>
       <span id="editEmailError" style="color: red; font-size: 0.8em; display: block; margin-top: 1px;"></span>
     <br><br>
-      <label>Password:</label>
-      <input type="password" name="password">
+      <label  class = "modalText" >Password:</label>
+      <input type="password" name="password"  class = "inputFunc" >
       <span id="passwordError" style="color: red; font-size: 0.8em; display: block; margin-top: 1px;"></span>
       <br /><br />
 
-      <label>Confirm Password:</label>
-      <input type="password" name="confirmPassword">
+      <label  class = "modalText" >Confirm Password:</label>
+      <input type="password" name="confirmPassword"  class = "inputFunc" >
       <p style="color: rgb(88, 73, 73); font-style: italic;">Keep password fields blank unless changing password.</p>
 
-      <label>Courses:</label><br>
+      <label  class = "modalText" >Courses:</label><br>
       <span id="editCourseError" style="color: red; font-size: 0.8em; display: block; margin-top: 1px;"></span>
       <% courses.forEach(course => { %>
-        <label>
+        <label  class = "modalText" >
           <input type="checkbox" name="tutorCourses" value="<%= course._id %>">
          <%= course.courseName %>
         </label>
@@ -251,7 +252,7 @@
     <!-- x to close modal-->
     <span class="assign-close-btn" id="closeAssignTutorModal">&times;</span>
 
-    <h2>Assign Tutor Hours</h2>
+    <h2 class = "headingText">Assign Tutor Hours</h2>
 
 <!-- connected to route, sends data to /addUser, POST req for submission-->
  <!-- <form action="/viewAvailableTutorShifts" method="POST"></form> -->
@@ -275,7 +276,7 @@
 <!-- choosing day from calendar (flatpickr) -->
 <input type="text" id="shiftDate" name="shiftDate" value = "<%= selectedShiftDate || '' %>" required>
 
-<button type="submit" name="action" value="view">View Available Shifts</button>
+<button type="submit" name="action" value="view" class = "small-gray-button-round">View Available Shifts</button>
 
 
     <% if (assignTutorError) { %>
@@ -287,12 +288,12 @@
     <% } %>
 
  <% if (openAssignTutorModal && availableShiftBlocks && availableShiftBlocks.length > 0){%>
-  <h3>Available Shifts</h3>
+  <h3 class = "headingText">Available Shifts</h3>
 
   
   <div class="shift-checkbox-container">
     <% availableShiftBlocks.forEach(function(block) { %>
-      <label>
+      <label  class = "modalText" >
         <input 
           type="checkbox" 
           name="shiftBlocks"
@@ -305,7 +306,7 @@
 
   <br>
 
-  <button type = "submit" name ="action" value ="assign">Assign Hours</button>
+  <button type = "submit" name ="action" value ="assign" class = "small-red-button-round">Assign Hours</button>
 
   <% } else if (openAssignTutorModal &&  !assignTutorError && availableShiftBlocks && availableShiftBlocks.length === 0) { %>
   <p>No available shifts for date.</p>
@@ -331,7 +332,7 @@
     <!-- x to close modal-->
     <span class="clear-close-btn" id="closeClearTutorModal">&times;</span>
 
-    <h2>Clear Tutor Hours</h2>
+    <h2 class = "headingText">Clear Tutor Hours</h2>
 <!-- connected to route, sends data to /addUser, POST req for submission-->
     <form action="/clearTutorHours/remove" method="POST">
       <!-- data to be sent (first name, last name, email, password (We can just have it as a 
@@ -354,19 +355,19 @@
 
  <!-- input type changed to "text" for flatpickr-->
   <!-- choosing day -->
-<input type="text" id = "clearShiftDate" name="shiftDate" placeholder="-- Select Date --" required value ="<%= selectedShiftDate || '' %>" required>
+<input type="text" id = "clearShiftDate" name="shiftDate" placeholder="-- Select Date --"  class = "inputFunc" required value ="<%= selectedShiftDate || '' %>" required>
 
       <br><br>
       <button type="submit" name = "action" value = "view">View Active Shifts</button>
       <br><br>
 <!-- updated below to reflect "clearShifts"-->
       <% if (openClearTutorModal && clearShifts && clearShifts.length > 0 ) { %>
-        <h3>Active Shifts</h3> 
+        <h3 class = "headingText">Active Shifts</h3> 
 
         <div class= "shift-checkbox-container"> 
           <!-- changed from "shifts.forEach" to "clearShifts"-->
           <% clearShifts.forEach(function(shift) {%>
-            <label> 
+            <label  class = "modalText" > 
               <input type = "checkbox" name = "selectedShiftIds" value = "<%= shift._id %>"> 
               <%= shift.startTime %> - <%= shift.endTime %>
               </label>
@@ -394,10 +395,13 @@
   </div>
 
 </div> 
-<!-- end of modal-->
+
+
 
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+</div>
 
 <!-- flagged as error, functions fine -->
 <script>
@@ -418,6 +422,7 @@
   window.openAssignTutorModal = <%= openAssignTutorModal ? 'true' : 'false' %>;
   </script> -->
 
+  
 </body>
 
 

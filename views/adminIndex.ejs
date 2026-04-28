@@ -11,21 +11,29 @@
 <header>
   <%- include("includes/_navbar") %>
 </header>
-  <br>
-  <main>
-  <h1 style="text-align: center;">Current Scheduled Appointments</h1>
-  <!-- Search Appointments box/search function -->
-  <input id="search" type="text" aria-label="Search for an Appointment" placeholder="Search appointments..." />
 
-  <%
-%>
+<main class = "pageContent">
   
-<div class="appointments-container">
+  
+  <!-- Search Appointments box/search function -->
+  <label for="search" class="visually-hidden">Search appointments</label>
+  <input class="searchFunc" id="search" type="text" placeholder="Search appointments..." />
+
+
+  <button class = "small-red-button-round" type="button" id="notifs">Notifications</button>
+
+  <!-- Appointment/cancellation buttons -->
+  <button class = "small-red-button-round" type="button" id="cancelBtn">Cancel Appointment</button>
+
+
+  
+  
   <!-- Appointments Table -->
-<div class="appointments-table"> <!-- BEGIN FLEX -->
-  <table border="1" cellpadding="9" cellspacing="0" style="margin-top:10px;">
+<div class = "apptSection" > <!-- BEGIN FLEX -->
+  <div style="flex: 1;">
+  <table class = "apptTable tableHover">
     <thead>
-      <tr>
+      <tr class = "tableRow">
           <!-- headers (1st row) -->
 
         <th>Select</th>
@@ -44,7 +52,15 @@
     <% appointments.forEach(function(appointment) { %>
       <tr>
         <!-- radio button instead of checkbox -> only one appt selected at a time to cancel or assign tutor-->
-    <td><input type="radio" aria-label="Selected Appointment" name="selectedAppointment" value="<%= appointment._id %>"> </td> 
+    <td>
+  <label>
+    <input type="radio" name="selectedAppointment" value="<%= appointment._id %>">
+    <span class="visually-hidden">
+      Select appointment for 
+      <%= appointment.studentId?.fname %> <%= appointment.studentId?.lname %>
+    </span>
+  </label>
+</td> 
     <!-- if appointment date exists, convert to string (using .split to get 00:00:000Z from mongodb date)-->
         <td><%= appointment.appointmentDate ? appointment.appointmentDate.toISOString().split('T')[0] : "No date" %></td>
         <!-- printing start time and endtime-->
@@ -100,28 +116,31 @@
 
 
 <!--Admin's Google Calendar-->
-  <div class="google-calendar-view">
-  <iframe src="https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=America%2FChicago&showPrint=0&src=aXN1dHV0b3JhZG1pbkBnbWFpbC5jb20&src=ZW4udXNhI2hvbGlkYXlAZ3JvdXAudi5jYWxlbmRhci5nb29nbGUuY29t&color=%23039be5&color=%230b8043" title="Google Calendar View" style="border:solid 1px #777" width="800" height="600" frameborder="0" scrolling="no"></iframe>
-  <a href="https://calendar.google.com/calendar/u/4?cid=aXN1dHV0b3JhZG1pbkBnbWFpbC5jb20" style="text-align: center; color: black;">Having trouble seeing the Google Calendar? Click here to view full calendar.</a>
+  <div style="flex: 1;">
+  <div id="googleCalendarView">
+  <iframe title="Admin Google Calendar" src="https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=America%2FChicago&showPrint=0&src=aXN1dHV0b3JhZG1pbkBnbWFpbC5jb20&src=ZW4udXNhI2hvbGlkYXlAZ3JvdXAudi5jYWxlbmRhci5nb29nbGUuY29t&color=%23039be5&color=%230b8043" style="border:solid 1px #777" width="800" height="600" frameborder="0" scrolling="no"></iframe>
   </div>
+  <a href="https://calendar.google.com/calendar/u/4?cid=aXN1dHV0b3JhZG1pbkBnbWFpbC5jb20" style="align-content: end;">Having trouble seeing the Google Calendar? Click here to view full calendar.</a>
   </div>
 
+  </div>
+  
 
 </div> <!-- END APPONTMENTS CONTAINER -->
 <!-- END FLEX -->
 
 
-<div id="notificationsModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.35); padding:30px; z-index:1000;">
-  <div style="background:#fff; padding: 12px; max-width:1200px;margin: 0 auto;">
+<div class = "modal notificationsModal" id="notificationsModal">
+  <div class="modal-content notificationsContent">
     
-    <div style="display:flex; justify-content: space-between; align-items: center;">
-      <h3>Notifications</h3>
+    <div class="notificationsHeader">
+      <h3 class = "headingText">Notifications</h3>
   <button id="closeNotificationsBtn">&times;</button>
   </div>
 
-  <table border ="1">
+  <table class="notifTable tableHover">
     <thead>
-      <tr>
+      <tr class = "tableRow">
         <th>Time</th>
         <th>Details</th>
         </tr>
@@ -251,17 +270,22 @@
 
 
     <!-- Confirm Cancel Modal -->
-  <div id="confirmCancelModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.35); padding:30px;">
-  <div style="background:#fff; padding:12px; max-width:400px; margin:0 auto;">
-    <h3>Confirm Cancellation</h3>
+  <div id="confirmCancelModal" class = "modal">
+  <div class = "modal-content">
+    <h3 class = "headingText">Confirm Cancellation</h3>
     <p>Are you sure you want to cancel this appointment?</p>
     <form action="/adminIndex/cancelAppointment" method="POST">
       <input type="hidden" name="appointmentId" id="confirmAppointmentId">
-      <button type="submit">Yes, Cancel</button>
-      <button type="button" id="closeConfirmBtn">No</button>
+      <button type="submit" class="small-red-button-round">Yes, Cancel</button>
+      <button type="button" id="closeConfirmBtn" class = "small-gray-button-round">No</button>
     </form>
   </div>
 </div>
+
+
+</main>
+
+
 
 <script src="/js/adminIndex.js"></script>
 </main>

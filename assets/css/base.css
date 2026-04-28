@@ -2,9 +2,9 @@
  --primary: #CE1126; /* Redbird Red */
  --secondary: #7d0a17; /* Darker Red */
  --redbird-yellow: #F9DD16; /* Redbird Yellow */
- --gray1: #a19d9e;  /* Lightest Accent Gray */
- --gray2: #696868; /* Darker Accent Gray */
- --gray3: #f0f2f2; /* Background Gray */
+ --gray0: #ebebeb; /*Lightest Gray */
+ --gray1: #a19d9e;  /* Light Gray */
+ --gray2: #696868; /* Darker Gray */
 } 
 
 
@@ -32,34 +32,43 @@
   
 }
 
-/* Accent Buttons */
-.red-button-small {
-  background-color: var(--primary);
-  color: white;
-  padding: 15px 25px;
-  font-size: 0.85rem;
-  border-radius: 8px;
-  border: 2px solid white;
-  transition: background-color 0.3s ease;
-  
-}
-
-.red-button-large {
-  background-color: var(--primary);
-  color: white;
-  padding: 15px 25px;
-  font-size: 1.3rem;
-  border-radius: 8px;
-  border: 2px solid white;
-  transition: background-color 0.3s ease;
-  
-}
-
-.red-button:hover, .red-button-round:hover, .red-button-small:hover, .red-button-large:hover {
+.red-button:hover, .red-button-round:hover {
   background-color: var(--secondary);
 }
 
-/*  */
+
+.small-red-button-round { 
+  background-color: var(--primary);
+  color: white;
+  padding: 8px 13px;
+  font-size: 1.1rem;
+  border-radius: 100px;
+  border: 2px solid white;
+  transition: background-color 0.3s ease;
+}
+
+.small-red-button-round:hover {
+  background-color: var(--secondary);
+}
+
+
+
+.small-gray-button-round { 
+  background-color: var(--gray2);
+  color: white;
+  padding: 8px 13px;
+  font-size: 1.1rem;
+  border-radius: 100px;
+  border: 2px solid white;
+  transition: background-color 0.3s ease;
+}
+
+.small-gray-button-round:hover {
+  background-color: var(--gray1);
+}
+
+
+
 .white-button {
   background-color: transparent;
   color: white;
@@ -98,4 +107,108 @@
 .white-button:hover, .white-button-round:hover, .white-button-large:hover {
   background-color: white;
   color: var(--gray2);
+}
+
+
+
+.searchFunc {
+  padding: 8px 13px;
+  font-size: 1.1rem;
+  border-radius: 100px;
+  border: 2px solid #696868;
+}
+
+.inputFunc{
+  padding: 6px 10px;
+  font-size: 18px;
+  border-radius: 8px;
+  border: 1px solid var(--gray1);
+}
+
+.errorMessage {
+  color: #b00020;
+  background-color: #ffe5e5;
+  border: 1px solid #ffb3b3;
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin: 10px 0;
+  width: fit-content;
+}
+
+
+
+
+
+.errorContainer {
+  height: 45px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.errorMessage {
+  color: var(--secondary);
+  background-color: #ffe5e5;
+  border: 1px solid #ffb3b3;
+  padding: 8px 12px;
+  border-radius: 6px;
+  width: fit-content;
+  box-sizing: border-box;
+  margin: 0;
+}
+
+
+
+
+/* Modal background */
+.modal {
+  display: none; 
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Modal box */
+.modal-content {
+  background-color: white;
+  margin: 10% auto;
+  padding: 20px;
+  width: 400px;
+  border-radius: 8px;
+}
+
+/* Close button */
+.close-btn {
+  float: right;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.modalText {
+  font-size: 18px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: 400;
+}
+
+.headingText {
+  font-size: 25px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: 600;
+}
+
+
+
+
+/* Hover transition for cells of table */
+.tableHover tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+/* Hover color for cells of table */
+.tableHover tbody tr:hover {
+  background-color : #ffe5e5;; 
 }

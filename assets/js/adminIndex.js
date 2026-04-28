@@ -86,7 +86,7 @@ confirmCancelModal.addEventListener("click", (e) => {
 // display modal when "Notifications" button is clicked
 if (notifBtn && modal && closeBtn){
   notifBtn.onclick = function () {
-    modal.style.display = "block";
+    modal.style.display = "flex";
   };
 // close modal when close button is clicked
   closeBtn.onclick = function () {
