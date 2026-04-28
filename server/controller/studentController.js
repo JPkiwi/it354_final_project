@@ -311,7 +311,7 @@ exports.cancelAppointment = async (req, res) => {
                 studentName: req.session.user.fname,
                 tutorName: `${appointment.tutorShiftId.tutorId.fname} ${appointment.tutorShiftId.tutorId.lname}`,
                 date: appointment.appointmentDate.toLocaleDateString('en-US', { timeZone: 'UTC' }),
-                time: `${appointment.startTime} - ${appointment.endTime}`,
+                time: `${formatTo12Hour(appointment.startTime)} - ${formatTo12Hour(appointment.endTime)}`,
                 course: appointment.course
                 })
             });

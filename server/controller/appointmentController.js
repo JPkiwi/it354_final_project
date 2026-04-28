@@ -129,7 +129,7 @@ exports.bookAppointment = async (req, res) => {
           date: appointment.appointmentDate.toLocaleDateString("en-US", {
             timeZone: "UTC",
           }),
-          time: `${appointment.startTime} - ${appointment.endTime}`,
+          time: `${formatTo12Hour(appointment.startTime)} - ${formatTo12Hour(appointment.endTime)}`,
           course: appointment.course,
         }),
       });
