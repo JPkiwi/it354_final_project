@@ -167,7 +167,7 @@ cancelButton.addEventListener("click", ()=> {
     selectShow.style.visibility = "hidden";
     showSubmitButton.style.visibility = "hidden";
     cancelButton.style.visibility = "hidden";
-    buttonOptions.style.visibility = "hidden";
+    buttonOptions.style.visibility = "visible";
 
     // get checked radio button and unselect it
     const selectedAppointment = document.querySelector('input[name="selectedAppointment"]:checked');
