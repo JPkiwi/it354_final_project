@@ -41,7 +41,7 @@ exports.getStudentIndex = async (req, res) => {
         const courses = await Course.find().sort({ courseName: 1 });
 
         const error = req.session.error || null;
-        delete req.session.error; // clear the error after displaying it once
+        delete req.session.error; // clear the session error after displaying it once
 
         res.render("studentIndex", {
             title: "Book an Appointment",
@@ -301,7 +301,7 @@ exports.cancelAppointment = async (req, res) => {
         // ────────────────────────────────────────────────────────────
 
         // send cancellation confirmation email to student and CC admin
-        let emailSent = false;
+        let emailFailed = false;
         try {
             await sendEmail({
             to: req.session.user.email,
@@ -315,17 +315,18 @@ exports.cancelAppointment = async (req, res) => {
                 course: appointment.course
                 })
             });
-            emailSent = true;
         
         } catch (emailErr) {
             console.error("Student cancellation email sending error.");
+            emailFailed = true; // flag to indicate email sending failed
         }
         
+        // log the cancellation action in NotificationLog collection
         try {
             // Notification log for when student cancels their appointment
             await NotificationLog.create({
                 appointmentId: appointment._id,
-                recipientUserId: appointment.studentId._id,
+                recipientUserId: req.session.user._id,
                 appointmentDate: appointment.appointmentDate,
                 notificationType: "STUDENT_CANCEL_APPT"
             });
@@ -333,12 +334,13 @@ exports.cancelAppointment = async (req, res) => {
             console.error("NotificationLog STUDENT_CANCEL_APPT failed.");
         }
         
-        // log if email failed to send
-        if (!emailSent) {
+        // log if email failed to send in NotificationLog collection
+        if (emailFailed) {
+            req.session.error = "Appointment cancelled, but failed to send confirmation email."; // store email failure message in session to display on next page load
             try {
                 await NotificationLog.create({
                     appointmentId: appointment._id,
-                    recipientUserId: user._id,
+                    recipientUserId: req.session.user._id,
                     appointmentDate: appointment.appointmentDate,
                     notificationType: "SEND_EMAIL_FAILED",
               });
@@ -350,7 +352,7 @@ exports.cancelAppointment = async (req, res) => {
 
 
          // reload page 
-         res.redirect('/studentAppointment');
+        return res.redirect('/studentAppointment');
     } // end of try 
     catch(err){
         //console.error("Error cancelling appointment:", err);
