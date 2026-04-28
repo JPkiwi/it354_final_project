@@ -56,6 +56,7 @@ function closeAllAvailabilityForms() {
   if (editHoursForm) editHoursForm.style.display = "none";
   if (blackoutDateForm) blackoutDateForm.style.display = "none";
   if (exceptionForm) exceptionForm.style.display = "none";
+  if (removeExceptionsForm) removeExceptionsForm.style.display = "none";
 }
 
 
@@ -162,5 +163,43 @@ flatpickr("#exceptionDate", {
   altFormat: "F j, Y",
   onReady: function (selectedDates, dateStr, instance) {
     instance.altInput.placeholder = "-- Select Date --";
+  }
+});
+
+
+
+
+const removeExceptionsButton = document.getElementById("removeExceptionsButton");
+const removeExceptionsForm = document.getElementById("removeExceptionsForm");
+
+// open/close form
+if (removeExceptionsButton && removeExceptionsForm) {
+  removeExceptionsButton.addEventListener("click", () => {
+    const isOpen = removeExceptionsForm.style.display === "block";
+
+    closeAllAvailabilityForms();
+
+    if (!isOpen) {
+      removeExceptionsForm.style.display = "block";
+    }
+  });
+}
+
+// hide on submit
+if (removeExceptionsForm) {
+  removeExceptionsForm.addEventListener("submit", () => {
+    removeExceptionsForm.style.display = "none";
+  });
+}
+
+
+// attach flatpickr cal to removeExceptionDate input
+flatpickr("#removeExceptionDate", {
+  dateFormat: "Y-m-d",
+  minDate: "today",
+  altInput: true,
+  altFormat: "F j, Y",
+  onReady: function(selectedDates, dateStr, instance){
+    instance.altInput.placeholder = "-- Select Date -- ";
   }
 });

@@ -92,12 +92,13 @@
         let openHour, closeHour;
 
         // only split/store open and close times if the center is not closed that day
-        if (currWeekday && !currWeekday.isClosed) {
-            // get open hour as an integer
-            openHour = Number(currWeekday.openTime.split(":")[0]);
+        if (currWeekday && !currWeekday.isClosed && currWeekday.timeBlocks.length > 0) {
+            const firstBlock = currWeekday.timeBlocks[0];
+            const lastBlock = currWeekday.timeBlocks[currWeekday.timeBlocks.length - 1];
 
-            // get close hour as an integer
-            closeHour = Number(currWeekday.closeTime.split(":")[0]);
+            // get open and close hour as an integer
+            openHour = Number(firstBlock.start.split(":")[0]);
+            closeHour = Number(lastBlock.end.split(":")[0]);
         }
     %>
 
@@ -116,10 +117,16 @@
         <% weekdays.forEach(day => { %>
             <h2>
                 <%= day.weekday %>:
-                <% if(day.isClosed){ %>
+                <% if (day.isClosed || day.timeBlocks.length === 0) { %>
                     Closed
                 <% } else { %>
-                    <%= formatTo12Hour(day.openTime) %> - <%= formatTo12Hour(day.closeTime) %>
+                    <% day.timeBlocks.forEach((block, i) => { %>
+                        <%= formatTo12Hour(block.start) %> - <%= formatTo12Hour(block.end) %>
+                        <% if (i < day.timeBlocks.length - 1) { %>
+                            <br>
+                        <% } %>
+                    <% }) %>
+
                 <% } %>
             </h2>
         <% }) %>

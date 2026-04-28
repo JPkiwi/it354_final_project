@@ -1,7 +1,38 @@
 const express = require('express');
 const route = express.Router();
+const rateLimit = require("express-rate-limit");
+const { formatTo12Hour } = require("../services/timeService");
 
 const controller = require('../controller/adminController');
+
+
+// cancellation rate limiting
+const cancelLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 minutes
+  max: 3, // 3 attempts per IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req, res) => {
+    return res.status(429).render("adminIndex", {
+      error: "Too many cancellation attempts. Please exit the page and try again later.",
+      title: "Admin Page",
+      cssStylesheet: "adminIndex.css",
+      jsFile: "adminIndex.js",
+      user: req.session.user,
+      appointments: [],
+      courses: [],
+      eligibleTutorShifts: [],
+      studentFName: "",
+      studentLName: "",
+      date: "",
+      time: "",
+      course: "",
+      notificationLogs: [],
+      formatTo12Hour,
+    });
+  }
+});
+
 
 // renders adminIndex
 route.get('/adminIndex', controller.getAdminIndex);
@@ -45,12 +76,16 @@ route.post("/clearTutorHours/remove", controller.clearTutorHours);
 // Handles admin viewing a specific tutor's schedule
 route.post("/adminTutorIndex/viewSchedule", controller.adminViewTutorShedule);
 
-route.post("/adminIndex/cancelAppointment", controller.adminCancelAppointment);
+// Handles admin cancelling an appointment, cancel limiter applied here
+route.post("/adminIndex/cancelAppointment", cancelLimiter, controller.adminCancelAppointment);
 
 // Handles admin setting a blackout (fully closing specified date(s))
 route.post("/addBlackoutDate",controller.addBlackoutDate);
 
-// // Handles admin adding a partial-day closed time block
+// Handles admin adding a partial-day closed time block
 route.post("/addException", controller.addException);
+
+// Handles admin removing an exception or blackout date
+route.post("/removeExceptions", controller.removeExceptions);
 
 module.exports = route;
