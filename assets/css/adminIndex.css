@@ -98,15 +98,6 @@
   background-color: #ffffff; 
 }
 
-/* Hover transition for cells of appt table */
-.apptTable tbody tr {
-  transition: background-color 0.2s ease;
-}
-
-.apptTable tbody tr:hover {
-  background-color :#a19d9e; 
-}
-
 
 /* --------------------------------------------------------- */
 
@@ -116,6 +107,7 @@
   width: 100%;
   border-collapse: collapse;
   margin-top: 10px;
+  table-layout: fixed; 
 }
 
 /* Notif table cell styling */
@@ -141,15 +133,53 @@
 
 /* Full screen overaly notif table */
 .notificationsModal{
-  display: none; 
-  position:fixed; 
-  inset:0; 
-  background:rgba(0,0,0,.35); 
-  padding:30px; 
-  z-index:1000;
+  justify-content: center;
+  align-items: center;
+}
+/* log --> !important overrides base.css */
+.notificationsContent {
+  width: 75vw !important;
+  max-width: none !important;
+  min-width: 900px;
+
+  max-height: 80vh;
+  overflow-y: auto;
+
+  margin: 0 !important;
+  padding: 24px;
+}
+
+
+.notificationsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 /*Inner modal */
 .modal{
   border-radius: 8px;
 }
+
+/* time column inner spacing */
+.notifTable th:first-child,
+.notifTable td:first-child {
+  width: 170px;
+  white-space: nowrap;
+}
+
+/* details column inner spacing */
+.notifTable th:nth-child(2),
+.notifTable td:nth-child(2) {
+  width: auto;
+  white-space: normal;
+  word-wrap: break-word;
+}
+
+
+/* Header text color for notification table */
+.notifTable th {
+  color: white;
+}
+
+

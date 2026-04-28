@@ -31,7 +31,7 @@
   <!-- Appointments Table -->
 <div class = "apptSection" > <!-- BEGIN FLEX -->
   <div style="flex: 1;">
-  <table class = "apptTable">
+  <table class = "apptTable tableHover">
     <thead>
       <tr class = "tableRow">
           <!-- headers (1st row) -->
@@ -124,17 +124,17 @@
 <!-- END FLEX -->
 
 
-<div class = "notificationsModal" id="notificationsModal">
-  <div class = "modal" style="background:#fff; padding: 12px; max-width:1250px;margin: 0 auto; max-height:80vh; overflow-y:auto;">
+<div class = "modal notificationsModal" id="notificationsModal">
+  <div class="modal-content notificationsContent">
     
-    <div style="display:flex; justify-content: space-between; align-items: center;">
-      <h3>Notifications</h3>
+    <div class="notificationsHeader">
+      <h3 class = "headingText">Notifications</h3>
   <button id="closeNotificationsBtn">&times;</button>
   </div>
 
-  <table class="notifTable">
+  <table class="notifTable tableHover">
     <thead>
-      <tr>
+      <tr class = "tableRow">
         <th>Time</th>
         <th>Details</th>
         </tr>
@@ -264,14 +264,14 @@
 
 
     <!-- Confirm Cancel Modal -->
-  <div id="confirmCancelModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.35); padding:30px;">
-  <div style="background:#fff; padding:12px; max-width:400px; margin:0 auto;">
-    <h3>Confirm Cancellation</h3>
+  <div id="confirmCancelModal" class = "modal">
+  <div class = "modal-content">
+    <h3 class = "headingText">Confirm Cancellation</h3>
     <p>Are you sure you want to cancel this appointment?</p>
     <form action="/adminIndex/cancelAppointment" method="POST">
       <input type="hidden" name="appointmentId" id="confirmAppointmentId">
-      <button type="submit">Yes, Cancel</button>
-      <button type="button" id="closeConfirmBtn">No</button>
+      <button type="submit" class="small-red-button-round">Yes, Cancel</button>
+      <button type="button" id="closeConfirmBtn" class = "small-gray-button-round">No</button>
     </form>
   </div>
 </div>

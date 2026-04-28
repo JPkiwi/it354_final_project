@@ -95,10 +95,11 @@
 }
 
 /* Hover transition for cells of audit table */
-.auditTable tbody tr {
+/* .auditTable tbody tr {
   transition: background-color 0.2s ease;
 }
 
 .auditTable tbody tr:hover {
   background-color :#a19d9e; 
 }
+*/
