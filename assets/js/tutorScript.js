@@ -25,16 +25,16 @@ appointmentRadios.forEach(appointmentRadio => {
     cancelButton.style.visibility = "visible";
 
     // every time a different radio button is selected, hide the button features again
-    // commentText.style.visibility = "hidden";
-    // commentSubmitButton.style.visibility = "hidden";
-    // startTimeText.style.visibility = "hidden";
-    // endTimeText.style.visibility = "hidden";
-    // startTimeLabel.style.visibility = "hidden";
-    // endTimeLabel.style.visibility = "hidden";
-    // timeSubmitButton.style.visibility = "hidden";
-    // showLabel.style.visibility = "hidden";
-    // selectShow.style.visibility = "hidden";
-    // showSubmitButton.style.visibility = "hidden";
+    commentText.style.visibility = "hidden";
+    commentSubmitButton.style.visibility = "hidden";
+    startTimeText.style.visibility = "hidden";
+    endTimeText.style.visibility = "hidden";
+    startTimeLabel.style.visibility = "hidden";
+    endTimeLabel.style.visibility = "hidden";
+    timeSubmitButton.style.visibility = "hidden";
+    showLabel.style.visibility = "hidden";
+    selectShow.style.visibility = "hidden";
+    showSubmitButton.style.visibility = "hidden";
   });
 });
 
@@ -139,8 +139,8 @@ timeSubmitButton.addEventListener("click", ()=> {
     startTimeLabel.style.visibility = "hidden";
     endTimeLabel.style.visibility = "hidden";
     timeSubmitButton.style.visibility = "hidden";
-    //cancelButton.style.visibility = "hidden";
-    //buttonOptions.style.visibility = "hidden";
+    cancelButton.style.visibility = "hidden";
+    buttonOptions.style.visibility = "hidden";
 });
 
 
@@ -149,25 +149,25 @@ showSubmitButton.addEventListener("click", ()=> {
     showLabel.style.visibility = "hidden";
     selectShow.style.visibility = "hidden";
     showSubmitButton.style.visibility = "hidden";
-    //cancelButton.style.visibility = "hidden";
-    //buttonOptions.style.visibility = "hidden";
+    cancelButton.style.visibility = "hidden";
+    buttonOptions.style.visibility = "hidden";
 });
 
 
 /*When click cancel button, the show features and button options will be hidden and nothing will be submitted*/
 cancelButton.addEventListener("click", ()=> {
-    // commentText.style.visibility = "hidden";
-    // commentSubmitButton.style.visibility = "hidden";
-    // startTimeText.style.visibility = "hidden";
-    // endTimeText.style.visibility = "hidden";
-    // startTimeLabel.style.visibility = "hidden";
-    // endTimeLabel.style.visibility = "hidden";
-    // timeSubmitButton.style.visibility = "hidden";
-    // showLabel.style.visibility = "hidden";
-    // selectShow.style.visibility = "hidden";
-    // showSubmitButton.style.visibility = "hidden";
-    // cancelButton.style.visibility = "hidden";
-    // buttonOptions.style.visibility = "hidden";
+    commentText.style.visibility = "hidden";
+    commentSubmitButton.style.visibility = "hidden";
+    startTimeText.style.visibility = "hidden";
+    endTimeText.style.visibility = "hidden";
+    startTimeLabel.style.visibility = "hidden";
+    endTimeLabel.style.visibility = "hidden";
+    timeSubmitButton.style.visibility = "hidden";
+    showLabel.style.visibility = "hidden";
+    selectShow.style.visibility = "hidden";
+    showSubmitButton.style.visibility = "hidden";
+    cancelButton.style.visibility = "hidden";
+    buttonOptions.style.visibility = "hidden";
 
     // get checked radio button and unselect it
     const selectedAppointment = document.querySelector('input[name="selectedAppointment"]:checked');
