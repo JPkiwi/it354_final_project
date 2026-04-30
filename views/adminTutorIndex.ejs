@@ -36,6 +36,7 @@
         <button class = "small-red-button-round" type="button" id="openAddTutorModal">Add Tutor</button>
         <button class = "small-red-button-round" type="button" id="openAssignTutorModal">Assign Hours</button>
         <button class = "small-red-button-round" type="button" id="openClearTutorModal">Clear Hours</button>
+        <button class = "small-red-button-round" type="button" id="openAddCourseModal">Add Course</button>
 
         <br><br>
 
@@ -176,13 +177,14 @@
  be tutoring students for-->
 <br><br><label  class = "modalText" >Courses:</label><br><br>
 <span id="addCourseError" style="color: red; font-size: 0.8em; display: block; margin-top: 1px;"></span>
-      <% courses.forEach(course => { %>
-        <label  class = "modalText" >
-          <input type="checkbox" name="tutorCourses" value="<%= course._id %>">
-         <%= course.courseName %>
-        </label>
-        <br>
-      <% }) %>
+      <div class="courseGrid">
+        <% courses.forEach(course => { %>
+          <label  class = "modalText" >
+            <input type="checkbox" name="tutorCourses" value="<%= course._id %>">
+          <%= course.courseName %>
+          </label>
+        <% }) %>
+      </div>
 
       <br><br>
       
@@ -225,13 +227,14 @@
 
       <label  class = "modalText" >Courses:</label><br>
       <span id="editCourseError" style="color: red; font-size: 0.8em; display: block; margin-top: 1px;"></span>
-      <% courses.forEach(course => { %>
-        <label  class = "modalText" >
-          <input type="checkbox" name="tutorCourses" value="<%= course._id %>">
-         <%= course.courseName %>
-        </label>
-        <br>
-      <% }) %>
+      <div class="courseGrid">
+        <% courses.forEach(course => { %>
+          <label  class = "modalText" >
+            <input type="checkbox" name="tutorCourses" value="<%= course._id %>">
+          <%= course.courseName %>
+          </label>
+        <% }) %>
+      </div>
       <br>
       <button type="submit" class = "small-red-button-round">Submit Changes</button>
       </form>
@@ -334,34 +337,34 @@
     <span class="clear-close-btn" id="closeClearTutorModal">&times;</span>
 
     <h2 class = "headingText">Clear Tutor Hours</h2>
-<!-- connected to route, sends data to /addUser, POST req for submission-->
+    <!-- connected to route, sends data to /addUser, POST req for submission-->
     <form action="/clearTutorHours/remove" method="POST">
       <!-- data to be sent (first name, last name, email, password (We can just have it as a 
        temporary password set by admin for students to use to login and then student can change password after
        / be sent a link to change password? ) )-->
       <input type="hidden" name="role" value="tutor">
       
-<!-- looping through *all tutors in dropdown menu -->
-<select name="tutorId" required>
-  <option value="">-- Select Tutor --</option>
+      <!-- looping through *all tutors in dropdown menu -->
+      <select name="tutorId" required>
+        <option value="">-- Select Tutor --</option>
 
-      <% tutors.forEach(function(tutor) { %>
-       <option value="<%= tutor._id %>" <%= selectedTutorId && selectedTutorId.toString() === tutor._id.toString() ? "selected" : "" %>>
-      <%= tutor.fname %> <%= tutor.lname %> <%= tutor.isActive ? "" : " (Inactive)" %>
-    </option>
-  <% }); %>
-</select>
+            <% tutors.forEach(function(tutor) { %>
+            <option value="<%= tutor._id %>" <%= selectedTutorId && selectedTutorId.toString() === tutor._id.toString() ? "selected" : "" %>>
+            <%= tutor.fname %> <%= tutor.lname %> <%= tutor.isActive ? "" : " (Inactive)" %>
+          </option>
+        <% }); %>
+      </select>
 
-<br><br>
+      <br><br>
 
- <!-- input type changed to "text" for flatpickr-->
-  <!-- choosing day -->
-<input type="text" id = "clearShiftDate" name="shiftDate" placeholder="-- Select Date --"  class = "inputFunc" required value ="<%= selectedShiftDate || '' %>" required>
+    <!-- input type changed to "text" for flatpickr-->
+    <!-- choosing day -->
+    <input type="text" id = "clearShiftDate" name="shiftDate" placeholder="-- Select Date --"  class = "inputFunc" required value ="<%= selectedShiftDate || '' %>" required>
 
       <br><br>
       <button class="small-gray-button-round" type="submit" name = "action" value = "view">View Active Shifts</button>
       <br><br>
-<!-- updated below to reflect "clearShifts"-->
+    <!-- updated below to reflect "clearShifts"-->
       <% if (openClearTutorModal && clearShifts && clearShifts.length > 0 ) { %>
         <!-- <h3 class = "headingText">Active Shifts</h3>  -->
          <br>
@@ -397,7 +400,39 @@
 
 </div> 
 
+<!-- ADD COURSE MODAL -->
+<div id="addCourseModal" class="modal">
+  <div class="modal-content">
+    <span class="close-btn" id="closeAddCourseModal">&times;</span>
 
+    <h2 class="headingText">Add Course</h2>
+
+    <form action="/addCourse" method="POST">
+      <label class="modalText">Course Number:</label>
+      <input 
+        type="text" 
+        name="courseName" 
+        class="inputFunc" 
+        placeholder="(e.g. 100 -> IT100)"
+        required
+      >
+
+      <br><br>
+
+      <% if (courseError) { %>
+        <div class="errorMessage">
+          <%= courseError %>
+        </div>
+        <br>
+      <% } %>
+
+      <button type="submit" class="small-red-button-round">
+        Add Course
+      </button>
+    </form>
+  </div>
+</div> 
+<!-- end of addCourseModal -->
 
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -409,6 +444,7 @@
   window.closedWeekdays = <%- JSON.stringify(closedWeekdays || []) %>;
   window.shouldOpenAssignTutorModal = <%- JSON.stringify(openAssignTutorModal || false) %>;
   window.shouldOpenClearTutorModal = <%- JSON.stringify(openClearTutorModal || false) %>;
+  window.shouldOpenAddCourseModal = <%- JSON.stringify(openAddCourseModal || false) %>;
 </script>
 
 

@@ -217,3 +217,11 @@ select {
   box-sizing: border-box;
   cursor: pointer;
 }
+
+.courseGrid {
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(2, auto);
+  column-gap: 20px;
+  row-gap: 8px;
+}
