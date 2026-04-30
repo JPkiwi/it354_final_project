@@ -25,6 +25,8 @@ a {                         /* For link color */
 .nav-links a {
     color: white;
     text-decoration: none;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 350;
     padding: 10px 20px;
     border-radius: 10px;
     transition: background-color 0.3s ease;
@@ -32,6 +34,12 @@ a {                         /* For link color */
 
 .nav-links a:hover {
     background-color: var(--secondary);
+}
+
+
+.nav-links a.active {
+  background-color: var(--secondary);
+  color: white;
 }
 
 .white-button-large-nav {

@@ -372,6 +372,9 @@ exports.getAdminAvailabilityIndex = async (req, res) => {
     }
 
     const weekdays = await updateCenterExceptions();
+
+    const closedWeekdays = await getClosedWeekdays();
+  
     
     res.render("adminAvailabilityIndex", {
       error: null,
@@ -380,6 +383,7 @@ exports.getAdminAvailabilityIndex = async (req, res) => {
       jsFile: "adminAvailability.js",
       user: req.session.user,
       weekdays,
+      closedWeekdays, 
       formatTo12Hour
     });
   } catch (err) {
@@ -390,6 +394,7 @@ exports.getAdminAvailabilityIndex = async (req, res) => {
       jsFile: "adminAvailability.js",
       user: req.session.user,
       weekdays: [],
+      closedWeekdays: [], 
       formatTo12Hour
     });
   }
@@ -2541,6 +2546,9 @@ exports.changeHours = async (req, res) => {
 
     let weekdays = await updateCenterExceptions();
 
+    const closedWeekdays = await getClosedWeekdays();
+
+
     // make sure all required fields were filled out if weekday is set to open
     if (
       (!weekday || !centerOpenTime || !centerCloseTime) &&
@@ -2553,6 +2561,7 @@ exports.changeHours = async (req, res) => {
         jsFile: "adminAvailability.js",
         user: req.session.user,
         weekdays,
+        closedWeekdays,
         formatTo12Hour
       });
     }
@@ -2599,6 +2608,7 @@ exports.changeHours = async (req, res) => {
           cssStylesheet: "availabilityIndex.css",
           jsFile: "adminAvailability.js",
           user: req.session.user,
+          closedWeekdays,
           weekdays,
           formatTo12Hour
         });
@@ -2613,6 +2623,7 @@ exports.changeHours = async (req, res) => {
           jsFile: "adminAvailability.js",
           user: req.session.user,
           weekdays,
+          closedWeekdays,
           formatTo12Hour
         });
       }
@@ -2626,6 +2637,7 @@ exports.changeHours = async (req, res) => {
           jsFile: "adminAvailability.js",
           user: req.session.user,
           weekdays,
+          closedWeekdays,
           formatTo12Hour
         });
       }
@@ -2683,6 +2695,7 @@ exports.changeHours = async (req, res) => {
       jsFile: "adminAvailability.js",
       user: req.session.user,
       weekdays,
+      closedWeekdays,
       formatTo12Hour
     });
   } catch (err) {
@@ -2692,6 +2705,7 @@ exports.changeHours = async (req, res) => {
       cssStylesheet: "availabilityIndex.css",
       jsFile: "adminAvailability.js",
       user: req.session.user,
+      closedWeekdays: [],
       weekdays: [],
       formatTo12Hour
     });
@@ -2732,16 +2746,18 @@ exports.addBlackoutDate = async (req, res) => {
     const { startDate, endDate, reason } = req.body;
     const weekdays = await updateCenterExceptions();
 
+    const closedWeekdays = await getClosedWeekdays();
 
     // ensure all form fields are entered
     if (!startDate || !endDate || !reason) {
       return res.render("adminAvailabilityIndex", {
         title: "Admin Manage Availability",
-        cssStylesheet: "adminAvailability.css",
-        jsFile: "adminAvailabilityIndex.js",
+        cssStylesheet: "availabilityIndex.css",
+        jsFile: "adminAvailability.js",
         error: "All blackout date fields are required.",
         user: req.session.user,
         weekdays,
+        closedWeekdays,
         formatTo12Hour
       });
     }
@@ -2754,22 +2770,24 @@ exports.addBlackoutDate = async (req, res) => {
     if (weekdays.find((day) => day.weekday === weekdayStart)?.isClosed) {
       return res.render("adminAvailabilityIndex", {
         title: "Admin Manage Availability",
-        cssStylesheet: "adminAvailability.css",
-        jsFile: "adminAvailabilityIndex.js",
+        cssStylesheet: "availabilityIndex.css",
+        jsFile: "adminAvailability.js",
         error: `Cannot add blackout date on ${weekdayStart}s as the center is regularly closed on that day.`,
         user: req.session.user,
         weekdays,
+        closedWeekdays,
         formatTo12Hour
       });
     }
     if (weekdays.find((day) => day.weekday === weekdayEnd)?.isClosed) {
       return res.render("adminAvailabilityIndex", {
         title: "Admin Manage Availability",
-        cssStylesheet: "adminAvailability.css",
-        jsFile: "adminAvailabilityIndex.js",
+        cssStylesheet: "availabilityIndex.css",
+        jsFile: "adminAvailability.js",
         error: `Cannot add blackout date on ${weekdayEnd}s as the center is regularly closed on that day.`,
         user: req.session.user,
         weekdays,
+        closedWeekdays,
         formatTo12Hour
       });
     }
@@ -2794,6 +2812,7 @@ exports.addBlackoutDate = async (req, res) => {
         error: "End date must be on or after start date.",
         user: req.session.user,
         weekdays,
+        closedWeekdays,
         formatTo12Hour
       });
 
@@ -2825,10 +2844,11 @@ exports.addBlackoutDate = async (req, res) => {
 
   return res.render("adminAvailabilityIndex", {
     title: "Admin Manage Availability",
-    cssStylesheet: "adminAvailability.css",
-    jsFile: "adminAvailabilityIndex.js",
+    cssStylesheet: "availabilityIndex.css",
+        jsFile: "adminAvailability.js",
     error: "Something went wrong while adding blackout date.",
     user: req.session.user,
+    closedWeekdays: [],
     weekdays: [], // fallback so page doesn’t crash
     formatTo12Hour
   });
@@ -3063,6 +3083,8 @@ exports.addException = async (req, res) => {
     // finding regular center hours for when center is open/closed
     const weekdays = await updateCenterExceptions();
 
+    const closedWeekdays = await getClosedWeekdays();
+
     // ensure all fields in form were filled & entered correctly 
     if(!exceptionDate || !startTime || !endTime || !reason ){
        return res.render("adminAvailabilityIndex", {
@@ -3071,6 +3093,7 @@ exports.addException = async (req, res) => {
         jsFile: "adminAvailability.js",
         error: "All exception fields are required.",
         user: req.session.user,
+        closedWeekdays,
         weekdays,
         formatTo12Hour
       });
@@ -3096,6 +3119,7 @@ exports.addException = async (req, res) => {
         jsFile: "adminAvailability.js",
         error: "Exception range must be entered on the hour.",
         user: req.session.user,
+        closedWeekdays,
         weekdays,
         formatTo12Hour
       });
@@ -3109,6 +3133,7 @@ exports.addException = async (req, res) => {
         jsFile: "adminAvailability.js",
         error: "Start time must be earlier than end time.",
         user: req.session.user,
+        closedWeekdays,
         weekdays,
         formatTo12Hour
       });
@@ -3122,6 +3147,7 @@ exports.addException = async (req, res) => {
         jsFile: "adminAvailability.js",
         error: "The exception must be at least one hour long.",
         user: req.session.user,
+        closedWeekdays,
         weekdays,
         formatTo12Hour
       });
@@ -3151,6 +3177,7 @@ exports.addException = async (req, res) => {
         jsFile: "adminAvailability.js",
         error: `Center is fully closed on ${weekday}.`,
         user: req.session.user,
+        closedWeekdays,
         weekdays,
         formatTo12Hour
       });
@@ -3179,6 +3206,7 @@ exports.addException = async (req, res) => {
         jsFile: "adminAvailability.js",
         error: "Exception must be within the center's open hours.",
         user: req.session.user,
+        closedWeekdays,
         weekdays,
         formatTo12Hour
       });
@@ -3202,6 +3230,7 @@ exports.addException = async (req, res) => {
         jsFile: "adminAvailability.js",
         error: "An exception already exists for this date. Only one exception per day is allowed.",
         user: req.session.user,
+        closedWeekdays,
         weekdays,
         formatTo12Hour
       });
@@ -3256,6 +3285,7 @@ exports.addException = async (req, res) => {
       cssStylesheet: "availabilityIndex.css",
       jsFile: "adminAvailability.js",
       user: req.session.user,
+      closedWeekdays: [],
       weekdays: [],
       formatTo12Hour
     });
@@ -3297,6 +3327,8 @@ exports.removeExceptions = async (req, res) => {
 
     const { removeExceptionDate } = req.body;
 
+    const closedWeekdays = await getClosedWeekdays();
+
     // ensure date field in form filled
     if(!removeExceptionDate){
        return res.render("adminAvailabilityIndex", {
@@ -3306,6 +3338,7 @@ exports.removeExceptions = async (req, res) => {
         error: "Date is required.",
         user: req.session.user,
         weekdays,
+        closedWeekdays,
         formatTo12Hour
       });
     }
@@ -3336,6 +3369,7 @@ exports.removeExceptions = async (req, res) => {
       cssStylesheet: "availabilityIndex.css",
       jsFile: "adminAvailability.js",
       user: req.session.user,
+      closedWeekdays: [],
       weekdays: [],
       formatTo12Hour
     });

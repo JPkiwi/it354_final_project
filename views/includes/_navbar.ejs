@@ -48,3 +48,19 @@
         <% } %>
   </div>
 </nav>
+
+
+<script>
+  const currentPath = window.location.pathname;
+
+  document.querySelectorAll('.nav-links a').forEach(link => {
+  const href = link.getAttribute('href');
+
+  // skip the isu logo for permanent hover styling
+  if (href === "/") return;
+
+  if (href === currentPath) {
+    link.classList.add('active');
+  }
+});
+</script>
