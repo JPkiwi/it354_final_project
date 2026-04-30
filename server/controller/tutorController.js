@@ -283,72 +283,42 @@ exports.submitComment = async (req, res) => {
     const appointmentId = req.body.selectedAppointment;
     const comments = req.body["comments-textarea"];
 
-    // if comments not entered
-    if (!comments && comments !== "") {
-      return res.render("tutorIndex", {
-        error: "Comment required",
-        shiftError,
-        title: "Tutor Appointments",
-        cssStylesheet: "tutorStyle.css",
-        jsFile: "tutorScript.js",
-        user: req.session.user,
-        bookedAppointments: [],
-        appointmentsLoaded: false,
-        upcomingTutorShifts,
-        pastBookedAppointments: [],
-        pastAppointmentsLoaded: false,
-        formatTo12Hour
-      });
+    // if comments not entered/empty/empty spaces
+    if (!comments || comments.trim() === "") {
+      req.session.error = "Comment required.";
+      return res.redirect("/tutorIndex");
     }
 
     // no appointment selected
     if (!appointmentId) {
-      return res.render("tutorIndex", {
-        error: "No appointment selected.",
-        shiftError,
-        title: "Tutor Appointments",
-        cssStylesheet: "tutorStyle.css",
-        jsFile: "tutorScript.js",
-        user: req.session.user,
-        bookedAppointments: [],
-        appointmentsLoaded: false,
-        upcomingTutorShifts,
-        pastBookedAppointments: [],
-        pastAppointmentsLoaded: false,
-        formatTo12Hour
-      });
+      req.session.error = "No appointment selected.";
+      return res.redirect("/tutorIndex");
     }
 
 
-    // cannot submit comments the day(s) before or after the appointment date (times excluded)
+    // no appointment found
+    const appointment = await Appointment.findById(appointmentId);
+    if (!appointment) {
+      req.session.error = "Appointment not found.";
+      return res.redirect("/tutorIndex");
+    }
 
 
+    // cannot submit comments the day(s) after the appointment date (times excluded)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const apptDate = new Date(appointment.appointmentDate);
+    apptDate.setHours(0, 0, 0, 0);
+
+    if (today > apptDate) {
+      req.session.error = "Tutor cannot submit comments the day(s) after appointment date.";
+      return res.redirect("/tutorIndex");
+    }
 
 
     // update the comments for specific appointment
-    const appointmentExist = await Appointment.findOneAndUpdate(
-      { _id: appointmentId },
-      { $set: { tutorComments: comments } },
-    );
-
-    // no appointment found
-    if (!appointmentExist) {
-      return res.render("tutorIndex", {
-        error: "Appointment not found.",
-        shiftError,
-        title: "Tutor Appointments",
-        cssStylesheet: "tutorStyle.css",
-        jsFile: "tutorScript.js",
-        user: req.session.user,
-        bookedAppointments: [],
-        appointmentsLoaded: false,
-        upcomingTutorShifts,
-        pastBookedAppointments: [],
-        pastAppointmentsLoaded: false,
-        formatTo12Hour
-      });
-    }
-
+    appointment.tutorComments = comments;
+    await appointment.save();
 
     // redirect to tutorIndex page
     return res.redirect("/tutorIndex");
