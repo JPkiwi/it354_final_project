@@ -186,11 +186,27 @@ flatpickr("#clearShiftDate", {
 });
 
 
+// ADD COURSE modal elements
+const addCourseModal = document.getElementById("addCourseModal");
+const openAddCourseModal = document.getElementById("openAddCourseModal");
+const closeAddCourseModal = document.getElementById("closeAddCourseModal");
 
+// open modal
+openAddCourseModal.addEventListener("click", () => {
+  addCourseModal.style.display = "block";
+});
 
+// close when click on X
+closeAddCourseModal.addEventListener("click", () => {
+  addCourseModal.style.display = "none";
+});
 
-
-
+// close when click outside
+window.addEventListener("click", (event) => {
+  if (event.target === addCourseModal) {
+    addCourseModal.style.display = "none";
+  }
+});
 
 
 // // log
@@ -218,6 +234,10 @@ window.addEventListener("DOMContentLoaded", () => {
 
   if (window.shouldOpenClearTutorModal === true) {
     clearTutorModal.style.display = "block";
+  }
+
+  if (window.shouldOpenAddCourseModal === true) {
+    addCourseModal.style.display = "block";
   }
 });
 

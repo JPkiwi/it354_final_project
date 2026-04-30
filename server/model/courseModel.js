@@ -2,7 +2,7 @@
 const mongoose = require("mongoose");
 const courseSchema = new mongoose.Schema(
     {
-        courseName: { type: String, enum: ["IT179", "IT168"], default: "IT179" }
+        courseName: { type: String, default: "IT179" }
     }
 );
 

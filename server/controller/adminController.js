@@ -401,7 +401,6 @@ exports.getAdminAvailabilityIndex = async (req, res) => {
 
 // renders ADMIN TUTOR INDEX
 exports.getAdminTutorIndex = async (req, res) => {
-  try {
     // if not an auth user, send to login page
     if (!req.session.user) {
       return res.render("login", {
@@ -423,6 +422,63 @@ exports.getAdminTutorIndex = async (req, res) => {
         user: null,
       });
     }
+    
+    // calling helper function to load admin tutor page
+    return loadCourseAdminPage(req, res);
+};
+
+// POST: handle adding a course from adminTutorIndex
+exports.addCourse = async (req, res) => {
+  try {
+    let { courseName } = req.body;
+
+    // check if course name is empty or just whitespace
+    if (!courseName || courseName.trim() === "") {
+      return loadCourseAdminPage(req, res, { 
+        courseError: "Please enter a course number.",
+        openAddCourseModal: true
+      });
+    }
+
+    // remove whitespace if any
+    courseName = courseName.trim();
+
+    // Ensure it's only numbers (since admin enters just the number)
+    const numericCourse = Number(courseName);
+    if (!Number.isInteger(numericCourse) || numericCourse <= 0) {
+      return loadCourseAdminPage(req, res, { 
+        courseError: "Course number must be a positive integer.",
+        openAddCourseModal: true
+      });
+    }
+
+    // Add IT prefix
+    courseName = "IT" + numericCourse;
+
+    // check if course already exists
+    const existingCourse = await Course.findOne({ courseName: courseName });
+    if (existingCourse) {
+      return loadCourseAdminPage(req, res, { 
+        courseError: "Course already exists.",
+        openAddCourseModal: true
+      });
+    }
+
+    await Course.create({ courseName });
+
+    return loadCourseAdminPage(req, res, { courseError: null });
+  } catch (err) {
+    console.error("Error adding course.");
+    return loadCourseAdminPage(req, res, { 
+      courseError: "Error occurred while adding course.",
+      openAddCourseModal: true
+    });
+  }
+};
+
+// helper function to load the admin tutor page
+async function loadCourseAdminPage(req, res, data = {}) {
+  try {
     // finding tutors in user collection
     const tutors = await User.find({ role: "tutor" });
     const activeTutors = await User.find({ role: "tutor", isActive: true });
@@ -432,27 +488,23 @@ exports.getAdminTutorIndex = async (req, res) => {
     const centerSchedule = await CenterOpen.find();
 
     const weekdayMap = {
-      Sunday: 0,
-      Monday: 1,
+      Sunday: 0, 
+      Monday: 1, 
       Tuesday: 2,
-      Wednesday: 3,
-      Thursday: 4,
-      Friday: 5,
+      Wednesday: 3, 
+      Thursday: 4, 
+      Friday: 5, 
       Saturday: 6,
     };
 
     const closedWeekdays = [];
-
     centerSchedule.forEach((day) => {
       if (day.isClosed) {
         closedWeekdays.push(weekdayMap[day.weekday]);
       }
     });
-
     // open adminTutorIndex view
-    res.render("adminTutorIndex", {
-      error: null,
-      shiftError: null,
+    return res.render("adminTutorIndex", {
       title: "Admin Manage Tutors",
       cssStylesheet: "tutorIndex.css",
       jsFile: "tutorIndex.js",
@@ -471,15 +523,21 @@ exports.getAdminTutorIndex = async (req, res) => {
       availableShiftBlocks: [],
       openAssignTutorModal: false,
       openClearTutorModal: false,
-      assignTutorError: null,
-    });
-  } catch (err) {
-    const today = new Date().toLocaleDateString("en-CA");
+      openAddCourseModal: false,
 
-    // even w/ error, page will still render
-    res.render("adminTutorIndex", {
-      error: "Could not load tutors.",
+      error: null,
       shiftError: null,
+      assignTutorError: null,
+      courseError: null,
+
+      ...data
+    });
+
+  } catch (err) {
+    console.error("Error loading admin tutor page.");
+    const today = new Date().toLocaleDateString("en-CA");
+    // even w/ error, page will still render
+    return res.render("adminTutorIndex", {
       title: "Admin Manage Tutors",
       cssStylesheet: "tutorIndex.css",
       jsFile: "tutorIndex.js",
@@ -498,7 +556,14 @@ exports.getAdminTutorIndex = async (req, res) => {
       availableShiftBlocks: [],
       openAssignTutorModal: false,
       openClearTutorModal: false,
+      openAddCourseModal: false,
+
+      error: "Could not load data for admin tutor index page.",
+      shiftError: null,
       assignTutorError: null,
+      courseError: null,
+
+      ...data
     });
   }
 };
@@ -640,6 +705,8 @@ exports.toggleTutorStatus = async (req, res) => {
         openAssignTutorModal: false,
         openClearTutorModal: false,
         assignTutorError: null,
+        openAddCourseModal: false,
+        courseError: null,
       });
     }
 
@@ -669,6 +736,8 @@ exports.toggleTutorStatus = async (req, res) => {
         openAssignTutorModal: false,
         openClearTutorModal: false,
         assignTutorError: null,
+        openAddCourseModal: false,
+        courseError: null,
       });
     }
 
@@ -723,6 +792,8 @@ exports.toggleTutorStatus = async (req, res) => {
       openAssignTutorModal: false,
       openClearTutorModal: false,
       assignTutorError: null,
+      openAddCourseModal: false,
+      courseError: null,
     });
   }
 };
@@ -987,6 +1058,8 @@ exports.assignTutorHours = async (req, res) => {
         openAssignTutorModal: false,
         openClearTutorModal: false,
         assignTutorError: null,
+        openAddCourseModal: false,
+        courseError: null,
       });
     } // end of if(!tutorId || !shiftDate etc...)
 
@@ -1016,6 +1089,8 @@ exports.assignTutorHours = async (req, res) => {
         openAssignTutorModal: false,
         openClearTutorModal: false,
         assignTutorError: null,
+        openAddCourseModal: false,
+        courseError: null,
       });
     } // end of if(!tutor)
 
@@ -1060,6 +1135,8 @@ exports.assignTutorHours = async (req, res) => {
         openAssignTutorModal: true,
         openClearTutorModal: false,
         assignTutorError: `The center is closed due to blackout date. Tutor shifts cannot be assigned.`,
+        openAddCourseModal: false,
+        courseError: null,
       });
     }
 
@@ -1108,6 +1185,8 @@ exports.assignTutorHours = async (req, res) => {
         openAssignTutorModal: false,
         openClearTutorModal: false,
         assignTutorError: null,
+        openAddCourseModal: false,
+        courseError: null,
       });
     }
 
@@ -1181,6 +1260,8 @@ exports.assignTutorHours = async (req, res) => {
         openAssignTutorModal: true,
         openClearTutorModal: false,
         assignTutorError: null,
+        openAddCourseModal: false,
+        courseError: null,
       });
     }
 
@@ -1268,6 +1349,8 @@ exports.assignTutorHours = async (req, res) => {
         openAssignTutorModal: true,
         openClearTutorModal: false,
         assignTutorError: "No tutor shifts are available for that date. The center is closed during the remaining hours, or the shifts are already taken.",
+        openAddCourseModal: false,
+        courseError: null,
       });
     }
 
@@ -1294,6 +1377,8 @@ exports.assignTutorHours = async (req, res) => {
         openAssignTutorModal: true,
         openClearTutorModal: false,
         assignTutorError: null,
+        openAddCourseModal: false,
+        courseError: null,
       });
     }
     // assign button
@@ -1321,6 +1406,8 @@ exports.assignTutorHours = async (req, res) => {
           openAssignTutorModal: true,
           openClearTutorModal: false,
           assignTutorError: null,
+          openAddCourseModal: false,
+          courseError: null,
         });
       }
 
@@ -1437,7 +1524,9 @@ exports.assignTutorHours = async (req, res) => {
         availableShiftBlocks,
         openAssignTutorModal: false,
         openClearTutorModal: false,
-        assignTutorError: null
+        assignTutorError: null,
+        openAddCourseModal: false,
+        courseError: null
       });
 
       // add fallback(?)
@@ -1470,7 +1559,9 @@ exports.assignTutorHours = async (req, res) => {
       availableShiftBlocks: [],
       openAssignTutorModal: false,
       openClearTutorModal: false,
-      assignTutorError: null
+      assignTutorError: null,
+      openAddCourseModal: false,
+      courseError: null
     });
   } // end of catch
 };
@@ -1551,7 +1642,8 @@ exports.adminViewTutorShedule = async (req, res) => {
         openAssignTutorModal: false,
         openClearTutorModal: false,
         assignTutorError: null,
-        formatTo12Hour
+        openAddCourseModal: false,
+        courseError: null,
       });
     }
 
@@ -1587,7 +1679,8 @@ exports.adminViewTutorShedule = async (req, res) => {
       openAssignTutorModal: false,
       openClearTutorModal: false,
       assignTutorError: null,
-      formatTo12Hour
+      openAddCourseModal: false,
+      courseError: null,
     });
   } catch (err) {
     res.render("adminTutorIndex", {
@@ -1611,7 +1704,8 @@ exports.adminViewTutorShedule = async (req, res) => {
       openAssignTutorModal: false,
       openClearTutorModal: false,
       assignTutorError: null,
-      formatTo12Hour
+      openAddCourseModal: false,
+      courseError: null,
     });
   }
 };
@@ -1768,6 +1862,8 @@ exports.clearTutorHours = async (req, res) => {
         openAssignTutorModal: false,
         openClearTutorModal: true,
         assignTutorError: null,
+        openAddCourseModal: false,
+        courseError: null,
       });
     }
 
@@ -1817,6 +1913,8 @@ exports.clearTutorHours = async (req, res) => {
         openAssignTutorModal: false,
         openClearTutorModal: true,
         assignTutorError: null,
+        openAddCourseModal: false,
+        courseError: null,
       });
     }
 
@@ -1852,6 +1950,8 @@ return res.render("adminTutorIndex", {
         openAssignTutorModal: false,
         openClearTutorModal: true,
         assignTutorError: null,
+        openAddCourseModal: false,
+        courseError: null,
       });
     } // end of if (!selectedShiftIds)
 
@@ -1943,6 +2043,8 @@ const removedShiftTimes = shiftsToRemove.map(shift => {
           openAssignTutorModal: false,
           openClearTutorModal: true,
           assignTutorError: null,
+          openAddCourseModal: false,
+          courseError: null,
         });
       }
 
@@ -2002,7 +2104,9 @@ const removedShiftTimes = shiftsToRemove.map(shift => {
       availableShiftBlocks: [],
       openAssignTutorModal: false,
       openClearTutorModal: true,
-      assignTutorError: null
+      assignTutorError: null,
+      openAddCourseModal: false,
+      courseError: null
     });
   }
 }; 
@@ -2296,7 +2400,8 @@ exports.addUser = async (req, res) => {
         openAssignTutorModal: false,
         openClearTutorModal: false,
         assignTutorError: null,
-        formatTo12Hour
+        openAddCourseModal: false,
+        courseError: null,
       });
     }
 
@@ -2327,7 +2432,8 @@ exports.addUser = async (req, res) => {
           openAssignTutorModal: false,
           openClearTutorModal: false,
           assignTutorError: null,
-          formatTo12Hour
+          openAddCourseModal: false,
+          courseError: null
         });
       }
 
