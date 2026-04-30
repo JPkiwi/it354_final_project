@@ -916,17 +916,50 @@ exports.editUser = async (req, res) => {
     // IF the password field is NOT empty, hash new password
     // ELSE, keep the existing password by fetching it from the database
 
-    // make sure password is at least 8 characters long
-    if (password && password.trim() !== "" && password.length < 8) {
+    // password cannot contain spaces
+    if (password.includes(" ")) {
       return res.render("adminAuditLog", {
         title: "Audit Log",
-        error: "Password must be at least 8 characters long.",
+        error: "Password cannot contain spaces.",
         cssStylesheet: "adminAuditLog.css",
         jsFile: "adminAuditLog.js",
         formData: req.body,
         user: req.session.user,
         auditLogs: [],
+        formatTo12Hour
       });
+    }
+
+    // make sure password is at least 8 characters long and doesn't include special characters or Unicode characters
+    if (password && password.trim() !== "") {
+
+      if (password.length < 8) {
+         return res.render("adminAuditLog", {
+          title: "Audit Log",
+          error: "Password must be at least 8 characters long.",
+          cssStylesheet: "adminAuditLog.css",
+          jsFile: "adminAuditLog.js",
+          formData: req.body,
+          user: req.session.user,
+          auditLogs: [],
+          formatTo12Hour
+        });
+      }
+
+      const passwordRegex = /^[A-Za-z0-9!@#$%^&*]+$/;
+      if (!passwordRegex.test(password)) {
+        return res.render("adminAuditLog", {
+          title: "Audit Log",
+          error: "Password must not contain spaces, special characters, or Unicode characters. Can only use the following: A-Z, a-z, 0-9, and !@#$%^&*.",
+          cssStylesheet: "adminAuditLog.css",
+          jsFile: "adminAuditLog.js",
+          formData: req.body,
+          user: req.session.user,
+          auditLogs: [],
+          formatTo12Hour
+        });
+      }
+        
     }
 
     let passwordHash;
@@ -2343,6 +2376,35 @@ exports.addUser = async (req, res) => {
         user: req.session.user,
         auditLogs: [],
         formatTo12Hour
+      });
+    }
+
+    // password cannot contain spaces
+    if (password.includes(" ")) {
+      return res.render("adminAuditLog", {
+        title: "Audit Log",
+        error: "Password cannot contain spaces.",
+        cssStylesheet: "adminAuditLog.css",
+        jsFile: "adminAuditLog.js",
+        formData: req.body,
+        user: req.session.user,
+        auditLogs: [],
+        formatTo12Hour
+      });
+    }
+
+    // password must only contain any of the following: A-Z, a-z, 0-9, and !@#$%^&*
+    const passwordRegex = /^[A-Za-z0-9!@#$%^&*]+$/;
+      if (!passwordRegex.test(password)) {
+        return res.render("adminAuditLog", {
+          title: "Audit Log",
+          error: "Password must not contain spaces, special characters, or Unicode characters. Can only use the following: A-Z, a-z, 0-9, and !@#$%^&*.",
+          cssStylesheet: "adminAuditLog.css",
+          jsFile: "adminAuditLog.js",
+          formData: req.body,
+          user: req.session.user,
+          auditLogs: [],
+          formatTo12Hour
       });
     }
 
