@@ -414,38 +414,14 @@ exports.submitTimes = async (req, res) => {
 
     // if start and end times not entered
     if (!sessionStartTime || !sessionEndTime) {
-      return res.render("tutorIndex", {
-        error: "Start time and end time are required.",
-        shiftError,
-        title: "Tutor Appointments",
-        cssStylesheet: "tutorStyle.css",
-        jsFile: "tutorScript.js",
-        user: req.session.user,
-        bookedAppointments: [],
-        appointmentsLoaded: false,
-        upcomingTutorShifts,
-        pastBookedAppointments: [],
-        pastAppointmentsLoaded: false,
-        formatTo12Hour
-      });
+      req.session.error = "Start time and end time are required.";
+      return res.redirect("/tutorIndex");
     }
 
     // no appointment selected
     if (!appointmentId) {
-      return res.render("tutorIndex", {
-        error: "No appointment selected.",
-        shiftError,
-        title: "Tutor Appointments",
-        cssStylesheet: "tutorStyle.css",
-        jsFile: "tutorScript.js",
-        user: req.session.user,
-        bookedAppointments: [],
-        appointmentsLoaded: false,
-        upcomingTutorShifts,
-        pastBookedAppointments: [],
-        pastAppointmentsLoaded: false,
-        formatTo12Hour
-      });
+      req.session.error = "No appointment selected.";
+      return res.redirect("/tutorIndex");
     }
 
     // split entered times
@@ -461,26 +437,21 @@ exports.submitTimes = async (req, res) => {
 
     // no appointment found
     if (!appointment) {
-      return res.render("tutorIndex", {
-        error: "Appointment not found.",
-        shiftError,
-        title: "Tutor Appointments",
-        cssStylesheet: "tutorStyle.css",
-        jsFile: "tutorScript.js",
-        user: req.session.user,
-        bookedAppointments: [],
-        appointmentsLoaded: false,
-        upcomingTutorShifts,
-        pastBookedAppointments: [],
-        pastAppointmentsLoaded: false,
-        formatTo12Hour
-      });
+      req.session.error = "Appointment not found.";
+      return res.redirect("/tutorIndex");
     }
 
 
-    // cannot submit the actual start and end times the day(s) before or after the appointment date (times excluded)
+    // cannot submit the actual start and end times the day(s) before or the day after the appointment date (times excluded)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const apptDate = new Date(appointment.appointmentDate);
+    apptDate.setHours(0, 0, 0, 0);
 
-
+    if (today < apptDate || today > apptDate) {
+      req.session.error = "Tutor cannot submit actual start and times the day(s) before or after appointment date.";
+      return res.redirect("/tutorIndex");
+    }
 
 
     // compare entered times with general center hours
@@ -498,21 +469,8 @@ exports.submitTimes = async (req, res) => {
       endHour > centerEndHour ||
       (endHour === centerEndHour && endMinute > centerEndMinute)
     ) {
-      return res.render("tutorIndex", {
-        error:
-          "Start time and end time cannot occur outside general center hours.",
-        shiftError,
-        title: "Tutor Appointments",
-        cssStylesheet: "tutorStyle.css",
-        jsFile: "tutorScript.js",
-        user: req.session.user,
-        bookedAppointments: [],
-        appointmentsLoaded: false,
-        upcomingTutorShifts,
-        pastBookedAppointments: [],
-        pastAppointmentsLoaded: false,
-        formatTo12Hour
-      });
+      req.session.error = "Start time and end time cannot occur outside general center hours.";
+      return res.redirect("/tutorIndex");
     }
 
     // start time cannot be greater than end time
@@ -520,20 +478,8 @@ exports.submitTimes = async (req, res) => {
       startHour > endHour ||
       (endHour - startHour === 0 && endMinute < startMinute)
     ) {
-      return res.render("tutorIndex", {
-        error: "Start time must precede end time.",
-        shiftError,
-        title: "Tutor Appointments",
-        cssStylesheet: "tutorStyle.css",
-        jsFile: "tutorScript.js",
-        user: req.session.user,
-        bookedAppointments: [],
-        appointmentsLoaded: false,
-        upcomingTutorShifts,
-        pastBookedAppointments: [],
-        pastAppointmentsLoaded: false,
-        formatTo12Hour
-      });
+      req.session.error = "Start time must precede end time.";
+      return res.redirect("/tutorIndex");
     }
 
     // session can only be 5 minutes short
@@ -541,20 +487,8 @@ exports.submitTimes = async (req, res) => {
       (endHour - startHour === 1 && 60 - startMinute + endMinute < 5) ||
       (startHour === endHour && endMinute - startMinute < 5)
     ) {
-      return res.render("tutorIndex", {
-        error: "Appointment must be at least 5 minutes long.",
-        shiftError,
-        title: "Tutor Appointments",
-        cssStylesheet: "tutorStyle.css",
-        jsFile: "tutorScript.js",
-        user: req.session.user,
-        bookedAppointments: [],
-        appointmentsLoaded: false,
-        upcomingTutorShifts,
-        pastBookedAppointments: [],
-        pastAppointmentsLoaded: false,
-        formatTo12Hour
-      });
+      req.session.error = "Appointment must be at least 5 minutes long.";
+      return res.redirect("/tutorIndex");
     }
 
     // session can only be an hour max long
@@ -562,20 +496,8 @@ exports.submitTimes = async (req, res) => {
       endHour - startHour > 1 ||
       (endHour - startHour === 1 && endMinute > startMinute)
     ) {
-      return res.render("tutorIndex", {
-        error: "Appointment can only be an hour long maximum.",
-        shiftError,
-        title: "Tutor Appointments",
-        cssStylesheet: "tutorStyle.css",
-        jsFile: "tutorScript.js",
-        user: req.session.user,
-        bookedAppointments: [],
-        appointmentsLoaded: false,
-        upcomingTutorShifts,
-        pastBookedAppointments: [],
-        pastAppointmentsLoaded: false,
-        formatTo12Hour
-      });
+      req.session.error = "Appointment can only be an hour long maximum.";
+      return res.redirect("/tutorIndex");
     }
 
     // update the times for specific appointment
@@ -591,20 +513,8 @@ exports.submitTimes = async (req, res) => {
 
     // appointment unable to update
     if (!appointmentUpdated) {
-      return res.render("tutorIndex", {
-        error: "Appointment could not be updated.",
-        shiftError,
-        title: "Tutor Appointments",
-        cssStylesheet: "tutorStyle.css",
-        jsFile: "tutorScript.js",
-        user: req.session.user,
-        bookedAppointments: [],
-        appointmentsLoaded: false,
-        upcomingTutorShifts,
-        pastBookedAppointments: [],
-        pastAppointmentsLoaded: false,
-        formatTo12Hour
-      });
+      req.session.error = "Appointment could not be updated.";
+      return res.redirect("/tutorIndex");
     }
 
 
