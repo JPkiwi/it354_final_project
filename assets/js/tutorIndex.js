@@ -1,5 +1,12 @@
 // ADMIN - Manage Tutors page 
 
+const pageDataElement = document.getElementById("page-data");
+const pageData = pageDataElement ? JSON.parse(pageDataElement.textContent) : {};
+
+const closedWeekdays = pageData.closedWeekdays || [];
+const shouldOpenAssignTutorModal = pageData.shouldOpenAssignTutorModal || false;
+const shouldOpenClearTutorModal = pageData.shouldOpenClearTutorModal || false;
+
 const search = document.getElementById("search");
 
 search.addEventListener("input", () => {
@@ -160,7 +167,7 @@ flatpickr("#shiftDate", {
   // (disable date if weekday is in closed list)
   disable: [
     function(date) {
-      return window.closedWeekdays.includes(date.getDay());
+      return closedWeekdays.includes(date.getDay());
     }
   ],
   // setting placeholder for select date box (would not work inside ejs file))
@@ -177,7 +184,7 @@ flatpickr("#clearShiftDate", {
   altFormat: "F j, Y",
   disable: [
     function(date) {
-      return window.closedWeekdays.includes(date.getDay());
+      return closedWeekdays.includes(date.getDay());
     }
   ],
   onReady: function(selectedDates, dateStr, instance) {
@@ -212,11 +219,11 @@ flatpickr("#clearShiftDate", {
 //log 
 // reopen modal AFTER rendering 
 window.addEventListener("DOMContentLoaded", () => {
-  if (window.shouldOpenAssignTutorModal === true) {
+  if (shouldOpenAssignTutorModal === true) {
     assignTutorModal.style.display = "block";
   }
 
-  if (window.shouldOpenClearTutorModal === true) {
+  if (shouldOpenClearTutorModal === true) {
     clearTutorModal.style.display = "block";
   }
 });
