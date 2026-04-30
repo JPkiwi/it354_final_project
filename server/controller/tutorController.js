@@ -64,6 +64,7 @@ exports.getTutorIndex = async (req, res) => {
         $match: {
           "tutorShift.tutorId": tutorId,
           "tutorShift.isBooked": true,
+          appointmentStatus: { $ne: "cancelled" },
           appointmentDate: {
             $gte: new Date(new Date().setUTCHours(0, 0, 0, 0)),
           },
@@ -108,6 +109,7 @@ exports.getTutorIndex = async (req, res) => {
         $match: {
           "tutorShift.tutorId": tutorId,
           "tutorShift.isBooked": true,
+          appointmentStatus: { $ne: "cancelled" },
           appointmentDate: {
             $lt: new Date(new Date().setUTCHours(0, 0, 0, 0)),
           },
