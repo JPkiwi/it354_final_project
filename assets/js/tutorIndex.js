@@ -6,6 +6,7 @@ const pageData = pageDataElement ? JSON.parse(pageDataElement.textContent) : {};
 const closedWeekdays = pageData.closedWeekdays || [];
 const shouldOpenAssignTutorModal = pageData.shouldOpenAssignTutorModal || false;
 const shouldOpenClearTutorModal = pageData.shouldOpenClearTutorModal || false;
+const shouldOpenAddCourseModal = pageData.shouldOpenAddCourseModal || false;
 
 const search = document.getElementById("search");
 
@@ -243,7 +244,7 @@ window.addEventListener("DOMContentLoaded", () => {
     clearTutorModal.style.display = "block";
   }
 
-  if (window.shouldOpenAddCourseModal === true) {
+  if (shouldOpenAddCourseModal === true) {
     addCourseModal.style.display = "block";
   }
 });
