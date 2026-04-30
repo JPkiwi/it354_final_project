@@ -88,4 +88,7 @@ route.post("/addException", controller.addException);
 // Handles admin removing an exception or blackout date
 route.post("/removeExceptions", controller.removeExceptions);
 
+// Handles admin adding a course to the system
+route.post("/addCourse", controller.addCourse);
+
 module.exports = route;
