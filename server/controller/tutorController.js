@@ -319,6 +319,12 @@ exports.submitComment = async (req, res) => {
       });
     }
 
+
+    // cannot submit comments the day(s) before or after the appointment date (times excluded)
+
+
+
+
     // update the comments for specific appointment
     const appointmentExist = await Appointment.findOneAndUpdate(
       { _id: appointmentId },
@@ -470,6 +476,12 @@ exports.submitTimes = async (req, res) => {
         formatTo12Hour
       });
     }
+
+
+    // cannot submit the actual start and end times the day(s) before or after the appointment date (times excluded)
+
+
+
 
     // compare entered times with general center hours
     const weekdays = await centerOpen.find(); // get the days of the week
@@ -678,14 +690,14 @@ exports.submitShow = async (req, res) => {
 
     // if trying to update show/no-show value before the start date of the appointment occurs, then send an error
     // get the appointment date and set the hours properly
-    const apptDate = new Date(appointment.appointmentDate); 
-    const hour = parseInt(appointment.startTime.split(":")[0]);
-    apptDate.setHours(hour, 0, 0, 0);
+    const apptStartDate = new Date(appointment.appointmentDate); 
+    const startHour = parseInt(appointment.startTime.split(":")[0]);
+    apptStartDate.setHours(startHour, 0, 0, 0);
 
-    const today = new Date(); // gets current date and time
+    let today = new Date(); // gets current date and time
 
     // if the current moment is earlier than the appointment date and time, send an error
-    if (today < apptDate) {
+    if (today < apptStartDate) {
       req.session.error = "Tutor cannot update attendance before the appointment start time.";
       return res.redirect("/tutorIndex");
     }
@@ -694,6 +706,8 @@ exports.submitShow = async (req, res) => {
     // if trying to update show/no-show value the day after the day of the appointment date, then send an error
     // set hours to the same, only care about comparing the date
     today.setHours(0, 0, 0, 0);
+    const apptDate = new Date(appointment.appointmentDate);
+    apptDate.setHours(0, 0, 0, 0);
 
     // if the current moment is the day(s) after the appointment date, send an error
     if (today > apptDate) {
@@ -704,6 +718,15 @@ exports.submitShow = async (req, res) => {
     // change to the proper value needed in MongoDB
     let updateValue;
     if (isShow === "no-show") {
+      const apptEndDate = new Date(appointment.appointmentDate); 
+      const endHour = parseInt(appointment.endTime.split(":")[0]);
+      apptEndDate.setHours(endHour, 0, 0, 0);
+      today = new Date(); // reset to current date and time
+      // if trying to submit no-show before the appointment end time, send an error
+      if (today < apptEndDate) {
+        req.session.error = "Tutor cannot update attendance to no-show before the appointment end time has passed.";
+        return res.redirect("/tutorIndex");
+      }
       updateValue = "noShow";
     } else if (isShow === "show") {
       updateValue = "attended";
