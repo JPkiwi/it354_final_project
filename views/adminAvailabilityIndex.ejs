@@ -207,4 +207,13 @@
 
 </main> 
 
+<script id="page-data" type="application/json">
+  <%- JSON.stringify({ closedWeekdays }) %>
+</script>
+
+<!-- Flatpickr CDN (if not already in your header) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+
 <%- include("includes/_footer") %>

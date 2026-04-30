@@ -439,25 +439,18 @@
 
 </div>
 
-<!-- flagged as error, functions fine -->
-<script>
-  window.closedWeekdays = <%- JSON.stringify(closedWeekdays || []) %>;
-  window.shouldOpenAssignTutorModal = <%- JSON.stringify(openAssignTutorModal || false) %>;
-  window.shouldOpenClearTutorModal = <%- JSON.stringify(openClearTutorModal || false) %>;
-  window.shouldOpenAddCourseModal = <%- JSON.stringify(openAddCourseModal || false) %>;
+<!-- Script fix -->
+<script id="page-data" type="application/json">
+  <%- JSON.stringify({
+    closedWeekdays: closedWeekdays || [],
+    shouldOpenAssignTutorModal: openAssignTutorModal || false,
+    shouldOpenClearTutorModal: openClearTutorModal || false,
+    ShouldOpenAddCourseModal: openAddCourseModal || false,
+  }) %>
 </script>
-
-
-<!-- <script>
-  window.closedWeekdays = <%- JSON.stringify(closedWeekdays || []) %>;
-</script> -->
 
 <!-- Flatpickr CDN -->
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-
-<!-- <script>
-  window.openAssignTutorModal = <%= openAssignTutorModal ? 'true' : 'false' %>;
-  </script> -->
 
   
 </body>

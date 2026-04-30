@@ -51,7 +51,7 @@
 .small-red-button-round { 
   background-color: var(--primary);
   color: white;
-  padding: 8px 13px;
+  padding: 6px 9px;
   font-size: 1.1rem;
   border-radius: 100px;
   border: 2px solid white;
@@ -67,7 +67,7 @@
 .small-gray-button-round { 
   background-color: var(--gray2);
   color: white;
-  padding: 8px 13px;
+  padding: 6px 9px;
   font-size: 1.1rem;
   border-radius: 100px;
   border: 2px solid white;
@@ -123,15 +123,15 @@
 
 
 .searchFunc {
-  padding: 8px 13px;
+  padding: 6px 9px;
   font-size: 1.1rem;
   border-radius: 100px;
   border: 2px solid #696868;
 }
 
 .inputFunc{
-  padding: 6px 10px;
-  font-size: 18px;
+  padding: 6px 9px;
+  font-size: 15px;
   border-radius: 8px;
   border: 1px solid var(--gray1);
 }

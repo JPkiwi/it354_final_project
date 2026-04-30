@@ -4,6 +4,10 @@ const submitHoursButton = document.getElementById("submitHoursButton");
 const centerOpenTimeInput = document.getElementById("centerOpenTime");
 const centerCloseTimeInput = document.getElementById("centerCloseTime");
 const closeWeekdayDropdown = document.getElementById("closeWeekdayDropdown");
+const data = JSON.parse(document.getElementById("page-data").textContent);
+const closedWeekdays = data.closedWeekdays;
+
+
 
 // When editHours button is clicked 
 // *updated to keep other forms closed when "Edit Center Hours" is clicked
@@ -89,6 +93,11 @@ flatpickr("#blackoutStartDate", {
   minDate: "today",
   altInput: true,
   altFormat: "F j, Y",
+  disable: [
+    function(date) {
+      return closedWeekdays.includes(date.getDay());
+    }
+  ],
   // disable closed weekdays 
   // (disable date if weekday is in closed list)
   // setting placeholder for select date box (would not work inside ejs file))
@@ -106,6 +115,11 @@ flatpickr("#blackoutEndDate", {
   minDate: "today",
   altInput: true,
   altFormat: "F j, Y",
+  disable: [
+    function(date) {
+      return closedWeekdays.includes(date.getDay());
+    }
+  ],
   // disable closed weekdays 
   // (disable date if weekday is in closed list)
   
@@ -164,6 +178,11 @@ flatpickr("#exceptionDate", {
   minDate: "today",
   altInput: true,
   altFormat: "F j, Y",
+  disable: [
+    function(date) {
+      return closedWeekdays.includes(date.getDay());
+    }
+  ],
   onReady: function (selectedDates, dateStr, instance) {
     instance.altInput.placeholder = "-- Select Date --";
     instance.altInput.classList.add("datePickerInput");
