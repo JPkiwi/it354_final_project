@@ -11,9 +11,10 @@ const AuditLog = require("../model/auditLog");
 const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
 const NotificationLog = require("../model/notificationLog");
-const { deleteCalendarEvent } = require('../services/calendarService');
+const { deleteCalendarEvent, createBlackoutCalendarEvent, createExceptionCalendarEvent, deleteBlackoutCalendarEvent } = require('../services/calendarService');
 const CenterException = require("../model/centerException");
 const { formatTo12Hour } = require("../services/timeService");
+const { formatDate } = require("../services/dateService");
 
 //-----------------------------------------------
 
@@ -70,7 +71,7 @@ exports.getAdminIndex = async (req, res) => {
     const appointments = await Appointment.find({
       appointmentStatus: { $ne: "cancelled" },
     })
-      .select("appointmentDate startTime endTime course studentId tutorShiftId")
+      .select("appointmentDate startTime endTime course studentId tutorShiftId tutorComments attendance")
       .populate({
         path: "studentId",
         select: "fname lname",
@@ -114,6 +115,7 @@ exports.getAdminIndex = async (req, res) => {
       course: "",
       notificationLogs,
       formatTo12Hour,
+      formatDate
     });
   } catch (err) {
     // render same page, with error message & empty arrays passed
@@ -135,6 +137,7 @@ exports.getAdminIndex = async (req, res) => {
       course: "",
       notificationLogs: [],
       formatTo12Hour,
+      formatDate
     });
   }
 };
@@ -198,7 +201,8 @@ exports.adminCancelAppointment = async (req, res) => {
         time: "",
         course: "",
         notificationLogs: [],
-        formatTo12Hour
+        formatTo12Hour,
+        formatDate
       });
     }
     if (!appointment.tutorShiftId) {
@@ -217,7 +221,8 @@ exports.adminCancelAppointment = async (req, res) => {
         time: "",
         course: "",
         notificationLogs: [],
-        formatTo12Hour
+        formatTo12Hour,
+        formatDate
       });
     }
     // cancel appointment
@@ -267,7 +272,8 @@ exports.adminCancelAppointment = async (req, res) => {
         time: "",
         course: "",
         notificationLogs: [],
-        formatTo12Hour
+        formatTo12Hour,
+        formatDate
       });
     }
     // ────────────────────────────────────────────────────────────
@@ -340,7 +346,8 @@ exports.adminCancelAppointment = async (req, res) => {
       time: "",
       course: "",
       notificationLogs: [],
-      formatTo12Hour
+      formatTo12Hour,
+      formatDate
     });
   }
 };
@@ -602,10 +609,15 @@ exports.getAdminAuditLog = async (req, res) => {
       });
     }
 
+    // get audit logs
     const auditLogs = await AuditLog.find(
       {},
       "timestamp actionType details",
     ).sort({ timestamp: -1 });
+
+    // get error
+    const error = req.session.error || null;
+    req.session.error = null;
 
     // render page
     res.render("adminAuditLog", {
@@ -613,7 +625,7 @@ exports.getAdminAuditLog = async (req, res) => {
       cssStylesheet: "adminAuditLog.css",
       jsFile: "adminAuditLog.js",
       user: req.session.user,
-      error: null,
+      error,
       auditLogs,
     });
   } catch (err) {
@@ -846,15 +858,8 @@ exports.editUser = async (req, res) => {
 
     // make sure all necessary fields were filled out
     if (!fname || !lname || !email || !role) {
-      return res.status(400).render("adminAuditLog", {
-        title: "Audit Log",
-        error: "All fields are required.",
-        cssStylesheet: "adminAuditLog.css",
-        jsFile: "adminAuditLog.js",
-        formData: req.body,
-        user: req.session.user,
-        auditLogs: [],
-      });
+      req.session.error = "All fields are required.";
+      return res.redirect("/adminAuditLog");
     }
 
     // Security check to make sure that emails will not be dupliated
@@ -864,29 +869,15 @@ exports.editUser = async (req, res) => {
       _id: { $ne: userId },
     });
     if (existingUser) {
-      return res.status(400).render("adminAuditLog", {
-        title: "Audit Log",
-        error: "A user with that email already exists.",
-        cssStylesheet: "adminAuditLog.css",
-        jsFile: "adminAuditLog.js",
-        formData: req.body,
-        user: req.session.user,
-        auditLogs: [],
-      });
+      req.session.error = "A user with that email already exists.";
+      return res.redirect("/adminAuditLog");
     }
 
     // ensures email is entered in the form of @ilstu.edu
     const emailRegex = /^[^\s@]+@ilstu\.edu$/;
     if (!emailRegex.test(email)) {
-      return res.status(400).render("adminAuditLog", {
-        title: "Audit Log",
-        error: "Email address not in the form of @ilstu.edu.",
-        cssStylesheet: "adminAuditLog.css",
-        jsFile: "adminAuditLog.js",
-        formData: req.body,
-        user: req.session.user,
-        auditLogs: [],
-      });
+      req.session.error = "Email address not in the form of @ilstu.edu.";
+      return res.redirect("/adminAuditLog");
     }
 
     // checks to see if role is a tutor
@@ -901,15 +892,8 @@ exports.editUser = async (req, res) => {
       }
 
       if (tutorCourses.length === 0) {
-        return res.status(400).render("adminAuditLog", {
-          title: "Audit Log",
-          error: "Course(s) must be selected to edit a tutor.",
-          cssStylesheet: "adminAuditLog.css",
-          jsFile: "adminAuditLog.js",
-          formData: req.body,
-          user: req.session.user,
-          auditLogs: [],
-        });
+        req.session.error = "Course(s) must be selected to edit a tutor.";
+        return res.redirect("/adminAuditLog");
       }
     }
 
@@ -917,17 +901,26 @@ exports.editUser = async (req, res) => {
     // IF the password field is NOT empty, hash new password
     // ELSE, keep the existing password by fetching it from the database
 
-    // make sure password is at least 8 characters long
-    if (password && password.trim() !== "" && password.length < 8) {
-      return res.render("adminAuditLog", {
-        title: "Audit Log",
-        error: "Password must be at least 8 characters long.",
-        cssStylesheet: "adminAuditLog.css",
-        jsFile: "adminAuditLog.js",
-        formData: req.body,
-        user: req.session.user,
-        auditLogs: [],
-      });
+    // password cannot contain spaces
+    if (password.includes(" ")) {
+      req.session.error = "Password cannot contain spaces.";
+      return res.redirect("/adminAuditLog");
+    }
+
+    // make sure password is at least 8 characters long and doesn't include special characters or Unicode characters
+    if (password && password.trim() !== "") {
+
+      if (password.length < 8) {
+        req.session.error = "Password must be at least 8 characters long.";
+        return res.redirect("/adminAuditLog");
+      }
+
+      const passwordRegex = /^[A-Za-z0-9!@#$%^&*]+$/;
+      if (!passwordRegex.test(password)) {
+        req.session.error = "Password must not contain spaces, special characters, or Unicode characters. Can only use the following: A-Z, a-z, 0-9, and !@#$%^&*.";
+        return res.redirect("/adminAuditLog");
+      }
+        
     }
 
     let passwordHash;
@@ -2306,74 +2299,47 @@ exports.addUser = async (req, res) => {
 
     // make sure all fields were filled out
     if (!fname || !lname || !email || !password || !confirmPassword || !role) {
-      return res.status(400).render("adminAuditLog", {
-        title: "Audit Log",
-        error: "All fields are required.",
-        cssStylesheet: "adminAuditLog.css",
-        jsFile: "adminAuditLog.js",
-        formData: req.body,
-        user: req.session.user,
-        auditLogs: [],
-        formatTo12Hour
-      });
+      req.session.error = "All fields are required.";
+      return res.redirect("/adminAuditLog");
     }
 
     // ensures email is entered in the form of @ilstu.edu
     const emailRegex = /^[^\s@]+@ilstu\.edu$/;
     if (!emailRegex.test(email)) {
-      return res.render("adminAuditLog", {
-        title: "Audit Log",
-        error: "Email address not in the form of @ilstu.edu.",
-        cssStylesheet: "adminAuditLog.css",
-        jsFile: "adminAuditLog.js",
-        formData: req.body,
-        user: req.session.user,
-        auditLogs: [],
-        formatTo12Hour
-      });
+      req.session.error = "Email address not in the form of @ilstu.edu.";
+      return res.redirect("/adminAuditLog");
     }
 
     // make sure password is at least 8 characters long
     if (password.length < 8) {
-      return res.render("adminAuditLog", {
-        title: "Audit Log",
-        error: "Password must be at least 8 characters long.",
-        cssStylesheet: "adminAuditLog.css",
-        jsFile: "adminAuditLog.js",
-        formData: req.body,
-        user: req.session.user,
-        auditLogs: [],
-        formatTo12Hour
-      });
+      req.session.error = "Password must be at least 8 characters long.";
+      return res.redirect("/adminAuditLog");
+    }
+
+    // password cannot contain spaces
+    if (password.includes(" ")) {
+      req.session.error = "Password cannot contain spaces.";
+      return res.redirect("/adminAuditLog");
+    }
+
+    // password must only contain any of the following: A-Z, a-z, 0-9, and !@#$%^&*
+    const passwordRegex = /^[A-Za-z0-9!@#$%^&*]+$/;
+      if (!passwordRegex.test(password)) {
+        req.session.error = "Password must not contain spaces, special characters, or Unicode characters. Can only use the following: A-Z, a-z, 0-9, and !@#$%^&*";
+        return res.redirect("/adminAuditLog");
     }
 
     // password and confirm password
     if (password !== confirmPassword) {
-      return res.status(400).render("adminAuditLog", {
-        title: "Audit Log",
-        error: "Password and Confirm Password must be the same.",
-        cssStylesheet: "adminAuditLog.css",
-        jsFile: "adminAuditLog.js",
-        formData: req.body,
-        user: req.session.user,
-        auditLogs: [],
-        formatTo12Hour
-      });
+      req.session.error = "Password and Confirm Password must be the same.";
+      return res.redirect("/adminAuditLog");
     }
 
     // Admin can only assign students and tutors,
     // if we need to change to add another admin this is just temporary for now
     if (role !== "student" && role !== "tutor") {
-      return res.status(400).render("adminAuditLog", {
-        title: "Audit Log",
-        error: "Invalid role.",
-        cssStylesheet: "adminAuditLog.css",
-        jsFile: "adminAuditLog.js",
-        formData: req.body,
-        user: req.session.user,
-        auditLogs: [],
-        formatTo12Hour
-      });
+      req.session.error = "Invalid role.";
+      return res.redirect("/adminAuditLog");
     }
 
     // FIX LATER, ADD FOR STUDENT?? SOURCEPAGE ERROR
@@ -2396,7 +2362,6 @@ exports.addUser = async (req, res) => {
         courses,
         activeTutors,
         today,
-        // changed from "shifts: [],"
         scheduleShifts: [],
         clearShifts: [],
         closedWeekdays,
@@ -2428,7 +2393,6 @@ exports.addUser = async (req, res) => {
           activeTutors,
           courses,
           today,
-          // changed from "shifts: [],"
           scheduleShifts: [],
           clearShifts: [],
           closedWeekdays,
@@ -2714,7 +2678,7 @@ exports.changeHours = async (req, res) => {
 };
 
 
-// -------------------------------------------------------------------------
+// -------------------------------------------------------------------------                                                    !!
 
 // Adding a blackout date functionality (choosing specified time range (covering entire day of dates chosen) 
 // that center is fully closed; example: Center normally open M-F, but need to close just on one specified Tuesday
@@ -2817,12 +2781,40 @@ exports.addBlackoutDate = async (req, res) => {
         formatTo12Hour
       });
 
-      await CenterClosedSchedule.create({
+      let blackoutDate;
+      blackoutDate = await CenterClosedSchedule.create({
         createdByAdminId: req.session.user._id,
         startDate: parseStart,
         endDate: parseEnd, 
         reason: reason.trim()
       });
+
+// ── Create Google Calendar event ────────────────────────────
+      try {
+        const admin = await User.findOne({ role: "admin" });
+        // checks for our admin and if the admin has tokens. returns undefined if not found
+        if (admin?.googleTokens) {
+
+          const eventId = await createBlackoutCalendarEvent(admin.googleTokens, {
+            createdByAdminId: req.session.user._id,
+            startDate: parseStart,
+            endDate: parseEnd, 
+            reason: reason.trim()
+          });
+          
+          // store the event ID on the appointment for deletion later
+          if (eventId) {
+            blackoutDate.calendarEventId = eventId; // unique ID assigned by google, stored in our centerClosedSchedule model
+            await blackoutDate.save();
+          } else {
+            console.error("No event ID returned from calendar API.");
+          }
+        }
+      } catch (calendarErr) {
+        console.error("Calendar event creation failed.");
+      }
+    
+// ────────────────────────────────────────────────────────────
 
       // cancel any appointments that fall within the blackout date range and log those cancellations in the audit log
       const appointments = await Appointment.find({
@@ -3328,13 +3320,43 @@ exports.addException = async (req, res) => {
 
     // once passing all validation checks, create the time block 
     // create the time block
-    await CenterException.create({
+    let exception;
+
+    exception = await CenterException.create({
       createdByAdminId: req.session.user._id,
       exceptionDate: parsedExceptionDate,
       startTime,
       endTime,
       reason: reason.trim(),
     });
+
+// ── Create Google Calendar event ────────────────────────────
+    try {
+      const admin = await User.findOne({ role: "admin" });
+      // checks for our admin and if the admin has tokens. returns undefined if not found
+      if (admin?.googleTokens) {
+
+        const eventId = await createExceptionCalendarEvent(admin.googleTokens, {
+          createdByAdminId: req.session.user._id,
+          exceptionDate: parsedExceptionDate,
+          startTime: startTime,
+          endTime: endTime, 
+          reason: reason.trim()
+        });
+        
+        // store the event ID on the appointment for deletion later
+        if (eventId) {
+          exception.calendarEventId = eventId; // unique ID assigned by google, stored in our centerException model
+          await exception.save();
+        } else {
+          console.error("No event ID returned from calendar API.");
+        }
+      }
+    } catch (calendarErr) {
+      console.error("Calendar event creation failed.", calendarErr.message);
+    }
+    
+// ────────────────────────────────────────────────────────────
 
 
     const exceptionStartMin = startHour * 60;
@@ -3539,6 +3561,53 @@ exports.removeExceptions = async (req, res) => {
     const startOfDay = new Date(year, month - 1, day, 0, 0, 0, 0);
     const endOfDay = new Date(year, month - 1, day, 23, 59, 59, 999);
 
+    const exceptions = await CenterException.find ({
+      exceptionDate: { $gte: startOfDay, $lte: endOfDay}
+    });
+
+    const blackouts = await CenterClosedSchedule.find ({
+      startDate: { $lte: endOfDay },
+      endDate: { $gte: startOfDay }
+    });
+
+
+  // ───────── Delete Google Calendar event ──────────────────── FIX
+    try {
+      const admin = await User.findOne({ role: "admin" });
+      if (admin?.googleTokens) {
+          for (const exception of exceptions) {
+              if (exception.calendarEventId) {
+                  await deleteBlackoutCalendarEvent(admin.googleTokens, exception.calendarEventId);
+              }
+          }
+          for (const blackout of blackouts) {
+              if (blackout.calendarEventId) {
+                  await deleteBlackoutCalendarEvent(admin.googleTokens, blackout.calendarEventId);
+              }
+          }
+      } 
+    } catch (calendarErr) {
+      return res.render("adminAvailabilityIndex", {
+        error: `Something went wrong with Google Calendar. ${calendarErr.message}`,
+        title: "Admin Manage Availability",
+        cssStylesheet: "availabilityIndex.css",
+        jsFile: "adminAvailability.js",
+        user: req.session.user,
+        appointments: [],
+        courses: [],
+        eligibleTutorShifts: [],
+        studentFName: "",
+        studentLName: "",
+        date: "",
+        time: "",
+        course: "",
+        notificationLogs: [],
+        formatTo12Hour
+      });
+    }
+  // ────────────────────────────────────────────────────────────
+    
+  // Deleting events from DB
     await CenterException.deleteMany({
       exceptionDate: {
         $gte: startOfDay,
@@ -3550,8 +3619,8 @@ exports.removeExceptions = async (req, res) => {
       startDate: { $lte: endOfDay },
       endDate: { $gte: startOfDay }
     });
-
-    return res.redirect("/adminAvailabilityIndex");
+  
+  return res.redirect("/adminAvailabilityIndex");
 
   }
   catch(err){

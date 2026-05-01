@@ -77,6 +77,54 @@ window.addEventListener("click", function (event) {
   }
 });
 
+
+// sorting students by last name (a-z or z-a)
+const lNameSort = document.getElementById("lNameSort");
+const studentRows = document.getElementById("studentRows");
+
+lNameSort.addEventListener("change", function () {
+  const rows = Array.from(studentRows.querySelectorAll("tr"));
+
+  rows.sort((a, b) => {
+    const lastNameA = a.dataset.lname.toLowerCase();
+    const lastNameB = b.dataset.lname.toLowerCase();
+
+    if (this.value === "az") {
+      return lastNameA.localeCompare(lastNameB);
+    }
+    if (this.value === "za") {
+      return lastNameB.localeCompare(lastNameA);
+    }
+
+    return 0;
+  });
+
+  rows.forEach(row => studentRows.appendChild(row));
+});
+
+
+// sort by students status (active vs. inactive)
+const statusSort = document.getElementById("statusSort");
+
+statusSort.addEventListener("change", function () {
+  const rows = Array.from(studentRows.querySelectorAll("tr"));
+
+  rows.forEach(row => {
+    const isActive = row.dataset.isactive === "true";
+
+    if (this.value === "activeOnly") {
+      row.style.display = isActive ? "" : "none";
+    } 
+    else if (this.value === "inactiveOnly") {
+      row.style.display = !isActive ? "" : "none";
+    } 
+    else {
+      // show all
+      row.style.display = "";
+    }
+  });
+});
+
 // EMAIL REGEX
 // email must be an ilstu.edu address
 const emailRegex = /^[^\s@]+@ilstu\.edu$/;

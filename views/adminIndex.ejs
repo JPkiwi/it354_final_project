@@ -19,6 +19,26 @@
   <label for="search" class="visually-hidden">Search appointments</label>
   <input class="searchFunc" id="search" type="text" placeholder="Search appointments..." />
 
+  <label for="lNameSort" class="visually-hidden">Sort appointments by student name</label>
+
+      <select id="lNameSort" >
+        <option value="">Sort by Student Name</option>
+        <option value="az">Last Name: A-Z</option>
+        <option value="za">Last Name: Z-A</option>
+      </select>
+
+    <label for="courseFilter" class="visually-hidden">Filter appointments by course</label>
+
+    <select id="courseFilter">
+      <option value="">All Courses</option>
+      <!-- course dropdown, dynamically loading courses into dropdown (to include any courses added)-->
+      <% courses.forEach(function(course) { %>
+        <option value="<%= course.courseName %>">
+          <%= course.courseName %>
+        </option>
+      <% }); %>
+    </select>
+
 
   <button class = "small-red-button-round" type="button" id="notifs">Notifications</button>
 
@@ -42,6 +62,8 @@
         <th>Student Name</th>
         <th>Tutor Name</th>
         <th>Course</th>
+        <th>Attendance</th>
+        <th>Tutor Comments</th>
       </tr>
     </thead>
 
@@ -50,7 +72,8 @@
       <% if (appointments && appointments.length > 0) { %>
         <!-- looping through appointments-->
     <% appointments.forEach(function(appointment) { %>
-      <tr>
+      <tr data-lname="<%= appointment.studentId?.lname || '' %>"
+        data-course="<%= appointment.course || '' %>">
         <!-- radio button instead of checkbox -> only one appt selected at a time to cancel or assign tutor-->
     <td>
   <label>
@@ -61,8 +84,8 @@
     </span>
   </label>
 </td> 
-    <!-- if appointment date exists, convert to string (using .split to get 00:00:000Z from mongodb date)-->
-        <td><%= appointment.appointmentDate ? appointment.appointmentDate.toISOString().split('T')[0] : "No date" %></td>
+    <!-- formatted date -->
+        <td> <%= appointment.appointmentDate ? formatDate(appointment.appointmentDate) : "No date" %> </td>
         <!-- printing start time and endtime-->
         <td>  <%= formatTo12Hour(appointment.startTime) %> -  <%= formatTo12Hour(appointment.endTime) %> </td>
         <!-- -->
@@ -95,12 +118,24 @@
         </td>
         <!-- prints course name-->
         <td><%= appointment.course %></td>
+        <!-- prints attendance status -->
+                
+        <td>
+          <%= appointment.attendance?.attendanceStatus || "pending" %>
+        </td>
+
+        <!-- prints tutor comments -->
+        <td>
+          <%= appointment.tutorComments && appointment.tutorComments.trim() !== "" 
+                ? appointment.tutorComments 
+                : "N/A" %>
+        </td>
 
       </tr>
     <% }); %>
     <% } else { %>
     <tr>
-      <td colspan="6">No appointments found.</td>
+      <td colspan="8">No appointments found.</td>
     </tr>
     <% } %>
   </tbody>

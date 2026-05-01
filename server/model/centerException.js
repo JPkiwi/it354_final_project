@@ -7,6 +7,7 @@ const centerExceptionSchema = new mongoose.Schema(
     startTime: { type: String, required: true },
     endTime: { type: String, required: true },
     reason: { type: String, required: true, trim: true },
+    calendarEventId: { type: String, default: null}
   },
   { timestamps: true }
 );

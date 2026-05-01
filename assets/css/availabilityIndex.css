@@ -45,15 +45,16 @@
     color: #4a148c;            
   }
 
-  .adminAvailabilityLayout {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-  }
+   .adminAvailabilityLayout {
+    /* display: flex;
+    align-items: flex-start; */
+    
+  } 
   
   .availabilityFunctionality {
-    display: flex;
-    flex-direction: column;
+    /* display: flex;
+    flex-direction: column; */
+    justify-content: center;
     gap: 20px;
   }
 
@@ -64,6 +65,9 @@
     gap: 12px;
     width: auto; 
     align-items: center;
+    align-content: center;
+    text-align: center;
+    justify-content: center;
   }
 
 
@@ -72,8 +76,7 @@
   background-color: var(--gray0);
   border: 1px solid var(--gray2);
   border-radius: 8px;
-  padding: 30px 40px;
-  margin-right: 40px;
+  padding: 50px 40px 50px 40px;
   min-width: 350px;
 }
 
@@ -81,7 +84,7 @@
 .generalCenterHours h2 {
   text-align: center;
   margin-top: 0;
-  margin-bottom: 25px;
+
 }
 
 /* Each weekday line */
@@ -102,4 +105,15 @@
   border-radius: 8px;
   font-size: 1rem;
   box-sizing: border-box;
+}
+
+.google-blackout-calendar {
+  padding-left: 40px;
+}
+
+.calendar-hours-row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 130px;
 }
