@@ -83,23 +83,24 @@
 }
 
 
-
-/* even Stripes for audit table */
-.auditTable tbody tr:nth-child(even) {
-  background-color: #ebebeb; 
+/* overriding the stripes to work with filtering */
+#auditTableBody tr.even {
+  background-color: #ffffff;
 }
 
-/* odd Stripes for audit table */
-.auditTable tbody tr:nth-child(odd) {
-  background-color: #ffffff; 
+#auditTableBody tr.odd {
+  background-color: #ebebeb;
 }
 
-/* Hover transition for cells of audit table */
-/* .auditTable tbody tr {
+
+/* Hover transition for cells of table */
+.tableHover tbody tr {
   transition: background-color 0.2s ease;
 }
 
-.auditTable tbody tr:hover {
-  background-color :#a19d9e; 
+/* Hover color for cells of table */
+.tableHover tbody tr:hover {
+  /* !important for overriding striped rows */
+  background-color: #ffe5e5 !important;
 }
-*/
+

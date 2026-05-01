@@ -23,9 +23,45 @@
   <div style="padding: 30px;"></div>
 
 
-    
   
+  <input class = "searchFunc" type="text" id="auditSearch" placeholder="Search audit logs..." />
 
+  <select class="actionFilter">
+  <option value="">Appointment Actions</option>
+  <option value="APPOINTMENT_CANCELLED">Appointment Cancelled</option>
+</select>
+
+<select class="actionFilter">
+  <option value="">Tutor Actions</option>
+  <option value="TUTOR_ADDED">Tutor Added</option>
+  <option value="TUTOR_STATUS_CHANGED">Tutor Status Changed</option>
+  <option value="TUTOR_SHIFT_ASSIGNED">Tutor Shift Assigned</option>
+  <option value="TUTOR_SHIFT_REMOVED">Tutor Shift Removed</option>
+  <option value="USER_EDITED" data-role-filter="tutor">Tutor Edited</option>  
+</select>
+
+
+
+<select class="actionFilter">
+  <option value="">Student Actions</option>
+  <option value="STUDENT_ADDED">Student Added</option>
+  <option value="STUDENT_STATUS_CHANGED">Student Status Changed</option>
+  <option value="USER_EDITED" data-role-filter="student">Student Edited</option>
+</select>
+
+
+
+<select class="actionFilter">
+  <option value="">Availability Actions</option>
+  <option value="CENTER_HOURS_CHANGED">Center Hours Changed</option>
+  <option value="EXCEPTION_ADDED">Exception Added</option>
+  <option value="BLACKOUT_DATE_ADDED">Blackout Date Added</option>
+</select>
+
+
+
+    <br></br>
+     
       <table class="auditTable tableHover">
         <thead>
           <tr class = "auditRow">
@@ -37,12 +73,15 @@
         </thead>
 
         
-        <tbody>
+        <tbody id="auditTableBody">
             <% if (auditLogs && auditLogs.length > 0) { %>
 
           <!-- loading the audit logs into table  -->
           <% auditLogs.forEach(log => { %>
-            <tr>
+            <tr 
+                data-action="<%= log.actionType %>"
+                data-role="<%= log.details && log.details.toLowerCase().includes('role: tutor') ? 'tutor' : log.details && log.details.toLowerCase().includes('role: student') ? 'student' : '' %>"
+              >
               <td><%= new Date(log.timestamp).toLocaleString() %></td>
               <td><%= log.actionType %></td>
               <td><%= log.details %></td>
@@ -60,6 +99,7 @@
         </tbody>
       </table>
 
+      <br><br>
 
   </div>
 
@@ -67,6 +107,8 @@
   </div>
 
 </body>
+
+<script src="/js/adminAuditLog.js"></script>
 
 
 
