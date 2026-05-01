@@ -127,3 +127,12 @@ row is greyed out to indicate inactivity*/
 .studentTable td:nth-child(4) {
   width: 40px;
 }
+
+.nameSort {
+    border-color: var(--gray2);
+}
+
+.statSort{
+    border-color: var(--gray2);
+}
+  

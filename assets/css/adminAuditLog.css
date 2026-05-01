@@ -104,3 +104,26 @@
   background-color: #ffe5e5 !important;
 }
 
+/* gray header-style options */
+.actionFilter option.dropdown-header {
+  color: var(--gray2);
+  background-color: var(--gray0);
+  font-weight: 300;
+}
+
+.actionFilter {
+  color: black;
+  background-color: white;
+  border-color: var(--gray2);
+}
+
+.actionFilter.is-header-selected {
+  color: var(--gray2);
+  background-color: var(--gray0);
+}
+
+/* normal options (everything EXCEPT the header) */
+.actionFilter option:not(.dropdown-header) {
+  color: black;
+  background-color: white;
+}

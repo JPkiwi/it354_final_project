@@ -3,6 +3,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const dropdowns = document.querySelectorAll(".actionFilter");
   const rows = document.querySelectorAll("#auditTableBody tr");
 
+
+function updateDropdownStyle(dropdown) {
+  if (dropdown.value === "") {
+    dropdown.classList.add("is-header-selected");
+  } else {
+    dropdown.classList.remove("is-header-selected");
+  }
+}
+
   // update row stripes so visible rows stay consistent (whether searching or filtering, keep striped rows)
   function updateRowStripes() {
     // display only visible rows 
@@ -61,8 +70,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // filterRows when changing dropdowns
   dropdowns.forEach(dropdown => {
-    dropdown.addEventListener("change", filterRows);
+  updateDropdownStyle(dropdown);
+
+  dropdown.addEventListener("change", () => {
+    updateDropdownStyle(dropdown);
+    filterRows();
   });
+});
 
   // format stripes
   filterRows();

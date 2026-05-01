@@ -82,25 +82,31 @@ window.addEventListener("click", function (event) {
 const lNameSort = document.getElementById("lNameSort");
 const studentRows = document.getElementById("studentRows");
 
-lNameSort.addEventListener("change", function () {
+function sortStudentsByLastName() {
   const rows = Array.from(studentRows.querySelectorAll("tr"));
 
   rows.sort((a, b) => {
     const lastNameA = a.dataset.lname.toLowerCase();
     const lastNameB = b.dataset.lname.toLowerCase();
 
-    if (this.value === "az") {
-      return lastNameA.localeCompare(lastNameB);
+    if (lNameSort.value === "az") {
+      return lastNameA.localeCompare(lastNameB, undefined, { sensitivity: "base" });
     }
-    if (this.value === "za") {
-      return lastNameB.localeCompare(lastNameA);
+    if (lNameSort.value === "za") {
+      return lastNameB.localeCompare(lastNameA, undefined, { sensitivity: "base" });
     }
 
     return 0;
   });
 
   rows.forEach(row => studentRows.appendChild(row));
-});
+}
+
+lNameSort.addEventListener("change", sortStudentsByLastName);
+// automatic sort when page loads
+sortStudentsByLastName();
+
+
 
 
 // sort by students status (active vs. inactive)
