@@ -10,12 +10,16 @@ const { formatTo12Hour } = require("../services/timeService");
 exports.getLandingPage = async (req, res) => {
   try {
     let weekdays = await updateCenterExceptions();
+    let exceptionDisplay = await getExceptionDisplay(weekdays);
     let courses = await Course.find();
+    const today = new Date();
+    const { monday, sunday } = getWeekRange(today);
 
     // if there are no weekdays in MongoDB, then insert all the default week hours
     if (weekdays.length === 0) {
       await CenterOpen.insertMany(DEFAULT_WEEK_HOURS);
       weekdays = await updateCenterExceptions();
+      exceptionDisplay = await getExceptionDisplay(weekdays);
     }
 
     // if there are no courses in MongoDB, then insert all the default courses
@@ -24,8 +28,6 @@ exports.getLandingPage = async (req, res) => {
       courses = await Course.insertMany(DEFAULT_COURSES); 
     }
 
-    
-
     res.render("index", {
       error: null,
       title: "ISU Learning Center",
@@ -33,6 +35,11 @@ exports.getLandingPage = async (req, res) => {
       jsFile: "index.js",
       user: req.session.user,
       weekdays,
+      exceptionDisplay,
+      monday: monday.toLocaleDateString("en-US", {
+        month: "numeric",
+        day: "numeric"
+      }),
       formatTo12Hour
     });
   } catch (err) {
@@ -43,6 +50,8 @@ exports.getLandingPage = async (req, res) => {
       jsFile: "index.js",
       user: req.session.user,
       weekdays: DEFAULT_WEEK_HOURS,
+      exceptionDisplay: [],
+      monday: "",
       formatTo12Hour
     });
   }
@@ -81,6 +90,12 @@ function isWeeklyBlock(date, start, end) {
   return currDate >= startDate && currDate <= endDate;
 }
 
+// convert time string "HH:MM" to total minutes for easier comparison for closed ranges
+function convertToMins(time) {
+  const [hour, min] = time.split(":").map(Number);
+  return hour * 60 + min;
+}
+
 function buildTimeBlocks(day, dayExceptions) {
   if (day.isClosed) return [];
 
@@ -115,6 +130,7 @@ function buildTimeBlocks(day, dayExceptions) {
     });
   }
 
+  console.log(`Built time blocks for ${day.weekday} with exceptions:`, blocks);
   return blocks;
 }
 
@@ -164,6 +180,8 @@ async function updateCenterExceptions() {
         return {
           weekday: day.weekday,
           date: currentDate,
+          openTime: day.openTime,
+          closeTime: day.closeTime,
           isClosed: timeBlocks.length === 0,
           reason: latestException.reason,
           timeBlocks
@@ -173,6 +191,8 @@ async function updateCenterExceptions() {
       return {
         weekday: day.weekday,
         date: currentDate,
+        openTime: day.openTime,
+        closeTime: day.closeTime,
         isClosed: true,
         reason: blackout.reason,
         timeBlocks: []
@@ -186,6 +206,8 @@ async function updateCenterExceptions() {
       return {
         weekday: day.weekday,
         date: currentDate,
+        openTime: day.openTime,
+        closeTime: day.closeTime,
         isClosed: timeBlocks.length === 0,
         reason: latestException.reason,
         timeBlocks
@@ -197,6 +219,8 @@ async function updateCenterExceptions() {
       return {
         weekday: day.weekday,
         date: currentDate,
+        openTime: day.openTime,
+        closeTime: day.closeTime,
         isClosed: true,
         reason: blackout.reason,
         timeBlocks: []
@@ -205,9 +229,12 @@ async function updateCenterExceptions() {
 
     // normal day
     const timeBlocks = buildTimeBlocks(day, []);
+    console.log(`Time blocks for ${day.weekday}:`, timeBlocks);
     return {
       weekday: day.weekday,
       date: currentDate,
+      openTime: day.openTime,
+      closeTime: day.closeTime,
       isClosed: day.isClosed || timeBlocks.length === 0,
       reason: "",
       timeBlocks
@@ -215,6 +242,70 @@ async function updateCenterExceptions() {
     
   }); // end of map through weekdays
 
+  console.log("Updated center hours with exceptions/blackouts:", exceptionWeek);
   return exceptionWeek;
 }
 
+
+// supply a reason why the center is closed for a given day that week
+async function getExceptionDisplay(exceptionWeek) {
+  const formattedDisplay = [];
+
+  for (const day of exceptionWeek) {
+    console.log(`timeBlocks=${JSON.stringify(day.timeBlocks)}`);
+    if (day.reason) {
+      const dateStr = new Date(day.date).toLocaleDateString("en-US", {
+        month: "numeric",
+        day: "numeric"
+      });
+
+      // fully closed = blackout date
+      if (day.isClosed) {
+        formattedDisplay.push(
+          `Closed all day on ${day.weekday} (${dateStr}) because of ${day.reason}`
+        );
+      } 
+      
+      // time blocks = exception. Rebuild the closed time ranges. Timeblocks represent the time ranges the center is open
+      else if (day.timeBlocks.length > 0) {
+        let closedRanges = [];
+
+        // the exception coincides with the opening time of the center
+        if (convertToMins(day.openTime) < convertToMins(day.timeBlocks[0].start)) {
+          closedRanges.push({
+            start: day.openTime,
+            end: day.timeBlocks[0].start
+          });
+        }
+
+        // the exception is in the middle of the day
+        let prevEnd = null;
+        for (const timeBlock of day.timeBlocks) {
+          if (prevEnd && prevEnd < timeBlock.start) { // checks the end time of the previous time block is earlier than the start time of the current block
+            closedRanges.push({
+              start: prevEnd,
+              end: timeBlock.start
+            });
+          }
+          prevEnd = timeBlock.end;
+        }
+
+        // the exception coincides with the closing time of the center
+        if (prevEnd && convertToMins(prevEnd) < convertToMins(day.closeTime)) {
+          closedRanges.push({
+            start: prevEnd,
+            end: day.closeTime
+          });
+        }
+
+        for (const range of closedRanges) {
+          formattedDisplay.push(
+            `Closed ${formatTo12Hour(range.start)} - ${formatTo12Hour(range.end)} on ${day.weekday} (${dateStr}) because of ${day.reason}`
+          );
+        }
+      }
+    }
+  }
+
+  return formattedDisplay;
+}

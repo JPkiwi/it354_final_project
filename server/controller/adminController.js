@@ -1,6 +1,7 @@
 const Appointment = require("../model/appointmentModel");
 const { sendEmail } = require("../services/emailService");
 const { adminCancellationTemplate } = require("../../views/templates/emailTemplates");
+const { exceptionCancellationTemplate } = require("../../views/templates/emailTemplates");
 const User = require("../model/userModel");
 const Course = require("../model/courseModel");
 const TutorShift = require("../model/tutorShiftModel");
@@ -2823,6 +2824,98 @@ exports.addBlackoutDate = async (req, res) => {
         reason: reason.trim()
       });
 
+      // cancel any appointments that fall within the blackout date range and log those cancellations in the audit log
+      const appointments = await Appointment.find({
+        appointmentDate: {
+          $gte: parseStart,
+          $lte: parseEnd
+        },
+        appointmentStatus: "scheduled"
+      })
+      .populate("studentId", "fname email")
+      .populate({
+        path: "tutorShiftId",
+        populate: {
+          path: "tutorId",
+          select: "fname lname"
+        }
+      });
+
+      if (appointments.length > 0) {
+        for (const appointment of appointments) {
+
+          // Free tutor shift
+          if (appointment.tutorShiftId) {
+            await TutorShift.findByIdAndUpdate(appointment.tutorShiftId, {
+              isBooked: false
+            });
+          }
+
+          // Mark cancelled
+          await Appointment.findByIdAndUpdate(appointment._id, {
+            appointmentStatus: "cancelled"
+          });
+
+          // Delete calendar event
+          try {
+            if (appointment.calendarEventId) {
+              const admin = await User.findOne({ role: "admin" });
+              if (admin?.googleTokens) {
+                await deleteCalendarEvent(admin.googleTokens, appointment.calendarEventId);
+              }
+            }
+          } catch (err) {
+            console.error("Calendar deletion failed for blackout date appt cancellation.");
+          }
+
+          // Send email to student
+          let emailFailed = false;
+          try {
+            await sendEmail({
+              to: appointment.studentId.email,
+              cc: process.env.GMAIL_ADMIN,
+              subject: "Appointment Cancelled - Center Closed",
+              html: exceptionCancellationTemplate({
+                studentName: appointment.studentId.fname,
+                tutorName: `${appointment.tutorShiftId.tutorId.fname} ${appointment.tutorShiftId.tutorId.lname}`,
+                date: appointment.appointmentDate.toLocaleDateString('en-US', { timeZone: 'UTC' }),
+                time: `${formatTo12Hour(appointment.startTime)} - ${formatTo12Hour(appointment.endTime)}`,
+                course: appointment.course
+              })
+            });
+          } catch (err) {
+            console.error("Email failed for blackout date appt cancellation.");
+            emailFailed = true;
+          }
+
+          // Log cancellation
+          try {
+            await NotificationLog.create({
+              appointmentId: appointment._id,
+              recipientUserId: appointment.studentId._id,
+              appointmentDate: appointment.appointmentDate,
+              notificationType: "EXCEPTION_CANCEL_APPT"
+            });
+          } catch (err) {
+            console.error("NotificationLog failed for blackout date appt cancellation.");
+          }
+
+          // Log email failure if necessary 
+          if (emailFailed) {
+            try {
+              await NotificationLog.create({
+                appointmentId: appointment._id,
+                recipientUserId: appointment.studentId._id,
+                appointmentDate: appointment.appointmentDate,
+                notificationType: "SEND_EMAIL_FAILED",
+              });
+            } catch (err) {
+              console.error("NotificationLog SEND_EMAIL_FAILED failed.");
+            }
+          }
+        }
+      }
+
       // if there is a blackout, delete any tutor shifts for that day since center is fully closed
       await TutorShift.deleteMany({
         shiftDate: {
@@ -2840,18 +2933,17 @@ exports.addBlackoutDate = async (req, res) => {
       return res.redirect("/adminAvailabilityIndex");
 
   }
-  catch(err){
-
-  return res.render("adminAvailabilityIndex", {
-    title: "Admin Manage Availability",
-    cssStylesheet: "availabilityIndex.css",
-        jsFile: "adminAvailability.js",
-    error: "Something went wrong while adding blackout date.",
-    user: req.session.user,
-    closedWeekdays: [],
-    weekdays: [], // fallback so page doesn’t crash
-    formatTo12Hour
-  });
+  catch(err) {
+    return res.render("adminAvailabilityIndex", {
+      title: "Admin Manage Availability",
+      cssStylesheet: "availabilityIndex.css",
+      jsFile: "adminAvailability.js",
+      error: "Something went wrong while adding blackout date.",
+      user: req.session.user,
+      closedWeekdays: [],
+      weekdays: [], // fallback so page doesn’t crash
+      formatTo12Hour
+    });
   }
 };
 
@@ -3043,8 +3135,6 @@ async function updateCenterExceptions() {
 
   return exceptionWeek;
 }
-
-
 
 
 // ------------------------------------------------------------------------------
@@ -3247,25 +3337,127 @@ exports.addException = async (req, res) => {
     });
 
 
-    // get all shifts within the exception date and delete any shifts that overlap with the exception time block
     const exceptionStartMin = startHour * 60;
     const exceptionEndMin = endHour * 60;
 
+    // cancel appointments that overlap with the exception time block
+    const appointments = await Appointment.find({
+      appointmentDate: {
+        $gte: startOfDay,
+        $lte: endOfDay
+      },
+      appointmentStatus: "scheduled"
+    })
+    .populate("studentId", "fname email")
+    .populate({
+      path: "tutorShiftId",
+      populate: {
+        path: "tutorId",
+        select: "fname lname"
+      }
+    });
+
+    if (appointments.length > 0) {
+      const apptsToCancel = appointments.filter(appt => {
+        const start = convertToMins(appt.startTime);
+        const end = convertToMins(appt.endTime);
+
+        return start < exceptionEndMin && end > exceptionStartMin;
+      });
+
+      // cancel each appointment that overlaps with the exception, free the tutor shift, delete the calendar event, send email to student, and log the cancellation in NotificationLog
+      for (const appointment of apptsToCancel) {
+
+        // Free tutor shift
+        if (appointment.tutorShiftId) {
+          await TutorShift.findByIdAndUpdate(appointment.tutorShiftId, {
+            isBooked: false
+          });
+        }
+
+        // Mark appointment cancelled
+        await Appointment.findByIdAndUpdate(appointment._id, {
+          appointmentStatus: "cancelled"
+        });
+
+        // Delete Google Calendar event
+        try {
+          if (appointment.calendarEventId) {
+            const admin = await User.findOne({ role: "admin" });
+            if (admin?.googleTokens) {
+              await deleteCalendarEvent(admin.googleTokens, appointment.calendarEventId);
+            }
+          }
+        } catch (calendarErr) {
+          console.error("Calendar deletion failed for exception:", calendarErr);
+        }
+
+        // Send email to student
+        let emailFailed = false;
+        try {
+          await sendEmail({
+            to: appointment.studentId.email,
+            cc: process.env.GMAIL_ADMIN,
+            subject: "Appointment Cancellation - Center Closed",
+            html: exceptionCancellationTemplate({
+              studentName: appointment.studentId.fname,
+              tutorName: `${appointment.tutorShiftId.tutorId.fname} ${appointment.tutorShiftId.tutorId.lname}`,
+              date: appointment.appointmentDate.toLocaleDateString('en-US', { timeZone: 'UTC' }),
+              time: `${formatTo12Hour(appointment.startTime)} - ${formatTo12Hour(appointment.endTime)}`,
+              course: appointment.course
+            })
+          });
+        } catch (emailErr) {
+          console.error("Email failed for exception cancellation.");
+          emailFailed = true;
+        }
+
+        // Notification log
+        try {
+          await NotificationLog.create({
+            appointmentId: appointment._id,
+            recipientUserId: appointment.studentId._id,
+            appointmentDate: appointment.appointmentDate,
+            notificationType: "EXCEPTION_CANCEL_APPT"
+          });
+        } catch (err) {
+          console.error("NotificationLog failed for exception cancel.");
+        }
+
+        // Log email failure if necessary 
+        if (emailFailed) {
+          try {
+            await NotificationLog.create({
+              appointmentId: appointment._id,
+              recipientUserId: appointment.studentId._id,
+              appointmentDate: appointment.appointmentDate,
+              notificationType: "SEND_EMAIL_FAILED",
+            });
+          } catch (err) {
+            console.error("NotificationLog SEND_EMAIL_FAILED failed.");
+          }
+        }
+      }
+    }
+
+
+    // get all shifts within the exception date and delete any shifts that overlap with the exception time block
     const shifts = await TutorShift.find({
       shiftDate: parsedExceptionDate
     });
 
-    const toDelete = shifts.filter(shift => {
-      const start = convertToMins(shift.startTime);
-      const end = convertToMins(shift.endTime);
+    if (shifts.length > 0) {
+      const shiftsToDelete = shifts.filter(shift => {
+        const start = convertToMins(shift.startTime);
+        const end = convertToMins(shift.endTime);
 
-      return start < exceptionEndMin && end > exceptionStartMin;
-    });
+        return start < exceptionEndMin && end > exceptionStartMin;
+      });
 
-    await TutorShift.deleteMany({
-      _id: { $in: toDelete.map(shift => shift._id) }
-    });
-
+      await TutorShift.deleteMany({
+        _id: { $in: shiftsToDelete.map(shift => shift._id) }
+      });
+    }
 
 
   // audit log creation describing the time block made & redirecting to the admin availability index page
