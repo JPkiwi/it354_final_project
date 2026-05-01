@@ -601,10 +601,15 @@ exports.getAdminAuditLog = async (req, res) => {
       });
     }
 
+    // get audit logs
     const auditLogs = await AuditLog.find(
       {},
       "timestamp actionType details",
     ).sort({ timestamp: -1 });
+
+    // get error
+    const error = req.session.error || null;
+    req.session.error = null;
 
     // render page
     res.render("adminAuditLog", {
@@ -612,7 +617,7 @@ exports.getAdminAuditLog = async (req, res) => {
       cssStylesheet: "adminAuditLog.css",
       jsFile: "adminAuditLog.js",
       user: req.session.user,
-      error: null,
+      error,
       auditLogs,
     });
   } catch (err) {
@@ -845,15 +850,8 @@ exports.editUser = async (req, res) => {
 
     // make sure all necessary fields were filled out
     if (!fname || !lname || !email || !role) {
-      return res.status(400).render("adminAuditLog", {
-        title: "Audit Log",
-        error: "All fields are required.",
-        cssStylesheet: "adminAuditLog.css",
-        jsFile: "adminAuditLog.js",
-        formData: req.body,
-        user: req.session.user,
-        auditLogs: [],
-      });
+      req.session.error = "All fields are required.";
+      return res.redirect("/adminAuditLog");
     }
 
     // Security check to make sure that emails will not be dupliated
@@ -863,29 +861,15 @@ exports.editUser = async (req, res) => {
       _id: { $ne: userId },
     });
     if (existingUser) {
-      return res.status(400).render("adminAuditLog", {
-        title: "Audit Log",
-        error: "A user with that email already exists.",
-        cssStylesheet: "adminAuditLog.css",
-        jsFile: "adminAuditLog.js",
-        formData: req.body,
-        user: req.session.user,
-        auditLogs: [],
-      });
+      req.session.error = "A user with that email already exists.";
+      return res.redirect("/adminAuditLog");
     }
 
     // ensures email is entered in the form of @ilstu.edu
     const emailRegex = /^[^\s@]+@ilstu\.edu$/;
     if (!emailRegex.test(email)) {
-      return res.status(400).render("adminAuditLog", {
-        title: "Audit Log",
-        error: "Email address not in the form of @ilstu.edu.",
-        cssStylesheet: "adminAuditLog.css",
-        jsFile: "adminAuditLog.js",
-        formData: req.body,
-        user: req.session.user,
-        auditLogs: [],
-      });
+      req.session.error = "Email address not in the form of @ilstu.edu.";
+      return res.redirect("/adminAuditLog");
     }
 
     // checks to see if role is a tutor
@@ -900,15 +884,8 @@ exports.editUser = async (req, res) => {
       }
 
       if (tutorCourses.length === 0) {
-        return res.status(400).render("adminAuditLog", {
-          title: "Audit Log",
-          error: "Course(s) must be selected to edit a tutor.",
-          cssStylesheet: "adminAuditLog.css",
-          jsFile: "adminAuditLog.js",
-          formData: req.body,
-          user: req.session.user,
-          auditLogs: [],
-        });
+        req.session.error = "Course(s) must be selected to edit a tutor.";
+        return res.redirect("/adminAuditLog");
       }
     }
 
@@ -916,17 +893,26 @@ exports.editUser = async (req, res) => {
     // IF the password field is NOT empty, hash new password
     // ELSE, keep the existing password by fetching it from the database
 
-    // make sure password is at least 8 characters long
-    if (password && password.trim() !== "" && password.length < 8) {
-      return res.render("adminAuditLog", {
-        title: "Audit Log",
-        error: "Password must be at least 8 characters long.",
-        cssStylesheet: "adminAuditLog.css",
-        jsFile: "adminAuditLog.js",
-        formData: req.body,
-        user: req.session.user,
-        auditLogs: [],
-      });
+    // password cannot contain spaces
+    if (password.includes(" ")) {
+      req.session.error = "Password cannot contain spaces.";
+      return res.redirect("/adminAuditLog");
+    }
+
+    // make sure password is at least 8 characters long and doesn't include special characters or Unicode characters
+    if (password && password.trim() !== "") {
+
+      if (password.length < 8) {
+        req.session.error = "Password must be at least 8 characters long.";
+        return res.redirect("/adminAuditLog");
+      }
+
+      const passwordRegex = /^[A-Za-z0-9!@#$%^&*]+$/;
+      if (!passwordRegex.test(password)) {
+        req.session.error = "Password must not contain spaces, special characters, or Unicode characters. Can only use the following: A-Z, a-z, 0-9, and !@#$%^&*.";
+        return res.redirect("/adminAuditLog");
+      }
+        
     }
 
     let passwordHash;
@@ -2305,74 +2291,47 @@ exports.addUser = async (req, res) => {
 
     // make sure all fields were filled out
     if (!fname || !lname || !email || !password || !confirmPassword || !role) {
-      return res.status(400).render("adminAuditLog", {
-        title: "Audit Log",
-        error: "All fields are required.",
-        cssStylesheet: "adminAuditLog.css",
-        jsFile: "adminAuditLog.js",
-        formData: req.body,
-        user: req.session.user,
-        auditLogs: [],
-        formatTo12Hour
-      });
+      req.session.error = "All fields are required.";
+      return res.redirect("/adminAuditLog");
     }
 
     // ensures email is entered in the form of @ilstu.edu
     const emailRegex = /^[^\s@]+@ilstu\.edu$/;
     if (!emailRegex.test(email)) {
-      return res.render("adminAuditLog", {
-        title: "Audit Log",
-        error: "Email address not in the form of @ilstu.edu.",
-        cssStylesheet: "adminAuditLog.css",
-        jsFile: "adminAuditLog.js",
-        formData: req.body,
-        user: req.session.user,
-        auditLogs: [],
-        formatTo12Hour
-      });
+      req.session.error = "Email address not in the form of @ilstu.edu.";
+      return res.redirect("/adminAuditLog");
     }
 
     // make sure password is at least 8 characters long
     if (password.length < 8) {
-      return res.render("adminAuditLog", {
-        title: "Audit Log",
-        error: "Password must be at least 8 characters long.",
-        cssStylesheet: "adminAuditLog.css",
-        jsFile: "adminAuditLog.js",
-        formData: req.body,
-        user: req.session.user,
-        auditLogs: [],
-        formatTo12Hour
-      });
+      req.session.error = "Password must be at least 8 characters long.";
+      return res.redirect("/adminAuditLog");
+    }
+
+    // password cannot contain spaces
+    if (password.includes(" ")) {
+      req.session.error = "Password cannot contain spaces.";
+      return res.redirect("/adminAuditLog");
+    }
+
+    // password must only contain any of the following: A-Z, a-z, 0-9, and !@#$%^&*
+    const passwordRegex = /^[A-Za-z0-9!@#$%^&*]+$/;
+      if (!passwordRegex.test(password)) {
+        req.session.error = "Password must not contain spaces, special characters, or Unicode characters. Can only use the following: A-Z, a-z, 0-9, and !@#$%^&*";
+        return res.redirect("/adminAuditLog");
     }
 
     // password and confirm password
     if (password !== confirmPassword) {
-      return res.status(400).render("adminAuditLog", {
-        title: "Audit Log",
-        error: "Password and Confirm Password must be the same.",
-        cssStylesheet: "adminAuditLog.css",
-        jsFile: "adminAuditLog.js",
-        formData: req.body,
-        user: req.session.user,
-        auditLogs: [],
-        formatTo12Hour
-      });
+      req.session.error = "Password and Confirm Password must be the same.";
+      return res.redirect("/adminAuditLog");
     }
 
     // Admin can only assign students and tutors,
     // if we need to change to add another admin this is just temporary for now
     if (role !== "student" && role !== "tutor") {
-      return res.status(400).render("adminAuditLog", {
-        title: "Audit Log",
-        error: "Invalid role.",
-        cssStylesheet: "adminAuditLog.css",
-        jsFile: "adminAuditLog.js",
-        formData: req.body,
-        user: req.session.user,
-        auditLogs: [],
-        formatTo12Hour
-      });
+      req.session.error = "Invalid role.";
+      return res.redirect("/adminAuditLog");
     }
 
     // FIX LATER, ADD FOR STUDENT?? SOURCEPAGE ERROR
@@ -2395,7 +2354,6 @@ exports.addUser = async (req, res) => {
         courses,
         activeTutors,
         today,
-        // changed from "shifts: [],"
         scheduleShifts: [],
         clearShifts: [],
         closedWeekdays,
@@ -2427,7 +2385,6 @@ exports.addUser = async (req, res) => {
           activeTutors,
           courses,
           today,
-          // changed from "shifts: [],"
           scheduleShifts: [],
           clearShifts: [],
           closedWeekdays,
