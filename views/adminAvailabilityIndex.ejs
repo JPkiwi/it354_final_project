@@ -23,8 +23,62 @@
 
   <h1 class="visually-hidden">Manage Availability</h1>
   
-  <!-- <p>Calendar placement</p> --> <!--For later-->
+  <div class="calendar-hours-row">
+  <div class="google-blackout-calendar">
+  <iframe src="https://calendar.google.com/calendar/embed?src=87bf4cf19fff65dfeb231ab88f47d24867a89d47245cc83c778657a81a12814b%40group.calendar.google.com&ctz=America%2FChicago" style="border: 0" width="800" height="600" frameborder="0" scrolling="no"></iframe>
+  </div>
+    <div class="generalCenterHours">
+    <% 
+        // retrieve current date/time to determine if center is currently open or closed
+        const today = new Date();
 
+        // get weekday index from current date (0 = Sunday, 6 = Saturday)
+        const weekdayIndex = today.getDay();
+
+        // since getDay indexes 0 = Sunday, 6 = Saturday, move the indices around to match the weekdays in application
+        // (this was why open/closed wasn't working originally)
+        const weekdayIndices = [6, 0, 1, 2, 3, 4, 5];
+
+        // get current hour
+        const currHour = today.getHours();
+
+        // get the matching weekday object from the weekdays array using the proper index for our application weekday order
+        const currWeekday = weekdays[weekdayIndices[weekdayIndex]];
+
+        // declare open and close hour so they can be used outside the if block below
+        let openHour, closeHour;
+
+        // only split/store open and close times if the center is not closed that day
+        if (currWeekday && !currWeekday.isClosed && currWeekday.timeBlocks.length > 0) {
+            const firstBlock = currWeekday.timeBlocks[0];
+            const lastBlock = currWeekday.timeBlocks[currWeekday.timeBlocks.length - 1];
+
+            // get open and close hour as an integer
+            openHour = Number(firstBlock.start.split(":")[0]);
+            closeHour = Number(lastBlock.end.split(":")[0]);
+        }
+    %>
+
+    <h2 class = "headingText" style="margin-top: 0;">General Center Hours:</h2>
+      <!--Display the day of the week and the open and closed hours, in AM/PM-->
+      <% weekdays.forEach(day => { %>
+        <h3 class = "modalText" style="margin: 10px 0;">
+          <span class = "boldText"><%= day.weekday %>: </span>
+          <% if (day.isClosed || !day.timeBlocks || day.timeBlocks.length === 0) { %>
+            Closed
+          <% } else { %>
+            <% day.timeBlocks.forEach((block, i) => { %>
+              <%= formatTo12Hour(block.start) %> - <%= formatTo12Hour(block.end) %>
+              <% if (i < day.timeBlocks.length - 1) { %>
+                <br>
+              <% } %>
+            <% }) %>
+
+          <% } %>
+        </h3>
+      <% }) %>
+  </div>
+  </div>
 
   <div class="adminAvailabilityLayout">
   
@@ -74,6 +128,8 @@
       <button class = "small-red-button-round" type="submit" id="submitHoursButton">Submit Hours</button>
     </form>
   </div>
+
+  
 
 
 
@@ -149,61 +205,7 @@
 
   </div>
 
-  <div class="generalCenterHours">
-    <% 
-        // retrieve current date/time to determine if center is currently open or closed
-        const today = new Date();
-
-        // get weekday index from current date (0 = Sunday, 6 = Saturday)
-        const weekdayIndex = today.getDay();
-
-        // since getDay indexes 0 = Sunday, 6 = Saturday, move the indices around to match the weekdays in application
-        // (this was why open/closed wasn't working originally)
-        const weekdayIndices = [6, 0, 1, 2, 3, 4, 5];
-
-        // get current hour
-        const currHour = today.getHours();
-
-        // get the matching weekday object from the weekdays array using the proper index for our application weekday order
-        const currWeekday = weekdays[weekdayIndices[weekdayIndex]];
-
-        // declare open and close hour so they can be used outside the if block below
-        let openHour, closeHour;
-
-        // only split/store open and close times if the center is not closed that day
-        if (currWeekday && !currWeekday.isClosed && currWeekday.timeBlocks.length > 0) {
-            const firstBlock = currWeekday.timeBlocks[0];
-            const lastBlock = currWeekday.timeBlocks[currWeekday.timeBlocks.length - 1];
-
-            // get open and close hour as an integer
-            openHour = Number(firstBlock.start.split(":")[0]);
-            closeHour = Number(lastBlock.end.split(":")[0]);
-        }
-    %>
-
-    <h2 class = "headingText" style="margin-top: 0;">General Center Hours:</h2>
-      <!--Display the day of the week and the open and closed hours, in AM/PM-->
-      <% weekdays.forEach(day => { %>
-        <h3 class = "modalText" style="margin: 10px 0;">
-          <span class = "boldText"><%= day.weekday %>: </span>
-          <% if (day.isClosed || !day.timeBlocks || day.timeBlocks.length === 0) { %>
-            Closed
-          <% } else { %>
-            <% day.timeBlocks.forEach((block, i) => { %>
-              <%= formatTo12Hour(block.start) %> - <%= formatTo12Hour(block.end) %>
-              <% if (i < day.timeBlocks.length - 1) { %>
-                <br>
-              <% } %>
-            <% }) %>
-
-          <% } %>
-        </h3>
-      <% }) %>
-  </div>
-
 </div>
-
-
 
 </main> 
 
