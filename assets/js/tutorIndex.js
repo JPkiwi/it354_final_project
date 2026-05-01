@@ -249,7 +249,7 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-
+// sort tutors by last name ( a-z or z-a)
 const lNameSort = document.getElementById("lNameSort");
 const tutorRows = document.getElementById("tutorRows");
 
@@ -271,6 +271,29 @@ lNameSort.addEventListener("change", function () {
   });
 
   rows.forEach(row => tutorRows.appendChild(row));
+});
+
+
+// sort by tutors status (active vs. inactive)
+const statusSort = document.getElementById("statusSort");
+
+statusSort.addEventListener("change", function () {
+  const rows = Array.from(tutorRows.querySelectorAll("tr"));
+
+  rows.forEach(row => {
+    const isActive = row.dataset.isactive === "true";
+
+    if (this.value === "activeOnly") {
+      row.style.display = isActive ? "" : "none";
+    } 
+    else if (this.value === "inactiveOnly") {
+      row.style.display = !isActive ? "" : "none";
+    } 
+    else {
+      // show all
+      row.style.display = "";
+    }
+  });
 });
 
 

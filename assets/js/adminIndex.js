@@ -78,6 +78,33 @@ confirmCancelModal.addEventListener("click", (e) => {
 });
 
 
+
+// sorting students by last name (a-z or z-a)
+const lNameSort = document.getElementById("lNameSort");
+const tbody = document.getElementById("rows");
+
+lNameSort.addEventListener("change", function () {
+  const rows = Array.from(tbody.querySelectorAll("tr"));
+
+  rows.sort((a, b) => {
+    const lastNameA = (a.dataset.lname || "").toLowerCase();
+    const lastNameB = (b.dataset.lname || "").toLowerCase();
+
+    if (this.value === "az") {
+      return lastNameA.localeCompare(lastNameB);
+    }
+
+    if (this.value === "za") {
+      return lastNameB.localeCompare(lastNameA);
+    }
+
+    return 0;
+  });
+
+  rows.forEach(row => tbody.appendChild(row));
+});
+
+
 // notification button modal function
 
  const notifBtn = document.getElementById("notifs");

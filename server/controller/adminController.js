@@ -13,6 +13,7 @@ const NotificationLog = require("../model/notificationLog");
 const { deleteCalendarEvent } = require('../services/calendarService');
 const CenterException = require("../model/centerException");
 const { formatTo12Hour } = require("../services/timeService");
+const { formatDate } = require("../services/dateService");
 
 //-----------------------------------------------
 
@@ -113,6 +114,7 @@ exports.getAdminIndex = async (req, res) => {
       course: "",
       notificationLogs,
       formatTo12Hour,
+      formatDate
     });
   } catch (err) {
     // render same page, with error message & empty arrays passed
@@ -134,6 +136,7 @@ exports.getAdminIndex = async (req, res) => {
       course: "",
       notificationLogs: [],
       formatTo12Hour,
+      formatDate
     });
   }
 };
@@ -197,7 +200,8 @@ exports.adminCancelAppointment = async (req, res) => {
         time: "",
         course: "",
         notificationLogs: [],
-        formatTo12Hour
+        formatTo12Hour,
+        formatDate
       });
     }
     if (!appointment.tutorShiftId) {
@@ -216,7 +220,8 @@ exports.adminCancelAppointment = async (req, res) => {
         time: "",
         course: "",
         notificationLogs: [],
-        formatTo12Hour
+        formatTo12Hour,
+        formatDate
       });
     }
     // cancel appointment
@@ -266,7 +271,8 @@ exports.adminCancelAppointment = async (req, res) => {
         time: "",
         course: "",
         notificationLogs: [],
-        formatTo12Hour
+        formatTo12Hour,
+        formatDate
       });
     }
     // ────────────────────────────────────────────────────────────
@@ -339,7 +345,8 @@ exports.adminCancelAppointment = async (req, res) => {
       time: "",
       course: "",
       notificationLogs: [],
-      formatTo12Hour
+      formatTo12Hour,
+      formatDate
     });
   }
 };
@@ -2296,16 +2303,10 @@ exports.addUser = async (req, res) => {
     const { fname, lname, email, password, confirmPassword, role, sourcePage } =
       req.body;
     const tutors = await User.find({ role: "tutor" });
-    const students = await User.find({ role: "student" });
     const users = await User.find();
     const courses = await Course.find();
     const activeTutors = await User.find({ role: "tutor", isActive: true });
     const today = new Date().toLocaleDateString("en-CA");
-    // FIX LATER, ADD FOR STUDENT?? SOURCEPAGE ERROR
-    // Security check to make sure that emails will not be dupliated
-    // (if a diff user already has email, return the 400/cannot process req)
-    const existingUser = await User.findOne({ email: email });
-    const closedWeekdays = await getClosedWeekdays();
 
     let { tutorCourses } = req.body;
 
@@ -2354,49 +2355,16 @@ exports.addUser = async (req, res) => {
 
     // password and confirm password
     if (password !== confirmPassword) {
-      if (sourcePage === "adminStudentIndex"){
-        // re-render student index if password & confirm password are not the same when adding a student
-        return res.status(400).render("adminStudentIndex", {
-        title: "Admin Manage Students",
+      return res.status(400).render("adminAuditLog", {
+        title: "Audit Log",
         error: "Password and Confirm Password must be the same.",
-        cssStylesheet: "studentIndex.css",
-        jsFile: "studentIndex.js",
-        formData: req.body,
-        user: req.session.user,
-        students,
-        formatTo12Hour
-      });
-      }
-      else {
-        // re-render tutor index if password & confirm password are not the same when adding a tutor
-         return res.status(400).render("adminTutorIndex", {
-        title: "Admin Manage Tutors",
-        error: "Password and Confirm Password must be the same.",
-        cssStylesheet: "tutorIndex.css",
-        jsFile: "tutorIndex.js",
+        cssStylesheet: "adminAuditLog.css",
+        jsFile: "adminAuditLog.js",
         formData: req.body,
         user: req.session.user,
         auditLogs: [],
-        formatTo12Hour,
-        tutors,
-        activeTutors,
-        courses,
-        today,
-         // changed from "shifts: [],"
-        scheduleShifts: [],
-        clearShifts: [],
-        closedWeekdays,
-        selectedTutorId: req.body.tutorId || null,
-        selectedShiftDate: req.body?.shiftDate || "",
-        availableShiftBlocks: [],
-        openAssignTutorModal: false,
-        openClearTutorModal: false,
-        assignTutorError: null,
-        openAddCourseModal: false,
-        courseError: null,
-        shiftError: null
+        formatTo12Hour
       });
-      }
     }
 
     // Admin can only assign students and tutors,
@@ -2414,6 +2382,11 @@ exports.addUser = async (req, res) => {
       });
     }
 
+    // FIX LATER, ADD FOR STUDENT?? SOURCEPAGE ERROR
+    // Security check to make sure that emails will not be dupliated
+    // (if a diff user already has email, return the 400/cannot process req)
+    const existingUser = await User.findOne({ email: email });
+    const closedWeekdays = await getClosedWeekdays();
 
     if (existingUser) {
       return res.status(400).render("adminTutorIndex", {

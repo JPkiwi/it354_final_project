@@ -19,6 +19,14 @@
   <label for="search" class="visually-hidden">Search appointments</label>
   <input class="searchFunc" id="search" type="text" placeholder="Search appointments..." />
 
+  <label for="lNameSort" class="visually-hidden">Sort appointments by student name</label>
+
+      <select id="lNameSort" >
+        <option value="">Sort by Student Name</option>
+        <option value="az">Last Name: A-Z</option>
+        <option value="za">Last Name: Z-A</option>
+      </select>
+
 
   <button class = "small-red-button-round" type="button" id="notifs">Notifications</button>
 
@@ -50,7 +58,7 @@
       <% if (appointments && appointments.length > 0) { %>
         <!-- looping through appointments-->
     <% appointments.forEach(function(appointment) { %>
-      <tr>
+      <tr data-lname="<%= appointment.studentId?.lname || '' %>">
         <!-- radio button instead of checkbox -> only one appt selected at a time to cancel or assign tutor-->
     <td>
   <label>
@@ -61,8 +69,8 @@
     </span>
   </label>
 </td> 
-    <!-- if appointment date exists, convert to string (using .split to get 00:00:000Z from mongodb date)-->
-        <td><%= appointment.appointmentDate ? appointment.appointmentDate.toISOString().split('T')[0] : "No date" %></td>
+    <!-- formatted date -->
+        <td> <%= appointment.appointmentDate ? formatDate(appointment.appointmentDate) : "No date" %> </td>
         <!-- printing start time and endtime-->
         <td>  <%= formatTo12Hour(appointment.startTime) %> -  <%= formatTo12Hour(appointment.endTime) %> </td>
         <!-- -->
