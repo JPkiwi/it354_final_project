@@ -59,4 +59,17 @@ function accountDeactivationTemplate({ name, date }) {
 }
 
 
-module.exports = { confirmationTemplate, studentCancellationTemplate, adminCancellationTemplate, accountDeactivationTemplate };
+function accountCreatedTemplate({ name, date, password }) {
+  return `
+    <p>Hi ${name},</p>
+    <p>Your account has been created.</b></p>
+    <p>Your temporary password is <b>${password}</b>.</p>
+    <p>Please log into your account and set a new password.</p>
+
+    <p><b>Date & Time:</b> ${date}<br/></p>
+  `;
+}
+
+
+
+module.exports = { confirmationTemplate, studentCancellationTemplate, adminCancellationTemplate, accountDeactivationTemplate, accountCreatedTemplate };

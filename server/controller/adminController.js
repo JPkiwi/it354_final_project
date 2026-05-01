@@ -1,6 +1,6 @@
 const Appointment = require("../model/appointmentModel");
 const { sendEmail } = require("../services/emailService");
-const { adminCancellationTemplate } = require("../../views/templates/emailTemplates");
+const { adminCancellationTemplate, accountCreatedTemplate } = require("../../views/templates/emailTemplates");
 const User = require("../model/userModel");
 const Course = require("../model/courseModel");
 const TutorShift = require("../model/tutorShiftModel");
@@ -2454,6 +2454,40 @@ exports.addUser = async (req, res) => {
         details: `New student ${fname} ${lname} added. Status: active.`,
       });
     }
+
+
+    // send email to new user email that account was created and temporary password set by admin was sent and CC admin
+    let emailSent = false;
+    try {
+      await sendEmail({
+        to: email,
+        cc: process.env.GMAIL_ADMIN, // CC admin
+        subject: "Account Created",
+        html: accountCreatedTemplate({
+          name: fname,
+          date: new Date().toLocaleString("en-US"),
+          password: password,
+        })
+      });
+      emailSent = true;
+      
+    } catch (emailErr) {
+      console.error("Admin account creation email sending error.");
+    }
+
+    // log if email failed to send
+    if (!emailSent) {
+      try {
+        await NotificationLog.create({
+          recipientUserId: newUser._id,
+          appointmentDate: new Date(),
+          notificationType: "SEND_EMAIL_FAILED",
+        });
+      } catch (err) {
+        console.error("NotificationLog SEND_EMAIL_FAILED for admin create account failed.");
+      }
+    }
+
 
     // redirect back to the correct page after creating the user
     if (role === "student") {
