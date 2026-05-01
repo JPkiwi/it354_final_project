@@ -156,7 +156,7 @@ exports.createExceptionCalendarEvent = async (tokens, exceptionDate) => {
 
 
 
-// Deletes Blackout date/Exception on Blackout Calendar                                         NEED TO TEST/IMPLEMENT
+// Deletes Blackout date/Exception on Blackout Calendar                                                         
 exports.deleteBlackoutCalendarEvent = async (tokens, calendarEventId) => {
     oauth2Client.setCredentials(tokens);
 
