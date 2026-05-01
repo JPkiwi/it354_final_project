@@ -3571,7 +3571,7 @@ exports.removeExceptions = async (req, res) => {
     });
 
 
-  // ───────── Delete Google Calendar event ──────────────────── FIX
+  // ───────── Delete Google Calendar event ──────────────────── 
     try {
       const admin = await User.findOne({ role: "admin" });
       if (admin?.googleTokens) {
