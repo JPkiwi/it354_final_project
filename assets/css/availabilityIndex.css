@@ -75,6 +75,7 @@
   padding: 30px 40px;
   margin-right: 40px;
   min-width: 350px;
+  padding-top: 50px;
 }
 
 /* General center hours title */
@@ -102,4 +103,8 @@
   border-radius: 8px;
   font-size: 1rem;
   box-sizing: border-box;
+}
+
+.google-blackout-calendar {
+  padding-left: 40px;
 }

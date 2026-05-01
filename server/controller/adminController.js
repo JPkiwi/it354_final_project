@@ -10,7 +10,7 @@ const AuditLog = require("../model/auditLog");
 const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
 const NotificationLog = require("../model/notificationLog");
-const { deleteCalendarEvent } = require('../services/calendarService');
+const { deleteCalendarEvent, createBlackoutCalendarEvent, createExceptionCalendarEvent, deleteBlackoutCalendarEvent } = require('../services/calendarService');
 const CenterException = require("../model/centerException");
 const { formatTo12Hour } = require("../services/timeService");
 
@@ -2713,7 +2713,7 @@ exports.changeHours = async (req, res) => {
 };
 
 
-// -------------------------------------------------------------------------
+// -------------------------------------------------------------------------                                                    !!
 
 // Adding a blackout date functionality (choosing specified time range (covering entire day of dates chosen) 
 // that center is fully closed; example: Center normally open M-F, but need to close just on one specified Tuesday
@@ -2816,12 +2816,40 @@ exports.addBlackoutDate = async (req, res) => {
         formatTo12Hour
       });
 
-      await CenterClosedSchedule.create({
+      let blackoutDate;
+      blackoutDate = await CenterClosedSchedule.create({
         createdByAdminId: req.session.user._id,
         startDate: parseStart,
         endDate: parseEnd, 
         reason: reason.trim()
       });
+
+// ── Create Google Calendar event ────────────────────────────
+      try {
+        const admin = await User.findOne({ role: "admin" });
+        // checks for our admin and if the admin has tokens. returns undefined if not found
+        if (admin?.googleTokens) {
+
+          const eventId = await createBlackoutCalendarEvent(admin.googleTokens, {
+            createdByAdminId: req.session.user._id,
+            startDate: parseStart,
+            endDate: parseEnd, 
+            reason: reason.trim()
+          });
+          
+          // store the event ID on the appointment for deletion later
+          if (eventId) {
+            blackoutDate.calendarEventId = eventId; // unique ID assigned by google, stored in our centerClosedSchedule model
+            await blackoutDate.save();
+          } else {
+            console.error("No event ID returned from calendar API.");
+          }
+        }
+      } catch (calendarErr) {
+        console.error("Calendar event creation failed.");
+      }
+    
+// ────────────────────────────────────────────────────────────
 
       // if there is a blackout, delete any tutor shifts for that day since center is fully closed
       await TutorShift.deleteMany({
@@ -3238,13 +3266,43 @@ exports.addException = async (req, res) => {
 
     // once passing all validation checks, create the time block 
     // create the time block
-    await CenterException.create({
+    let exception;
+
+    exception = await CenterException.create({
       createdByAdminId: req.session.user._id,
       exceptionDate: parsedExceptionDate,
       startTime,
       endTime,
       reason: reason.trim(),
     });
+
+// ── Create Google Calendar event ────────────────────────────
+    try {
+      const admin = await User.findOne({ role: "admin" });
+      // checks for our admin and if the admin has tokens. returns undefined if not found
+      if (admin?.googleTokens) {
+
+        const eventId = await createExceptionCalendarEvent(admin.googleTokens, {
+          createdByAdminId: req.session.user._id,
+          exceptionDate: parsedExceptionDate,
+          startTime: startTime,
+          endTime: endTime, 
+          reason: reason.trim()
+        });
+        
+        // store the event ID on the appointment for deletion later
+        if (eventId) {
+          exception.calendarEventId = eventId; // unique ID assigned by google, stored in our centerException model
+          await exception.save();
+        } else {
+          console.error("No event ID returned from calendar API.");
+        }
+      }
+    } catch (calendarErr) {
+      console.error("Calendar event creation failed.", calendarErr.message);
+    }
+    
+// ────────────────────────────────────────────────────────────
 
 
     // get all shifts within the exception date and delete any shifts that overlap with the exception time block
@@ -3347,6 +3405,53 @@ exports.removeExceptions = async (req, res) => {
     const startOfDay = new Date(year, month - 1, day, 0, 0, 0, 0);
     const endOfDay = new Date(year, month - 1, day, 23, 59, 59, 999);
 
+    const exceptions = await CenterException.find ({
+      exceptionDate: { $gte: startOfDay, $lte: endOfDay}
+    });
+
+    const blackouts = await CenterClosedSchedule.find ({
+      startDate: { $lte: endOfDay },
+      endDate: { $gte: startOfDay }
+    });
+
+
+  // ───────── Delete Google Calendar event ──────────────────── FIX
+    try {
+      const admin = await User.findOne({ role: "admin" });
+      if (admin?.googleTokens) {
+          for (const exception of exceptions) {
+              if (exception.calendarEventId) {
+                  await deleteBlackoutCalendarEvent(admin.googleTokens, exception.calendarEventId);
+              }
+          }
+          for (const blackout of blackouts) {
+              if (blackout.calendarEventId) {
+                  await deleteBlackoutCalendarEvent(admin.googleTokens, blackout.calendarEventId);
+              }
+          }
+      } 
+    } catch (calendarErr) {
+      return res.render("adminAvailabilityIndex", {
+        error: `Something went wrong with Google Calendar. ${calendarErr.message}`,
+        title: "Admin Manage Availability",
+        cssStylesheet: "availabilityIndex.css",
+        jsFile: "adminAvailability.js",
+        user: req.session.user,
+        appointments: [],
+        courses: [],
+        eligibleTutorShifts: [],
+        studentFName: "",
+        studentLName: "",
+        date: "",
+        time: "",
+        course: "",
+        notificationLogs: [],
+        formatTo12Hour
+      });
+    }
+  // ────────────────────────────────────────────────────────────
+    
+  // Deleting events from DB
     await CenterException.deleteMany({
       exceptionDate: {
         $gte: startOfDay,
@@ -3358,8 +3463,8 @@ exports.removeExceptions = async (req, res) => {
       startDate: { $lte: endOfDay },
       endDate: { $gte: startOfDay }
     });
-
-    return res.redirect("/adminAvailabilityIndex");
+  
+  return res.redirect("/adminAvailabilityIndex");
 
   }
   catch(err){
