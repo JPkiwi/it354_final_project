@@ -97,13 +97,30 @@ lNameSort.addEventListener("change", function () {
     if (this.value === "za") {
       return lastNameB.localeCompare(lastNameA);
     }
-
     return 0;
   });
 
   rows.forEach(row => tbody.appendChild(row));
 });
 
+
+// filter appointments shown by the course # 
+const courseFilter = document.getElementById("courseFilter");
+
+courseFilter.addEventListener("change", function () {
+  const selectedCourse = this.value;
+  const rows = document.querySelectorAll("#rows tr");
+
+  rows.forEach(row => {
+    const rowCourse = row.dataset.course;
+
+    if (selectedCourse === "" || rowCourse === selectedCourse) {
+      row.style.display = "";
+    } else {
+      row.style.display = "none";
+    }
+  });
+});
 
 // notification button modal function
 

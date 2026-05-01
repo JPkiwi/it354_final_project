@@ -70,7 +70,7 @@ exports.getAdminIndex = async (req, res) => {
     const appointments = await Appointment.find({
       appointmentStatus: { $ne: "cancelled" },
     })
-      .select("appointmentDate startTime endTime course studentId tutorShiftId")
+      .select("appointmentDate startTime endTime course studentId tutorShiftId tutorComments attendance")
       .populate({
         path: "studentId",
         select: "fname lname",
