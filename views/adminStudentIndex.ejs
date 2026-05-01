@@ -24,8 +24,24 @@
   <!-- Search -->
   <label for="search" class="visually-hidden">Search appointments</label>
   <input class = "searchFunc" type="text" id="search" placeholder="Search students..." />
+  
+      <select id="lNameSort" >
+        <option value="">Sort by Name</option>
+        <option value="az">Last Name: A-Z</option>
+        <option value="za">Last Name: Z-A</option>
+      </select>
+
+
+      
+      <select id="statusSort">
+        <option value="">All Students</option>
+        <option value="activeOnly">Active</option>
+        <option value="inactiveOnly">Inactive</option>
+      </select>
+
+
 <!-- toggle student status (active vs. inactive) button-->
-  <button class = "small-red-button-round" type="submit" id="toggleActiveBtn">Toggle Active</button>
+  <button class = "small-red-button-round" type="submit" id="toggleActiveBtn">Toggle Status</button>
 <!-- Add user (student) button -> opens Modal-->
   <button class = "small-red-button-round" type="button" id="openAddStudentModal">Add Student</button>
 <!--Edit Student Button-->
@@ -44,7 +60,7 @@
         <th>Select</th>
         <th>Name</th>
         <th>Email</th>
-        <th>Active</th>
+        <th>Status</th>
       </tr>
     </thead>
 
@@ -65,7 +81,7 @@
           <td><%= student.fname %> <%= student.lname %></td>
           <td><%= student.email %></td>
           <!-- prints student's status based on isActive -->
-          <td><%= student.isActive ? "Yes" : "No" %></td>
+          <td><%= student.isActive ? "Active" : "Inactive" %></td>
         </tr>
       <% }) %>
     </tbody>
@@ -90,6 +106,7 @@
        temporary password set by admin for students to use to login and then student can change password after
        / be sent a link to change password? ) )-->
       <input type="hidden" name="role" value="student">
+      <input type="hidden" name="sourcePage" value="adminStudentIndex">
       <label class = "modalText">First Name:</label>
   <input type="text" name="fname"  class = "inputFunc" required>
       <br><br>

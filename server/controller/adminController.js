@@ -13,6 +13,7 @@ const NotificationLog = require("../model/notificationLog");
 const { deleteCalendarEvent } = require('../services/calendarService');
 const CenterException = require("../model/centerException");
 const { formatTo12Hour } = require("../services/timeService");
+const { formatDate } = require("../services/dateService");
 
 //-----------------------------------------------
 
@@ -69,7 +70,7 @@ exports.getAdminIndex = async (req, res) => {
     const appointments = await Appointment.find({
       appointmentStatus: { $ne: "cancelled" },
     })
-      .select("appointmentDate startTime endTime course studentId tutorShiftId")
+      .select("appointmentDate startTime endTime course studentId tutorShiftId tutorComments attendance")
       .populate({
         path: "studentId",
         select: "fname lname",
@@ -113,6 +114,7 @@ exports.getAdminIndex = async (req, res) => {
       course: "",
       notificationLogs,
       formatTo12Hour,
+      formatDate
     });
   } catch (err) {
     // render same page, with error message & empty arrays passed
@@ -134,6 +136,7 @@ exports.getAdminIndex = async (req, res) => {
       course: "",
       notificationLogs: [],
       formatTo12Hour,
+      formatDate
     });
   }
 };
@@ -197,7 +200,8 @@ exports.adminCancelAppointment = async (req, res) => {
         time: "",
         course: "",
         notificationLogs: [],
-        formatTo12Hour
+        formatTo12Hour,
+        formatDate
       });
     }
     if (!appointment.tutorShiftId) {
@@ -216,7 +220,8 @@ exports.adminCancelAppointment = async (req, res) => {
         time: "",
         course: "",
         notificationLogs: [],
-        formatTo12Hour
+        formatTo12Hour,
+        formatDate
       });
     }
     // cancel appointment
@@ -266,7 +271,8 @@ exports.adminCancelAppointment = async (req, res) => {
         time: "",
         course: "",
         notificationLogs: [],
-        formatTo12Hour
+        formatTo12Hour,
+        formatDate
       });
     }
     // ────────────────────────────────────────────────────────────
@@ -339,7 +345,8 @@ exports.adminCancelAppointment = async (req, res) => {
       time: "",
       course: "",
       notificationLogs: [],
-      formatTo12Hour
+      formatTo12Hour,
+      formatDate
     });
   }
 };

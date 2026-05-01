@@ -78,6 +78,50 @@ confirmCancelModal.addEventListener("click", (e) => {
 });
 
 
+
+// sorting students by last name (a-z or z-a)
+const lNameSort = document.getElementById("lNameSort");
+const tbody = document.getElementById("rows");
+
+lNameSort.addEventListener("change", function () {
+  const rows = Array.from(tbody.querySelectorAll("tr"));
+
+  rows.sort((a, b) => {
+    const lastNameA = (a.dataset.lname || "").toLowerCase();
+    const lastNameB = (b.dataset.lname || "").toLowerCase();
+
+    if (this.value === "az") {
+      return lastNameA.localeCompare(lastNameB);
+    }
+
+    if (this.value === "za") {
+      return lastNameB.localeCompare(lastNameA);
+    }
+    return 0;
+  });
+
+  rows.forEach(row => tbody.appendChild(row));
+});
+
+
+// filter appointments shown by the course # 
+const courseFilter = document.getElementById("courseFilter");
+
+courseFilter.addEventListener("change", function () {
+  const selectedCourse = this.value;
+  const rows = document.querySelectorAll("#rows tr");
+
+  rows.forEach(row => {
+    const rowCourse = row.dataset.course;
+
+    if (selectedCourse === "" || rowCourse === selectedCourse) {
+      row.style.display = "";
+    } else {
+      row.style.display = "none";
+    }
+  });
+});
+
 // notification button modal function
 
  const notifBtn = document.getElementById("notifs");
