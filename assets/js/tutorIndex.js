@@ -250,6 +250,28 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 
+const lNameSort = document.getElementById("lNameSort");
+const tutorRows = document.getElementById("tutorRows");
+
+lNameSort.addEventListener("change", function () {
+  const rows = Array.from(tutorRows.querySelectorAll("tr"));
+
+  rows.sort((a, b) => {
+    const lastNameA = a.dataset.lname.toLowerCase();
+    const lastNameB = b.dataset.lname.toLowerCase();
+
+    if (this.value === "az") {
+      return lastNameA.localeCompare(lastNameB);
+    }
+    if (this.value === "za") {
+      return lastNameB.localeCompare(lastNameA);
+    }
+
+    return 0;
+  });
+
+  rows.forEach(row => tutorRows.appendChild(row));
+});
 
 
 // EMAIL REGEX

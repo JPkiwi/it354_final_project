@@ -29,7 +29,15 @@
       
       <form action="/adminTutorIndex/toggle" method="POST" id="tutorTableForm">
         <input class = "searchFunc" type="text" id="search" placeholder="Search tutors..." />
-        <button class = "small-red-button-round" type="submit">Toggle Active</button>
+ 
+      <select id="lNameSort" >
+      <option value="">Sort by Name</option>
+      <option value="az">Last Name: A-Z</option>
+      <option value="za">Last Name: Z-A</option>
+      </select>
+
+
+        <button class = "small-red-button-round" type="submit">Toggle Status</button>
 
         <!-- Add tutor button -> opens Modal-->
         <button class = "small-red-button-round" type="button" id="openEditTutorModal">Edit Tutor</button>
@@ -46,7 +54,7 @@
               <th>Select</th>
               <th>Name</th>
               <th>Email</th>
-              <th>Active</th>
+              <th>Status</th>
             </tr>
           </thead>
 
@@ -64,7 +72,7 @@
                 </td>
                 <td><%= tutor.fname %> <%= tutor.lname %></td>
                 <td><%= tutor.email %></td>
-                <td><%= tutor.isActive ? "Yes" : "No" %></td>
+                <td><%= tutor.isActive ? "Active" : "Inactive" %></td>
               </tr>
             <% }) %>
           </tbody>
