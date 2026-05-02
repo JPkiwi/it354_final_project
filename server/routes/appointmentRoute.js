@@ -34,4 +34,7 @@ route.post('/bookAppointment', bookingLimiter, controller.bookAppointment);
 // display the student's booked appointments
 route.get('/studentAppointment', controller.getBookedAppointments);
 
+// change password on submit
+route.post('/changePassword', controller.changePassword);
+
 module.exports = route;

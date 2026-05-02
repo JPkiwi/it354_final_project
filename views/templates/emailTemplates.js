@@ -71,5 +71,15 @@ function accountCreatedTemplate({ name, date, password }) {
 }
 
 
+function passwordChangeTemplate({ name, date }) {
+  return `
+    <p>Hi ${name},</p>
+    <p>Your account password has been changed.</b></p>
+    <p>If this change was not intentional, please contact an administrator.</p>
 
-module.exports = { confirmationTemplate, studentCancellationTemplate, adminCancellationTemplate, accountDeactivationTemplate, accountCreatedTemplate };
+    <p><b>Date & Time:</b> ${date}<br/></p>
+  `;
+}
+
+
+module.exports = { confirmationTemplate, studentCancellationTemplate, adminCancellationTemplate, accountDeactivationTemplate, accountCreatedTemplate, passwordChangeTemplate };

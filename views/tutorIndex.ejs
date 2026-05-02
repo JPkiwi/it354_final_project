@@ -9,15 +9,17 @@
   <%- include("includes/_navbar") %>
 </header>
 
-<!--BEGIN REWORK-->
+
 <main>
 <div class = "tutor-container">
-  <!--div here that is right-aligned for change password-->
-
-  <!--add a button to make stuff visible and not visible-->
+  <!--right-aligned div for change password-->
   <div style="display: flex; justify-content: flex-end;">
     <div class="change-password">
-      <h2 class = "headingText">Change Password Here</h2>
+      <br />
+      <!-- This button will change the visibility of the content -->
+      <button type="button" id="change-password-button" class="small-red-button-round">Change Password</button>
+      <br />
+      <h2 class = "headingText">Change Password</h2>
       <form action="/changePassword" method="POST">
         <label class = "modalText" >Password:</label>
         <input type="password" name="password"  class = "inputFunc" >
@@ -27,9 +29,9 @@
         <input type="password" name="confirmPassword"  class = "inputFunc" >
 
         <br /><br />
-        <button type="submit" class = "small-red-button-round">Submit Changes</button>
+        <button type="submit" class="small-red-button-round">Submit Changes</button>
         <br>
-        <button type="clear" class = "small-red-button-round">Clear Password Fields</button>
+        <button type="button" id="clear-password-button" class = "small-red-button-round">Clear Password Fields</button>
       </form>
     </div>
   </div>
