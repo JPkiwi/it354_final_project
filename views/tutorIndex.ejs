@@ -12,6 +12,28 @@
 <!--BEGIN REWORK-->
 <main>
 <div class = "tutor-container">
+  <!--div here that is right-aligned for change password-->
+
+  <!--add a button to make stuff visible and not visible-->
+  <div style="display: flex; justify-content: flex-end;">
+    <div class="change-password">
+      <h2 class = "headingText">Change Password Here</h2>
+      <form action="/changePassword" method="POST">
+        <label class = "modalText" >Password:</label>
+        <input type="password" name="password"  class = "inputFunc" >
+        <span id="passwordError" style="color: red; font-size: 0.8em; display: block; margin-top: 1px;"></span>
+        <br />
+        <label class = "modalText" >Confirm Password:</label>
+        <input type="password" name="confirmPassword"  class = "inputFunc" >
+
+        <br /><br />
+        <button type="submit" class = "small-red-button-round">Submit Changes</button>
+        <br>
+        <button type="clear" class = "small-red-button-round">Clear Password Fields</button>
+      </form>
+    </div>
+  </div>
+
   <div class = "schedule-container">
     <h1 style="text-align: center; width: 100%;">Schedule</h1>
     <% if (shiftError) { %>

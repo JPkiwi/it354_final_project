@@ -2341,7 +2341,7 @@ exports.addUser = async (req, res) => {
       return res.redirect("/adminAuditLog");
     }
 
-    // FIX LATER, ADD FOR STUDENT?? SOURCEPAGE ERROR
+    
     // Security check to make sure that emails will not be dupliated
     // (if a diff user already has email, return the 400/cannot process req)
     const existingUser = await User.findOne({ email: email });
