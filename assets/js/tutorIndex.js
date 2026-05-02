@@ -10,6 +10,37 @@ const shouldOpenAddCourseModal = pageData.shouldOpenAddCourseModal || false;
 
 const search = document.getElementById("search");
 
+// sort tutors by last name (A-Z or Z-A)
+const lNameSort = document.getElementById("lNameSort");
+const tutorRows = document.getElementById("tutorRows");
+
+function sortTutorsByLastName() {
+  const rows = Array.from(tutorRows.querySelectorAll("tr"));
+
+  rows.sort((a, b) => {
+    const lastNameA = a.dataset.lname.toLowerCase();
+    const lastNameB = b.dataset.lname.toLowerCase();
+
+    if (lNameSort.value === "az") {
+      return lastNameA.localeCompare(lastNameB, undefined, { sensitivity: "base" });
+    }
+
+    if (lNameSort.value === "za") {
+      return lastNameB.localeCompare(lastNameA, undefined, { sensitivity: "base" });
+    }
+
+    return 0;
+  });
+
+  rows.forEach(row => tutorRows.appendChild(row));
+}
+
+lNameSort.addEventListener("change", sortTutorsByLastName);
+sortTutorsByLastName();
+
+
+
+
 search.addEventListener("input", () => {
   const q = search.value.toLowerCase();
 
@@ -249,29 +280,6 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// sort tutors by last name ( a-z or z-a)
-const lNameSort = document.getElementById("lNameSort");
-const tutorRows = document.getElementById("tutorRows");
-
-lNameSort.addEventListener("change", function () {
-  const rows = Array.from(tutorRows.querySelectorAll("tr"));
-
-  rows.sort((a, b) => {
-    const lastNameA = a.dataset.lname.toLowerCase();
-    const lastNameB = b.dataset.lname.toLowerCase();
-
-    if (this.value === "az") {
-      return lastNameA.localeCompare(lastNameB);
-    }
-    if (this.value === "za") {
-      return lastNameB.localeCompare(lastNameA);
-    }
-
-    return 0;
-  });
-
-  rows.forEach(row => tutorRows.appendChild(row));
-});
 
 
 // sort by tutors status (active vs. inactive)

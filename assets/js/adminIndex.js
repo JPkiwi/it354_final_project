@@ -83,25 +83,33 @@ confirmCancelModal.addEventListener("click", (e) => {
 const lNameSort = document.getElementById("lNameSort");
 const tbody = document.getElementById("rows");
 
-lNameSort.addEventListener("change", function () {
-  const rows = Array.from(tbody.querySelectorAll("tr"));
+function sortAppointmentsByStudentLastName() {
+  const apptRows = Array.from(tbody.querySelectorAll("tr"));
 
-  rows.sort((a, b) => {
+  apptRows.sort((a, b) => {
     const lastNameA = (a.dataset.lname || "").toLowerCase();
     const lastNameB = (b.dataset.lname || "").toLowerCase();
 
-    if (this.value === "az") {
-      return lastNameA.localeCompare(lastNameB);
+    if (lNameSort.value === "az") {
+      return lastNameA.localeCompare(lastNameB, undefined, { sensitivity: "base" });
     }
 
-    if (this.value === "za") {
-      return lastNameB.localeCompare(lastNameA);
+    if (lNameSort.value === "za") {
+      return lastNameB.localeCompare(lastNameA, undefined, { sensitivity: "base" });
     }
+
     return 0;
   });
 
-  rows.forEach(row => tbody.appendChild(row));
-});
+  apptRows.forEach(row => tbody.appendChild(row));
+}
+
+lNameSort.addEventListener("change", sortAppointmentsByStudentLastName);
+sortAppointmentsByStudentLastName();
+
+
+
+
 
 
 // filter appointments shown by the course # 
@@ -145,7 +153,4 @@ if (notifBtn && modal && closeBtn){
 }); 
 } // end of if (notifBtn && modal && closeBtn)
 
-if (rows) {
-  sortAppointments();
-}
 
