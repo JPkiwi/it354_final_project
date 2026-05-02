@@ -106,25 +106,44 @@
        / be sent a link to change password? ) )-->
       <input type="hidden" name="role" value="student">
       <input type="hidden" name="sourcePage" value="adminStudentIndex">
+      
+      <div class="formRow">
       <label class = "modalText">First Name:</label>
-  <input type="text" name="fname"  class = "inputFunc" required>
+      <input type="text" name="fname"  class = "inputFunc" required>
+      </div>
+
       <br><br>
 
+      <div class="formRow">
       <label class = "modalText">Last Name:</label>
-     <input type="text" name="lname"  class = "inputFunc" required>
+      <input type="text" name="lname"  class = "inputFunc" required>
+      </div>
+
       <br><br>
 
+      <div class="formRow">
       <label class = "modalText">Email:</label>
       <input type="email" name="email" id="addEmail"  class = "inputFunc" required>
       <span id="addEmailError" style="color: red; font-size: 0.8em; display: block; margin-top: 1px;"></span>
+      </div>
+
       <br><br>
+
+      <div class="formRow">
       <label class = "modalText">Password:</label>
       <input type="password" name="password"  class = "inputFunc" required>
       <span id="passwordError" style="color: red; font-size: 0.8em; display: block; margin-top: 1px;"></span>
+      </div>
+
       <br /><br />
+
+      <div class="formRow">
       <label class = "modalText">Confirm Password:</label>
       <input type="password" name="confirmPassword"  class = "inputFunc" required>
+      </div>
+
       <br><br>
+
       <button class = "small-red-button-round" type="submit">Create Student</button>
     </form>
   </div>
@@ -141,26 +160,47 @@
       <input type="hidden" name="role" value="student">
       <input type="hidden" name="isActive">
       <input type="hidden" name="userId" id="editStudentId" >
+
+      <div class="formRow">
       <label class = "modalText" >First Name:</label>
       <input type="text" name="fname"  class = "inputFunc" required>
+      </div>
+
+
       <br><br>
 
+      <div class="formRow">
       <label class = "modalText">Last Name:</label>
-     <input type="text" name="lname"  class = "inputFunc" required>
+      <input type="text" name="lname"  class = "inputFunc" required>
+      </div>
+
       <br><br>
 
+      <div class="formRow">
       <label class = "modalText">Email:</label>
       <input type="email" name="email" id="editEmail" class = "inputFunc" required>
       <span id="editEmailError" style="color: red; font-size: 0.8em; display: block; margin-top: 1px;"></span>
+      </div>
+
       <br><br>
+
+      <div class="formRow">
       <label class = "modalText">Password:</label>
       <input type="password" name="password"  class = "inputFunc">
       <span id="passwordError" style="color: red; font-size: 0.8em; display: block; margin-top: 1px;"></span>
+      </div>
+
       <br /><br />
+
+      <div class="formRow">
       <label class = "modalText">Confirm Password:</label>
       <input type="password" name="confirmPassword"  class = "inputFunc">
+      </div>
+
       <p style="color: rgb(88, 73, 73); font-style: italic;">Keep password fields blank unless changing password.</p>
+
       <button type="submit" class="small-red-button-round">Submit Changes</button>
+
       </form>
   </div>
 </div>

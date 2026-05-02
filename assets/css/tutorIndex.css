@@ -124,10 +124,10 @@ row is greyed out to indicate inactivity*/
 
 
 
-.assign-modal-content,
-.edit-modal-content {
+.edit-modal-content,
+.add-tutor-modal-content {
   background-color: white;
-  margin: 10% auto;
+  margin: 5% auto;
   padding: 20px;
   max-width: 500px;
   border-radius: 8px;
@@ -141,12 +141,21 @@ row is greyed out to indicate inactivity*/
 }
 
 
+.assign-modal-content,
+.course-modal-content {
+  background-color: white;
+  margin: 8% auto;
+  padding: 20px;
+  max-width: 500px;
+  border-radius: 8px;
+}
+
 
 
 
 .clear-modal-content {
   background-color: white;
-  margin: 10% auto;
+  margin: 8% auto;
   padding: 20px;
   width: 500px;
   border-radius: 8px;
@@ -235,3 +244,24 @@ select {
     border-color: var(--gray2);
 }
   
+.formRow {
+  display: grid;
+  grid-template-columns: 160px 330px;
+  align-items: center;
+  /* column-gap: 20px; */
+}
+
+.formRow label {
+  text-align: left;
+}
+
+.formRow .inputFunc {
+  width: 330px;
+  box-sizing: border-box;
+}
+
+.tutorTable th:nth-child(1),
+.tutorTable td:nth-child(1) {
+  text-align: center;
+  vertical-align: middle;
+}

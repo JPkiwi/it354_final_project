@@ -147,7 +147,7 @@
    <!-- pop-up container-->
 <div id="addTutorModal" class="modal">
   <!-- content box (temp white)-->
-  <div class="modal-content">
+  <div class="add-tutor-modal-content">
     <!-- x to close modal-->
     <span class="close-btn" id="closeAddTutorModal">&times;</span>
 
@@ -163,25 +163,41 @@
       <input type="hidden" name="sourcePage" value="adminTutorIndex">
 
 
-  
+
+      <div class="formRow">
       <label class = "modalText" >First Name:</label>
       <input type="text" name="fname"  class = "inputFunc" required>
+      </div>
+
       <br><br>
 
+      <div class="formRow">
       <label class = "modalText" >Last Name:</label>
      <input type="text" name="lname"  class = "inputFunc" required>
+     </div>
+
       <br><br>
 
+      <div class="formRow">
       <label class = "modalText" >Email:</label>
       <input type="email" name="email" id="addEmail"  class = "inputFunc" required>
       <span id="addEmailError" style="color: red; font-size: 0.8em; display: block; margin-top: 1px;"></span>
-    <br><br>
+      </div>
+
+      <br><br>
+
+      <div class="formRow">
       <label class = "modalText" >Password:</label>
       <input type="password" name="password"  class = "inputFunc" required>
       <span id="passwordError" style="color: red; font-size: 0.8em; display: block; margin-top: 1px;"></span>
+      </div>
+
       <br /><br />
+
+      <div class="formRow">
       <label class = "modalText" >Confirm Password:</label>
       <input type="password" name="confirmPassword"  class = "inputFunc" required>
+      </div>
 
 <!-- a tutor NEEDS to be assigned to at least one course based on User model, 
  so we need to make sure that when admin creates a tutor, they assign them to the 
@@ -218,25 +234,45 @@
       <input type="hidden" name="role" value="tutor">
       <input type="hidden" name="userId" id="editTutorId">
       <input type="hidden" name="isActive">
+
+      <div class="formRow">
       <label  class = "modalText" >First Name:</label>
       <input type="text" name="fname"  class = "inputFunc" required>
+     </div>
+
       <br><br>
 
+      <div class="formRow">
       <label  class = "modalText" >Last Name:</label>
      <input type="text" name="lname"  class = "inputFunc" required>
+     </div>
+
       <br><br>
 
+      <div class="formRow">
       <label  class = "modalText" >Email:</label>
       <input type="email" name="email" id="editEmail"  class = "inputFunc" required>
       <span id="editEmailError" style="color: red; font-size: 0.8em; display: block; margin-top: 1px;"></span>
+      </div>
+
     <br><br>
+
+  
+      <div class="formRow">
       <label  class = "modalText" >Password:</label>
       <input type="password" name="password"  class = "inputFunc" >
       <span id="passwordError" style="color: red; font-size: 0.8em; display: block; margin-top: 1px;"></span>
+      </div>
+
+
       <br /><br />
 
+      <div class="formRow">
       <label  class = "modalText" >Confirm Password:</label>
       <input type="password" name="confirmPassword"  class = "inputFunc" >
+      </div>
+
+
       <p style="color: rgb(88, 73, 73); font-style: italic;">Keep password fields blank unless changing password.</p>
 
       <label  class = "modalText" >Courses:</label><br>
@@ -375,9 +411,9 @@
     <!-- choosing day -->
     <input type="text" id = "clearShiftDate" name="shiftDate" placeholder="-- Select Date --"  class = "inputFunc" required value ="<%= selectedShiftDate || '' %>" required>
 
-      <br><br>
+      
       <button class="small-gray-button-round" type="submit" name = "action" value = "view">View Active Shifts</button>
-      <br><br>
+      <br>
     <!-- updated below to reflect "clearShifts"-->
       <% if (openClearTutorModal && clearShifts && clearShifts.length > 0 ) { %>
         <!-- <h3 class = "headingText">Active Shifts</h3>  -->
@@ -416,7 +452,7 @@
 
 <!-- ADD COURSE MODAL -->
 <div id="addCourseModal" class="modal">
-  <div class="modal-content">
+  <div class="course-modal-content">
     <span class="close-btn" id="closeAddCourseModal">&times;</span>
 
     <h2 class="headingText">Add Course</h2>

@@ -183,3 +183,10 @@
 }
 
 
+.confirm-cancel-content{
+    background-color: white;
+    margin: 12% auto;
+    padding: 20px;
+    width: 500px;
+    border-radius: 8px;
+  }

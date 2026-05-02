@@ -136,3 +136,25 @@ row is greyed out to indicate inactivity*/
     border-color: var(--gray2);
 }
   
+
+.formRow {
+  display: grid;
+  grid-template-columns: 160px 330px;
+  align-items: center;
+  /* column-gap: 20px; */
+}
+
+.formRow label {
+  text-align: left;
+}
+
+.formRow .inputFunc {
+  width: 330px;
+  box-sizing: border-box;
+}
+
+.studentTable th:nth-child(1),
+.studentTable td:nth-child(1) {
+  text-align: center;
+  vertical-align: middle;
+}
