@@ -42,6 +42,37 @@ function adminCancellationTemplate({ studentName, tutorName, date, time, course 
   `;
 }
 
+function exceptionCancellationTemplate({ studentName, tutorName, date, time, course, reason }) {
+  return `
+    <p>Hi ${studentName},</p>
+    <p>Your tutoring appointment with ${tutorName} has been cancelled due to the IT Learning Center closing because of ${reason}.</p>
+    <p>We apologize for the inconvenience. Please log back into the appointment system to book a new appointment.</p>
+
+    <p>Appointment details:</p>
+    <p>
+        <b>Course:</b> ${course}<br/>
+        <b>Date:</b> ${date}<br/>
+        <b>Time:</b> ${time}
+    </p>
+
+  `;
+}
+
+function exceptionTutorDeletionTemplate({ studentName, tutorName, date, time, course, reason }) {
+  return `
+    <p>Hi ${tutorName},</p>
+    <p>Your tutoring appointment with student ${studentName} has been deleted due to the IT Learning Center closing because of ${reason}.</p>
+
+    <p>Appointment details:</p>
+    <p>
+        <b>Course:</b> ${course}<br/>
+        <b>Date:</b> ${date}<br/>
+        <b>Time:</b> ${time}
+    </p>
+
+  `;
+}
+
 
 function accountDeactivationTemplate({ name, date }) {
   return `
@@ -82,4 +113,4 @@ function passwordChangeTemplate({ name, date }) {
 }
 
 
-module.exports = { confirmationTemplate, studentCancellationTemplate, adminCancellationTemplate, accountDeactivationTemplate, accountCreatedTemplate, passwordChangeTemplate };
+module.exports = { confirmationTemplate, studentCancellationTemplate, adminCancellationTemplate, exceptionCancellationTemplate, exceptionTutorDeletionTemplate, accountDeactivationTemplate, accountCreatedTemplate, passwordChangeTemplate };

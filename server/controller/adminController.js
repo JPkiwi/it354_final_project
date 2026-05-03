@@ -1,6 +1,6 @@
 const Appointment = require("../model/appointmentModel");
 const { sendEmail } = require("../services/emailService");
-const { adminCancellationTemplate, accountCreatedTemplate } = require("../../views/templates/emailTemplates");
+const { adminCancellationTemplate, accountCreatedTemplate, exceptionCancellationTemplate, exceptionTutorDeletionTemplate } = require("../../views/templates/emailTemplates");
 const User = require("../model/userModel");
 const Course = require("../model/courseModel");
 const TutorShift = require("../model/tutorShiftModel");
@@ -2822,9 +2822,10 @@ exports.addBlackoutDate = async (req, res) => {
         reason: reason.trim()
       });
 
-// ── Create Google Calendar event ────────────────────────────
+      const admin = await User.findOne({ role: "admin" });
+
+      // ── Create Google Calendar event ────────────────────────────
       try {
-        const admin = await User.findOne({ role: "admin" });
         // checks for our admin and if the admin has tokens. returns undefined if not found
         if (admin?.googleTokens) {
 
@@ -2847,7 +2848,31 @@ exports.addBlackoutDate = async (req, res) => {
         console.error("Calendar event creation failed.");
       }
     
-// ────────────────────────────────────────────────────────────
+      // ────────────────────────────────────────────────────────────
+
+      // cancel any appointments that fall within the blackout date range and log those cancellations in the audit log
+      const appointments = await Appointment.find({
+        appointmentDate: {
+          $gte: parseStart,
+          $lte: parseEnd
+        },
+        appointmentStatus: "scheduled"
+      })
+      .populate("studentId", "fname email")
+      .populate({
+        path: "tutorShiftId",
+        populate: {
+          path: "tutorId",
+          select: "fname lname email"
+        }
+      });
+
+      if (appointments.length > 0) {
+        // handle all necessary actions for appointments that need to be cancelled due to overlapping with the blackout dates asynchronously so rendering the page is not too delayed
+        handleAfterExceptionActions({ apptsToCancel: appointments, exceptionReason: reason, admin, isBlackout: true }).catch(err => {
+          console.error("Background actions for exceptions failed.");
+        });
+      }
 
       // if there is a blackout, delete any tutor shifts for that day since center is fully closed
       await TutorShift.deleteMany({
@@ -2866,212 +2891,19 @@ exports.addBlackoutDate = async (req, res) => {
       return res.redirect("/adminAvailabilityIndex");
 
   }
-  catch(err){
-
-  return res.render("adminAvailabilityIndex", {
-    title: "Admin Manage Availability",
-    cssStylesheet: "availabilityIndex.css",
-        jsFile: "adminAvailability.js",
-    error: "Something went wrong while adding blackout date.",
-    user: req.session.user,
-    closedWeekdays: [],
-    weekdays: [], // fallback so page doesn’t crash
-    formatTo12Hour
-  });
-  }
-};
-
-
-// -------------------------------------------------------------------------------------------
-
-
-// get the week range (Monday-Sunday) for a given date, standardized to midnight to avoid timezone issues
-function getWeekRange(date) {
-  const currDate = new Date(date);
-
-  const day = (currDate.getDay() + 6) % 7;
-
-  const monday = new Date(currDate);
-  monday.setDate(currDate.getDate() - day);
-  monday.setHours(0, 0, 0, 0);
-
-  const sunday = new Date(monday);
-  sunday.setDate(monday.getDate() + 6);
-  sunday.setHours(23, 59, 59, 999);
-
-  return { monday, sunday };
-}
-
-// standardize the time to midnight to avoid timezone issues
-function standardizeDate(date) {
-  const updatedDate = new Date(date);
-  updatedDate.setHours(0, 0, 0, 0);
-  return updatedDate;
-}
-
-// check if a date falls within a blackout range
-function isWeeklyBlock(date, start, end) {
-  const currDate = standardizeDate(date);
-  const startDate = standardizeDate(start);
-  const endDate = standardizeDate(end);
-
-  return currDate >= startDate && currDate <= endDate;
-}
-
-function buildTimeBlocks(day, dayExceptions) {
-  if (day.isClosed) return [];
-
-  const blocks = [];
-
-  let currentStart = day.openTime; 
-  const closeTime = day.closeTime;
-
-  // sort exceptions by start time
-  const sortedExceptions = dayExceptions.sort((a, b) =>
-    a.startTime.localeCompare(b.startTime)
-  );
-
-  for (const expect of sortedExceptions) {
-    // add open block before exception
-    if (currentStart < expect.startTime) {
-      blocks.push({
-        start: currentStart,
-        end: expect.startTime
-      });
-    }
-
-    // got to next block after the exception end time
-    currentStart = expect.endTime;
-  }
-
-  // add final block after last exception
-  const startHour = Number(currentStart.split(":")[0]);
-  const endHour = Number(closeTime.split(":")[0]);
-
-  if (startHour < endHour) {
-    blocks.push({
-      start: currentStart,
-      end: closeTime
+  catch(err) {
+    return res.render("adminAvailabilityIndex", {
+      title: "Admin Manage Availability",
+      cssStylesheet: "availabilityIndex.css",
+      jsFile: "adminAvailability.js",
+      error: "Something went wrong while adding blackout date.",
+      user: req.session.user,
+      closedWeekdays: [],
+      weekdays: [], // fallback so page doesn’t crash
+      formatTo12Hour
     });
   }
-
-  return blocks;
-}
-
-async function updateCenterExceptions() {
-  const today = new Date();
-  const { monday, sunday } = getWeekRange(today);
-
-  // blackout ranges that for the current week
-  const blackoutDates = await CenterClosedSchedule.find({
-    startDate: { $lte: sunday },
-    endDate: { $gte: monday }
-  }).lean();
-
-  // time exceptions for the current week
-  const exceptions = await CenterException.find({
-    exceptionDate: { $gte: monday, $lte: sunday }
-  }).lean();
-
-  // get regular center hours for the week
-  const weekdays = await CenterOpen.find().lean(); // assume Mon–Sun order
-
-  const weekdayIndexMap = {
-    Monday: 0,
-    Tuesday: 1,
-    Wednesday: 2,
-    Thursday: 3,
-    Friday: 4,
-    Saturday: 5,
-    Sunday: 6
-  };
-
-
-
-  // if there is an exception for a given day, override the regular hours with the exception hours and reason
-  const exceptionWeek = weekdays.map(day => {
-    const currentDate = new Date(monday);
-    currentDate.setDate(monday.getDate() + weekdayIndexMap[day.weekday]);
-
-    const blackout = blackoutDates.find(blackoutDate =>
-      isWeeklyBlock(currentDate, blackoutDate.startDate, blackoutDate.endDate)
-    );
-
-    const dayExceptions = exceptions.filter(e =>
-      standardizeDate(e.exceptionDate).getTime() === standardizeDate(currentDate).getTime()
-    );
-
-    const latestException = dayExceptions.sort(
-      (except1, except2) => new Date(except2.createdAt) - new Date(except1.createdAt)
-    )[0];
-
-    const hasException = latestException !== undefined;
-    const hasBlackout = blackout !== undefined;
-
-    // if both exist, compare timestamps
-    if (hasException && hasBlackout) {
-      if (new Date(latestException.createdAt) > new Date(blackout.createdAt)) {
-        const timeBlocks = buildTimeBlocks(day, dayExceptions);
-
-        return {
-          weekday: day.weekday,
-          date: currentDate,
-          isClosed: timeBlocks.length === 0,
-          reason: latestException.reason,
-          timeBlocks
-        };
-      }
-
-      return {
-        weekday: day.weekday,
-        date: currentDate,
-        isClosed: true,
-        reason: blackout.reason,
-        timeBlocks: []
-      };
-    }
-
-    // only exception
-    if (hasException) {
-      const timeBlocks = buildTimeBlocks(day, dayExceptions);
-
-      return {
-        weekday: day.weekday,
-        date: currentDate,
-        isClosed: timeBlocks.length === 0,
-        reason: latestException.reason,
-        timeBlocks
-      };
-    }
-
-    // only blackout
-    if (hasBlackout) {
-      return {
-        weekday: day.weekday,
-        date: currentDate,
-        isClosed: true,
-        reason: blackout.reason,
-        timeBlocks: []
-      };
-    }
-
-    // normal day
-    const timeBlocks = buildTimeBlocks(day, []);
-    return {
-      weekday: day.weekday,
-      date: currentDate,
-      isClosed: day.isClosed || timeBlocks.length === 0,
-      reason: "",
-      timeBlocks
-    };
-    
-  }); // end of map through weekdays
-
-  return exceptionWeek;
-}
-
-
-
+};
 
 // ------------------------------------------------------------------------------
 
@@ -3274,9 +3106,10 @@ exports.addException = async (req, res) => {
       reason: reason.trim(),
     });
 
-// ── Create Google Calendar event ────────────────────────────
+    const admin = await User.findOne({ role: "admin" });
+
+    // ── Create Google Calendar event ────────────────────────────
     try {
-      const admin = await User.findOne({ role: "admin" });
       // checks for our admin and if the admin has tokens. returns undefined if not found
       if (admin?.googleTokens) {
 
@@ -3297,34 +3130,67 @@ exports.addException = async (req, res) => {
         }
       }
     } catch (calendarErr) {
-      console.error("Calendar event creation failed.", calendarErr.message);
+      console.error("Calendar event creation failed.");
     }
     
 // ────────────────────────────────────────────────────────────
 
 
-    // get all shifts within the exception date and delete any shifts that overlap with the exception time block
     const exceptionStartMin = startHour * 60;
     const exceptionEndMin = endHour * 60;
 
+    // cancel appointments that overlap with the exception time block
+    const appointments = await Appointment.find({
+      appointmentDate: {
+        $gte: startOfDay,
+        $lte: endOfDay
+      },
+      appointmentStatus: "scheduled"
+    })
+    .populate("studentId", "fname email")
+    .populate({
+      path: "tutorShiftId",
+      populate: {
+        path: "tutorId",
+        select: "fname lname email"
+      }
+    });
+
+    if (appointments.length > 0) {
+      const apptsToCancel = appointments.filter(appt => {
+        const start = convertToMins(appt.startTime);
+        const end = convertToMins(appt.endTime);
+
+        return start < exceptionEndMin && end > exceptionStartMin;
+      });
+
+      // handle all necessary actions for appointments that need to be cancelled due to overlapping with the exception block asynchronously so rendering the page is not too delayed
+      handleAfterExceptionActions({ apptsToCancel, exceptionReason: reason, admin, isBlackout: false }).catch(err => {
+        console.error("Background actions for exceptions failed.");
+      });
+    }
+
+
+    // get all shifts within the exception date and delete any shifts that overlap with the exception time block
     const shifts = await TutorShift.find({
       shiftDate: parsedExceptionDate
     });
 
-    const toDelete = shifts.filter(shift => {
-      const start = convertToMins(shift.startTime);
-      const end = convertToMins(shift.endTime);
+    if (shifts.length > 0) {
+      const shiftsToDelete = shifts.filter(shift => {
+        const start = convertToMins(shift.startTime);
+        const end = convertToMins(shift.endTime);
 
-      return start < exceptionEndMin && end > exceptionStartMin;
-    });
+        return start < exceptionEndMin && end > exceptionStartMin;
+      });
 
-    await TutorShift.deleteMany({
-      _id: { $in: toDelete.map(shift => shift._id) }
-    });
+      await TutorShift.deleteMany({
+        _id: { $in: shiftsToDelete.map(shift => shift._id) }
+      });
+    }
 
 
-
-  // audit log creation describing the time block made & redirecting to the admin availability index page
+    // audit log creation describing the time block made & redirecting to the admin availability index page
     await AuditLog.create({
       actionUserId: req.session.user._id,
       actionType: "EXCEPTION_ADDED",
@@ -3348,10 +3214,331 @@ exports.addException = async (req, res) => {
   }
 }; 
 
+// -----------------------------------------------------------------------------------------------
+
+// handle background tasks after admin adds a blackout date or exception: cancel appts, free tutor shifts, update google calendars, and notification logs
+async function handleAfterExceptionActions({ apptsToCancel, exceptionReason, admin, isBlackout }) {
+
+  // for each appointmen that needs to be cancelled, free the tutor shift, mark the appointment cancelled, delete the google calendar event, send email to student, and log the cancellation in NotificationLog
+  for (const appointment of apptsToCancel) {
+    try {
+      // Free tutor shift
+      if (appointment.tutorShiftId) {
+        await TutorShift.findByIdAndUpdate(appointment.tutorShiftId, {
+          isBooked: false
+        });
+      }
+
+      // Mark appointment cancelled
+      await Appointment.findByIdAndUpdate(appointment._id, {
+        appointmentStatus: "cancelled"
+      });
+
+      // Delete Google Calendar event
+      try {
+        if (appointment.calendarEventId) {
+          if (admin?.googleTokens) {
+            await deleteCalendarEvent(admin.googleTokens, appointment.calendarEventId);
+          }
+        }
+      } catch (calendarErr) {
+        if (isBlackout) {
+          console.error("Calendar deletion failed for blackout date appointment:", appointment._id);
+        } else {
+          console.error("Calendar deletion failed for exception for appointment:", appointment._id);
+        }
+      }
+
+      let studentEmailFailed = false;
+      let tutorEmailFailed = false;
+
+      // Send email to student
+      try {
+        await sendEmail({
+          to: appointment.studentId.email,
+          cc: process.env.GMAIL_ADMIN,
+          subject: "Appointment Cancellation - Center Closed",
+          html: exceptionCancellationTemplate({
+            studentName: appointment.studentId.fname,
+            tutorName: `${appointment.tutorShiftId.tutorId.fname} ${appointment.tutorShiftId.tutorId.lname}`,
+            date: appointment.appointmentDate.toLocaleDateString('en-US', { timeZone: 'UTC' }),
+            time: `${formatTo12Hour(appointment.startTime)} - ${formatTo12Hour(appointment.endTime)}`,
+            course: appointment.course,
+            reason: exceptionReason?.trim() || "an unknown reason"
+          })
+        });
+      } catch (emailErr) {
+        if (isBlackout) {
+          console.error("Email failed for student blackout date cancellation for appointment:", appointment._id);
+        } else {
+          console.error("Email failed for student exception cancellation for appointment:", appointment._id);
+        }
+        studentEmailFailed = true;
+      }
+
+      // send email to tutor
+      try {
+        await sendEmail({
+            to: appointment.tutorShiftId.tutorId.email,
+            subject: "Appointment Deleted - Center Closed",
+            html: exceptionTutorDeletionTemplate({
+              studentName: appointment.studentId.fname,
+              tutorName: `${appointment.tutorShiftId.tutorId.fname}`,
+              date: appointment.appointmentDate.toLocaleDateString('en-US', { timeZone: 'UTC' }),
+              time: `${formatTo12Hour(appointment.startTime)} - ${formatTo12Hour(appointment.endTime)}`,
+              course: appointment.course,
+              reason: exceptionReason?.trim() || "an unknown reason"
+            })
+          });
+      } catch (emailErr) {
+        if (isBlackout) {
+          console.error("Email failed for tutor blackout date cancellation for appointment:", appointment._id);
+        } else {
+          console.error("Email failed for tutor exception cancellation for appointment:", appointment._id);
+        }
+        tutorEmailFailed = true;
+      }
+
+      // Notification logs
+
+      // Log student email failure if necessary otherwise log the cancellation notification normally.
+      if (studentEmailFailed) {
+        try {
+          await NotificationLog.create({
+            appointmentId: appointment._id,
+            recipientUserId: appointment.studentId._id,
+            appointmentDate: appointment.appointmentDate,
+            notificationType: studentEmailFailed ? "SEND_EMAIL_FAILED" : "EXCEPTION_CANCEL_APPT_STUDENT"
+          });
+        } catch (err) {
+          if (isBlackout) {
+            console.error("NotificationLog failed for student after blackout date cancellation for appointment:", appointment._id);
+          } else {
+            console.error("NotificationLog failed for student after exception cancellation for appointment:", appointment._id);
+          }
+        }
+      }
+
+      // Log tutor email failure if necessary otherwise log the cancellation notification normally.
+      if (tutorEmailFailed) {
+        try {
+          await NotificationLog.create({
+            appointmentId: appointment._id,
+            recipientUserId: appointment.tutorShiftId.tutorId._id,
+            appointmentDate: appointment.appointmentDate,
+            notificationType: tutorEmailFailed ? "SEND_EMAIL_FAILED" : "EXCEPTION_CANCEL_APPT_TUTOR"
+          });
+        } catch (err) {
+          if (isBlackout) {
+            console.error("NotificationLog failed for tutor after blackout date cancellation for appointment:", appointment._id);
+          } else {
+            console.error("NotificationLog failed for tutor after exception cancellation for appointment:", appointment._id);
+          }
+        }
+      }
+
+    } catch (err) {
+      if (isBlackout) {
+        console.error("Error processing appointment for blackout date cancellation: ", appointment._id);
+      } else {
+        console.error("Error processing appointment for exception cancellation: ", appointment._id);
+      }
+    }
+  }
+}
+
+
+// ------------------------------------- helper functions ----------------------------------------
+
 function convertToMins(time) {
   const [hour, min] = time.split(":").map(Number);
   return hour * 60 + min;
 }
+
+// get the week range (Monday-Sunday) for a given date, standardized to midnight to avoid timezone issues
+function getWeekRange(date) {
+  const currDate = new Date(date);
+
+  const day = (currDate.getDay() + 6) % 7;
+
+  const monday = new Date(currDate);
+  monday.setDate(currDate.getDate() - day);
+  monday.setHours(0, 0, 0, 0);
+
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  sunday.setHours(23, 59, 59, 999);
+
+  return { monday, sunday };
+}
+
+// standardize the time to midnight to avoid timezone issues
+function standardizeDate(date) {
+  const updatedDate = new Date(date);
+  updatedDate.setHours(0, 0, 0, 0);
+  return updatedDate;
+}
+
+// check if a date falls within a blackout range
+function isWeeklyBlock(date, start, end) {
+  const currDate = standardizeDate(date);
+  const startDate = standardizeDate(start);
+  const endDate = standardizeDate(end);
+
+  return currDate >= startDate && currDate <= endDate;
+}
+
+function buildTimeBlocks(day, dayExceptions) {
+  if (day.isClosed) return [];
+
+  const blocks = [];
+
+  let currentStart = day.openTime; 
+  const closeTime = day.closeTime;
+
+  // sort exceptions by start time
+  const sortedExceptions = dayExceptions.sort((a, b) =>
+    a.startTime.localeCompare(b.startTime)
+  );
+
+  for (const expect of sortedExceptions) {
+    // add open block before exception
+    if (currentStart < expect.startTime) {
+      blocks.push({
+        start: currentStart,
+        end: expect.startTime
+      });
+    }
+
+    // got to next block after the exception end time
+    currentStart = expect.endTime;
+  }
+
+  // add final block after last exception
+  const startHour = Number(currentStart.split(":")[0]);
+  const endHour = Number(closeTime.split(":")[0]);
+
+  if (startHour < endHour) {
+    blocks.push({
+      start: currentStart,
+      end: closeTime
+    });
+  }
+
+  return blocks;
+}
+
+async function updateCenterExceptions() {
+  const today = new Date();
+  const { monday, sunday } = getWeekRange(today);
+
+  // blackout ranges that for the current week
+  const blackoutDates = await CenterClosedSchedule.find({
+    startDate: { $lte: sunday },
+    endDate: { $gte: monday }
+  }).lean();
+
+  // time exceptions for the current week
+  const exceptions = await CenterException.find({
+    exceptionDate: { $gte: monday, $lte: sunday }
+  }).lean();
+
+  // get regular center hours for the week
+  const weekdays = await CenterOpen.find().lean(); // assume Mon–Sun order
+
+  const weekdayIndexMap = {
+    Monday: 0,
+    Tuesday: 1,
+    Wednesday: 2,
+    Thursday: 3,
+    Friday: 4,
+    Saturday: 5,
+    Sunday: 6
+  };
+
+  // if there is an exception for a given day, override the regular hours with the exception hours and reason
+  const exceptionWeek = weekdays.map(day => {
+    const currentDate = new Date(monday);
+    currentDate.setDate(monday.getDate() + weekdayIndexMap[day.weekday]);
+
+    const blackout = blackoutDates.find(blackoutDate =>
+      isWeeklyBlock(currentDate, blackoutDate.startDate, blackoutDate.endDate)
+    );
+
+    const dayExceptions = exceptions.filter(e =>
+      standardizeDate(e.exceptionDate).getTime() === standardizeDate(currentDate).getTime()
+    );
+
+    const latestException = dayExceptions.sort(
+      (except1, except2) => new Date(except2.createdAt) - new Date(except1.createdAt)
+    )[0];
+
+    const hasException = latestException !== undefined;
+    const hasBlackout = blackout !== undefined;
+
+    // if both exist, compare timestamps
+    if (hasException && hasBlackout) {
+      if (new Date(latestException.createdAt) > new Date(blackout.createdAt)) {
+        const timeBlocks = buildTimeBlocks(day, dayExceptions);
+
+        return {
+          weekday: day.weekday,
+          date: currentDate,
+          isClosed: timeBlocks.length === 0,
+          reason: latestException.reason,
+          timeBlocks
+        };
+      }
+
+      return {
+        weekday: day.weekday,
+        date: currentDate,
+        isClosed: true,
+        reason: blackout.reason,
+        timeBlocks: []
+      };
+    }
+
+    // only exception
+    if (hasException) {
+      const timeBlocks = buildTimeBlocks(day, dayExceptions);
+
+      return {
+        weekday: day.weekday,
+        date: currentDate,
+        isClosed: timeBlocks.length === 0,
+        reason: latestException.reason,
+        timeBlocks
+      };
+    }
+
+    // only blackout
+    if (hasBlackout) {
+      return {
+        weekday: day.weekday,
+        date: currentDate,
+        isClosed: true,
+        reason: blackout.reason,
+        timeBlocks: []
+      };
+    }
+
+    // normal day
+    const timeBlocks = buildTimeBlocks(day, []);
+    return {
+      weekday: day.weekday,
+      date: currentDate,
+      isClosed: day.isClosed || timeBlocks.length === 0,
+      reason: "",
+      timeBlocks
+    };
+    
+  }); // end of map through weekdays
+
+  return exceptionWeek;
+}
+
+// -----------------------------------------------------------------------------
 
 // POST: handle form submission to remove all exceptions on a specific date 
 exports.removeExceptions = async (req, res) => {
@@ -3412,10 +3599,11 @@ exports.removeExceptions = async (req, res) => {
       endDate: { $gte: startOfDay }
     });
 
+    const admin = await User.findOne({ role: "admin" });
 
-  // ───────── Delete Google Calendar event ──────────────────── FIX
+
+  // ───────── Delete Google Calendar event ──────────────────── 
     try {
-      const admin = await User.findOne({ role: "admin" });
       if (admin?.googleTokens) {
           for (const exception of exceptions) {
               if (exception.calendarEventId) {

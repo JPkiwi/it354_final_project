@@ -19,7 +19,6 @@ exports.createCalendarEvent = async (tokens, appointment) => {
             const admin = await User.findOne({ role: "admin" });
             admin.googleTokens = { ...admin.googleTokens, ...newTokens }; // here the "..." is called a spread operator.
             await admin.save();                                           // it essentially overwrites what it needs to, but keeps what it doesn't need to overwrite
-            // console.log("Admin tokens refreshed and saved.");
         } catch (err) {
             console.error("Failed to save refreshed tokens.");
         }
@@ -60,7 +59,6 @@ exports.deleteCalendarEvent = async (tokens, calendarEventId) => {
             const admin = await User.findOne({ role: "admin" });
             admin.googleTokens = { ...admin.googleTokens, ...newTokens };
             await admin.save();
-            // console.log("Admin tokens refreshed and saved.");
         } catch (err) {
             console.error("Failed to save refreshed tokens.");
         }

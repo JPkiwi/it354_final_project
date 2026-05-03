@@ -245,6 +245,36 @@
                     ? formatTo12Hour(notification.appointmentId.endTime)
                     : "No end time" %>
 
+                  <% } else if (notification.notificationType === "EXCEPTION_CANCEL_APPT_STUDENT") { %>
+                    &nbsp;Confirmation email sent for student
+                    <%= notification.recipientUserId ? notification.recipientUserId.fname + " " + notification.recipientUserId.lname + "'s" : "Unknown" %>
+                    appointment cancellation due to exception; cancelled appointment details:
+                    <%= notification.appointmentId && notification.appointmentId.appointmentDate ? new Date(notification.appointmentId.appointmentDate).toISOString().split("T")[0]
+                    : "No date" %>
+                    at
+                    <%= notification.appointmentId && notification.appointmentId.startTime
+                    ? formatTo12Hour(notification.appointmentId.startTime)
+                    : "No start time" %>
+                    -
+                    <%= notification.appointmentId && notification.appointmentId.endTime
+                    ? formatTo12Hour(notification.appointmentId.endTime)
+                    : "No end time" %>
+
+                  <% } else if (notification.notificationType === "EXCEPTION_CANCEL_APPT_TUTOR") { %>
+                    &nbsp;Email sent for tutor
+                    <%= notification.recipientUserId ? notification.recipientUserId.fname + " " + notification.recipientUserId.lname + "'s" : "Unknown" %>
+                    appointment deletion due to exception; cancelled appointment details:
+                    <%= notification.appointmentId && notification.appointmentId.appointmentDate ? new Date(notification.appointmentId.appointmentDate).toISOString().split("T")[0]
+                    : "No date" %>
+                    at
+                    <%= notification.appointmentId && notification.appointmentId.startTime
+                    ? formatTo12Hour(notification.appointmentId.startTime)
+                    : "No start time" %>
+                    -
+                    <%= notification.appointmentId && notification.appointmentId.endTime
+                    ? formatTo12Hour(notification.appointmentId.endTime)
+                    : "No end time" %>
+
                   <% } else { %>
                     Unknown notification type
                   <% } %>

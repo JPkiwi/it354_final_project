@@ -109,10 +109,18 @@
     <% } else { %>
         <h2>We are currently open!</h2>
     <% } %>
+
+    <% if (exceptionDisplay.length > 0) { %>
+        <div>
+            <% exceptionDisplay.forEach(exception => { %>
+                <p><%= exception %></p>
+            <% }) %>
+        </div>
+     <% } %>
     
     <div class = "hoursRow">
     <div class = "hours">
-        <h1><u>HOURS</u></h1>
+        <h1><u>WEEK OF <%= monday %> HOURS</u></h1>
         <!--Display the day of the week and the open and closed hours, in AM/PM-->
         <% weekdays.forEach(day => { %>
             <h2>
