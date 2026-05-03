@@ -50,95 +50,98 @@
   <!-- Appointments Table -->
 <div class = "apptSection" > <!-- BEGIN FLEX -->
   <div style="flex: 1;">
-  <table class = "apptTable tableHover">
-    <thead>
-      <tr class = "tableRow">
-          <!-- headers (1st row) -->
+    <div class="table-responsive-wrapper">
+    <!-- <div class="appointments-container"> -->
+    <table class = "apptTable tableHover">
+      <thead>
+        <tr class = "tableRow">
+            <!-- headers (1st row) -->
 
-        <th>Select</th>
-        <th>Date</th>
-        <th>Time</th>
-        <th>Student Name</th>
-        <th>Tutor Name</th>
-        <th>Course</th>
-        <th>Attendance</th>
-        <th>Tutor Comments</th>
+          <th>Select</th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Student Name</th>
+          <th>Tutor Name</th>
+          <th>Course</th>
+          <th>Attendance</th>
+          <th>Tutor Comments</th>
+        </tr>
+      </thead>
+
+      <tbody id="rows">
+      <!-- checking if appointments exist -->
+        <% if (appointments && appointments.length > 0) { %>
+          <!-- looping through appointments-->
+      <% appointments.forEach(function(appointment) { %>
+        <tr data-lname="<%= appointment.studentId?.lname || '' %>"
+          data-course="<%= appointment.course || '' %>">
+          <!-- radio button instead of checkbox -> only one appt selected at a time to cancel or assign tutor-->
+      <td>
+    <label>
+      <input type="radio" name="selectedAppointment" value="<%= appointment._id %>">
+      <span class="visually-hidden">
+        Select appointment for 
+        <%= appointment.studentId?.fname %> <%= appointment.studentId?.lname %>
+      </span>
+    </label>
+  </td> 
+      <!-- formatted date -->
+          <td> <%= appointment.appointmentDate ? formatDate(appointment.appointmentDate) : "No date" %> </td>
+          <!-- printing start time and endtime-->
+          <td>  <%= formatTo12Hour(appointment.startTime) %> -  <%= formatTo12Hour(appointment.endTime) %> </td>
+          <!-- -->
+          <td>
+            <!-- if student id/firstName exists -->
+            <% if (appointment.studentId && appointment.studentId.fname) { %>
+              <!-- print first and last name-->
+              <%= appointment.studentId.fname %> <%= appointment.studentId.lname %>
+            <% } else { %>
+              <!-- print fallback (to avoid crashing) -->
+              Unknown student
+            <% } %>
+          </td>
+          <!-- -->
+          <td>
+            <!-- if tutor shift id exists/tutorId/first name,-->
+            <% if (
+              appointment.tutorShiftId &&
+              appointment.tutorShiftId.tutorId &&
+              appointment.tutorShiftId.tutorId.fname
+            ) { %>
+            <!-- print tutor first and last name-->
+              <%= appointment.tutorShiftId.tutorId.fname %>
+              <%= appointment.tutorShiftId.tutorId.lname %>
+            <% } else { %>
+              <!-- print fallback (to avoid crashing) -->
+
+              No tutor assigned
+            <% } %>
+          </td>
+          <!-- prints course name-->
+          <td><%= appointment.course %></td>
+          <!-- prints attendance status -->
+                  
+          <td>
+            <%= appointment.attendance?.attendanceStatus || "pending" %>
+          </td>
+
+          <!-- prints tutor comments -->
+          <td>
+            <%= appointment.tutorComments && appointment.tutorComments.trim() !== "" 
+                  ? appointment.tutorComments 
+                  : "N/A" %>
+          </td>
+
+        </tr>
+      <% }); %>
+      <% } else { %>
+      <tr>
+        <td colspan="8">No appointments found.</td>
       </tr>
-    </thead>
-
-    <tbody id="rows">
-    <!-- checking if appointments exist -->
-      <% if (appointments && appointments.length > 0) { %>
-        <!-- looping through appointments-->
-    <% appointments.forEach(function(appointment) { %>
-      <tr data-lname="<%= appointment.studentId?.lname || '' %>"
-        data-course="<%= appointment.course || '' %>">
-        <!-- radio button instead of checkbox -> only one appt selected at a time to cancel or assign tutor-->
-    <td>
-  <label>
-    <input type="radio" name="selectedAppointment" value="<%= appointment._id %>">
-    <span class="visually-hidden">
-      Select appointment for 
-      <%= appointment.studentId?.fname %> <%= appointment.studentId?.lname %>
-    </span>
-  </label>
-</td> 
-    <!-- formatted date -->
-        <td> <%= appointment.appointmentDate ? formatDate(appointment.appointmentDate) : "No date" %> </td>
-        <!-- printing start time and endtime-->
-        <td>  <%= formatTo12Hour(appointment.startTime) %> -  <%= formatTo12Hour(appointment.endTime) %> </td>
-        <!-- -->
-        <td>
-          <!-- if student id/firstName exists -->
-          <% if (appointment.studentId && appointment.studentId.fname) { %>
-            <!-- print first and last name-->
-            <%= appointment.studentId.fname %> <%= appointment.studentId.lname %>
-          <% } else { %>
-            <!-- print fallback (to avoid crashing) -->
-            Unknown student
-          <% } %>
-        </td>
-        <!-- -->
-        <td>
-          <!-- if tutor shift id exists/tutorId/first name,-->
-          <% if (
-            appointment.tutorShiftId &&
-            appointment.tutorShiftId.tutorId &&
-            appointment.tutorShiftId.tutorId.fname
-          ) { %>
-          <!-- print tutor first and last name-->
-            <%= appointment.tutorShiftId.tutorId.fname %>
-            <%= appointment.tutorShiftId.tutorId.lname %>
-          <% } else { %>
-            <!-- print fallback (to avoid crashing) -->
-
-            No tutor assigned
-          <% } %>
-        </td>
-        <!-- prints course name-->
-        <td><%= appointment.course %></td>
-        <!-- prints attendance status -->
-                
-        <td>
-          <%= appointment.attendance?.attendanceStatus || "pending" %>
-        </td>
-
-        <!-- prints tutor comments -->
-        <td>
-          <%= appointment.tutorComments && appointment.tutorComments.trim() !== "" 
-                ? appointment.tutorComments 
-                : "N/A" %>
-        </td>
-
-      </tr>
-    <% }); %>
-    <% } else { %>
-    <tr>
-      <td colspan="8">No appointments found.</td>
-    </tr>
-    <% } %>
-  </tbody>
-</table>
+      <% } %>
+    </tbody>
+  </table>
+  </div>
 </div>
 
 
@@ -146,7 +149,11 @@
 <!--Admin's Google Calendar-->
   <div style="flex: 1;">
   <div id="googleCalendarView">
+
+    <div class="calendar-container">
   <iframe title="Admin Google Calendar" src="https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=America%2FChicago&showPrint=0&src=aXN1dHV0b3JhZG1pbkBnbWFpbC5jb20&src=ZW4udXNhI2hvbGlkYXlAZ3JvdXAudi5jYWxlbmRhci5nb29nbGUuY29t&color=%23039be5&color=%230b8043" style="border:solid 1px #777" width="800" height="600" frameborder="0" scrolling="no"></iframe>
+  </div>
+
   </div>
   <a href="https://calendar.google.com/calendar/u/4?cid=aXN1dHV0b3JhZG1pbkBnbWFpbC5jb20" style="align-content: end;">Having trouble seeing the Google Calendar? Click here to view full calendar.</a>
   </div>
