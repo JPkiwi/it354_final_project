@@ -22,11 +22,11 @@ route.post('/tutorIndex/submitShow', controller.submitShow);
 route.post("/tutorIndex", (req, res) => {
     res.redirect("/tutorIndex");
 });
-// route.post("/tutorIndex/tutorAppointment", (req, res) => {
-//     res.redirect("/tutorIndex/tutorAppointment");
-// });
-
 // display the cancelled appointments under specific tutor
 route.get('/tutorCancelled', controller.getCancelledAppointments);
+
+// change password on submit
+route.post('/changePassword', controller.changePassword);
+
 
 module.exports = route;

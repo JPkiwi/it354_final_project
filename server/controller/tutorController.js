@@ -1,6 +1,10 @@
 const TutorShift = require("../model/tutorShiftModel");
 const Appointment = require("../model/appointmentModel");
 const centerOpen = require("../model/centerOpenSchedule");
+const User = require("../model/userModel");
+const { sendEmail } = require("../services/emailService");
+const { passwordChangeTemplate } = require("../../views/templates/emailTemplates");
+const bcrypt = require("bcrypt");
 const { formatTo12Hour } = require("../services/timeService");
 const mongoose = require("mongoose");
 
@@ -643,6 +647,136 @@ exports.submitShow = async (req, res) => {
 };
 
 
+exports.changePassword = async (req, res) => {
+  try {
+    // if not an auth user, send to login page
+    if (!req.session.user) {
+      return res.render("login", {
+        title: "Login Page",
+        cssStylesheet: "login.css",
+        jsFile: "login.js",
+        error: "User not logged in.",
+        user: null,
+      });
+    }
+
+    // if auth user but not a tutor, send to login page
+    if (req.session.user.role !== "tutor") {
+      return res.render("login", {
+        title: "Login Page",
+        cssStylesheet: "login.css",
+        jsFile: "login.js",
+        error: "Access denied. Only tutors can view this page.",
+        user: req.session.user,
+      });
+    }
+
+    // get entered passwords, tutorId, and tutor information
+    const { password, confirmPassword } = req.body;
+    const tutorId = new mongoose.Types.ObjectId(req.session.user._id);
+    const tutor = await User.findById(tutorId);
+
+    // Tutor not found
+    if (!tutor) {
+      req.session.error = "Tutor not found.";
+      return res.redirect("/tutorIndex");
+    }
+
+    // get tutor email and first name
+    const email = tutor.email;
+    const fname = tutor.fname;
+
+    // make sure all fields were filled out
+    if (!password || !confirmPassword) {
+      req.session.error = "All fields are required.";
+      return res.redirect("/tutorIndex");
+    }
+
+    // make sure password is at least 8 characters long
+    if (password.length < 8) {
+      req.session.error = "Password must be at least 8 characters long.";
+      return res.redirect("/tutorIndex");
+    }
+
+    // password cannot contain spaces
+    if (password.includes(" ")) {
+      req.session.error = "Password cannot contain spaces.";
+      return res.redirect("/tutorIndex");
+    }
+
+    // password must only contain any of the following: A-Z, a-z, 0-9, and !@#$%^&*
+    const passwordRegex = /^[A-Za-z0-9!@#$%^&*]+$/;
+      if (!passwordRegex.test(password)) {
+        req.session.error = "Password must not contain spaces, special characters, or Unicode characters. Can only use the following: A-Z, a-z, 0-9, and !@#$%^&*";
+        return res.redirect("/tutorIndex");
+    }
+
+    // password and confirm password
+    if (password !== confirmPassword) {
+      req.session.error = "Password and Confirm Password must be the same.";
+      return res.redirect("/tutorIndex");
+    }
+    
+    // hashing the passwords
+    const saltRounds = 10;
+    const passwordHash = await bcrypt.hash(password, saltRounds);
+
+    // save the hashed password
+    tutor.passwordHash = passwordHash;
+    await tutor.save();
+
+    // send email to user email that account password was changed and CC admin
+    let emailSent = false;
+    try {
+      await sendEmail({
+        to: email,
+        cc: process.env.GMAIL_ADMIN, // CC admin
+        subject: "Account Password Changed",
+        html: passwordChangeTemplate({
+          name: fname,
+          date: new Date().toLocaleString("en-US")
+        })
+      });
+      emailSent = true;
+    } catch (emailErr) {
+      console.error("User password change email sending error.");
+    }
+
+    // log if email failed to send
+    if (!emailSent) {
+      try {
+        await NotificationLog.create({
+          recipientUserId: tutor._id,
+          appointmentDate: new Date(),
+          notificationType: "SEND_EMAIL_FAILED",
+        });
+      } catch (err) {
+        console.error("NotificationLog SEND_EMAIL_FAILED for user change password failed.");
+      }
+    }
+
+    return res.redirect("/tutorIndex");
+
+  } catch (err) {
+    // in case of any errors, can log them and 500 for unfulfilled req
+    return res.status(500).render("tutorIndex", {
+      error: "Unable to change user password.",
+      shiftError: null,
+      title: "Tutor Appointments",
+      cssStylesheet: "tutorStyle.css",
+      jsFile: "tutorScript.js",
+      user: req.session.user,
+      bookedAppointments: [],
+      appointmentsLoaded: false,
+      upcomingTutorShifts: [],
+      pastBookedAppointments: [],
+      pastAppointmentsLoaded: false,
+      formatTo12Hour
+    });
+  }
+};
+
+
 // GET: load the page and display the cancelled appointments under specific tutor
 exports.getCancelledAppointments = async (req, res) => {
   try {
@@ -733,3 +867,4 @@ exports.getCancelledAppointments = async (req, res) => {
     });
   }
 };
+

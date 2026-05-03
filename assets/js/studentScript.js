@@ -28,15 +28,32 @@
 
 
 // js for when student cancels an appointment under "Upcoming Appointments"
-  const confirmCancelModal = document.getElementById("confirmCancelModal");
-  const closeConfirmBtn = document.getElementById("closeConfirmBtn");
-  const studentCancelForm = document.getElementById("studentCancelForm");
+const confirmCancelModal = document.getElementById("confirmCancelModal");
+const closeConfirmBtn = document.getElementById("closeConfirmBtn");
+const studentCancelForm = document.getElementById("studentCancelForm");
 
-  function openStudentCancelModal(appointmentId) {
-    studentCancelForm.action = `/studentAppointment/cancel/${appointmentId}`;
-    confirmCancelModal.style.display = "block";
+function openStudentCancelModal(appointmentId) {
+  studentCancelForm.action = `/studentAppointment/cancel/${appointmentId}`;
+  confirmCancelModal.style.display = "block";
+}
+
+closeConfirmBtn.addEventListener("click", function () {
+  confirmCancelModal.style.display = "none";
+});
+
+
+
+// clears password fields
+const clearPasswordButton = document.getElementById("clear-password-button");
+
+clearPasswordButton.addEventListener("click", ()=> {
+  const passwordInput = document.querySelector('input[name="password"]');
+  const confirmPasswordInput = document.querySelector('input[name="confirmPassword"]');
+
+  if (passwordInput) { 
+      passwordInput.value = "";
   }
-
-  closeConfirmBtn.addEventListener("click", function () {
-    confirmCancelModal.style.display = "none";
-  });
+  if (confirmPasswordInput) { 
+      confirmPasswordInput.value = "";
+  }
+});

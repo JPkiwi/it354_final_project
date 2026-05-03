@@ -16,6 +16,7 @@ const showLabel = document.getElementById("show-label");
 const selectShow = document.getElementById("select-show");
 const cancelButton = document.getElementById("cancel-button");
 const appointmentRadios = document.querySelectorAll('input[name="selectedAppointment"]');
+const clearPasswordButton = document.getElementById("clear-password-button");
 
 
 /*Add event listener for each radio button, when change a radio button it makes button options visible*/
@@ -174,5 +175,19 @@ cancelButton.addEventListener("click", ()=> {
 
     if (selectedAppointment) {
         selectedAppointment.checked = false;
+    }
+});
+
+
+// clears password fields
+clearPasswordButton.addEventListener("click", ()=> {
+    const passwordInput = document.querySelector('input[name="password"]');
+    const confirmPasswordInput = document.querySelector('input[name="confirmPassword"]');
+
+    if (passwordInput) { 
+        passwordInput.value = "";
+    }
+    if (confirmPasswordInput) { 
+        confirmPasswordInput.value = "";
     }
 });
