@@ -130,7 +130,6 @@ function buildTimeBlocks(day, dayExceptions) {
     });
   }
 
-  console.log(`Built time blocks for ${day.weekday} with exceptions:`, blocks);
   return blocks;
 }
 
@@ -229,7 +228,6 @@ async function updateCenterExceptions() {
 
     // normal day
     const timeBlocks = buildTimeBlocks(day, []);
-    console.log(`Time blocks for ${day.weekday}:`, timeBlocks);
     return {
       weekday: day.weekday,
       date: currentDate,
@@ -242,7 +240,6 @@ async function updateCenterExceptions() {
     
   }); // end of map through weekdays
 
-  console.log("Updated center hours with exceptions/blackouts:", exceptionWeek);
   return exceptionWeek;
 }
 
@@ -252,7 +249,6 @@ async function getExceptionDisplay(exceptionWeek) {
   const formattedDisplay = [];
 
   for (const day of exceptionWeek) {
-    console.log(`timeBlocks=${JSON.stringify(day.timeBlocks)}`);
     if (day.reason) {
       const dateStr = new Date(day.date).toLocaleDateString("en-US", {
         month: "numeric",

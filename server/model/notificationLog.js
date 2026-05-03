@@ -6,7 +6,7 @@ const notificationLogSchema = new mongoose.Schema(
         appointmentId: { type: mongoose.Schema.Types.ObjectId, ref: "Appointment" },
         recipientUserId: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, 
         appointmentDate: { type: Date, required: true },
-        notificationType: { type: String, enum: ["ADMIN_CANCEL_APPT", "STUDENT_CANCEL_APPT", "STUDENT_BOOK_APPT", "SEND_EMAIL_FAILED", "ACCT_DEACTIVATION", "EXCEPTION_CANCEL_APPT"], required: true }
+        notificationType: { type: String, enum: ["ADMIN_CANCEL_APPT", "STUDENT_CANCEL_APPT", "STUDENT_BOOK_APPT", "SEND_EMAIL_FAILED", "ACCT_DEACTIVATION", "EXCEPTION_CANCEL_APPT_STUDENT", "EXCEPTION_CANCEL_APPT_TUTOR"], required: true }
     },
     { timestamps: true }
 );
