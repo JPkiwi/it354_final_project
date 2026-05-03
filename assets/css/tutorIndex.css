@@ -225,3 +225,13 @@ select {
   column-gap: 20px;
   row-gap: 8px;
 }
+
+
+.nameSort {
+    border-color: var(--gray2);
+}
+
+.statSort{
+    border-color: var(--gray2);
+}
+  

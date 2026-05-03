@@ -90,4 +90,27 @@ function accountDeactivationTemplate({ name, date }) {
 }
 
 
-module.exports = { confirmationTemplate, studentCancellationTemplate, adminCancellationTemplate, exceptionCancellationTemplate, exceptionTutorDeletionTemplate, accountDeactivationTemplate };
+function accountCreatedTemplate({ name, date, password }) {
+  return `
+    <p>Hi ${name},</p>
+    <p>Your account has been created.</b></p>
+    <p>Your temporary password is <b>${password}</b>.</p>
+    <p>Please log into your account and set a new password.</p>
+
+    <p><b>Date & Time:</b> ${date}<br/></p>
+  `;
+}
+
+
+function passwordChangeTemplate({ name, date }) {
+  return `
+    <p>Hi ${name},</p>
+    <p>Your account password has been changed.</b></p>
+    <p>If this change was not intentional, please contact an administrator.</p>
+
+    <p><b>Date & Time:</b> ${date}<br/></p>
+  `;
+}
+
+
+module.exports = { confirmationTemplate, studentCancellationTemplate, adminCancellationTemplate, exceptionCancellationTemplate, exceptionTutorDeletionTemplate, accountDeactivationTemplate, accountCreatedTemplate, passwordChangeTemplate };
