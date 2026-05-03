@@ -296,7 +296,7 @@ exports.loginUser = async (req, res) => {
             res.redirect('/tutorIndex');
         }
         else {
-            res.redirect('/studentIndex');
+            res.redirect('/studentAppointment'); // previously was studentIndex (book appt). Now studentAppointment (view student's appts).
         }
     }
     catch (err) {

@@ -4,11 +4,16 @@
   <div class="navbar-container">
     <div class="nav-links">
         <!--For every user to see -->
-        <div><a href="/">
-            <!--Logo with a link to home page for all users-->
+        <div>
             <!--Logo downloaded from ISU Website-->
-            <img src="/images/ISU_Seal_1C_186.svg" alt="Illinois State University Logo" style="width: 120px; height: auto;">
-        </a></div>
+            <img src="/images/ISU_Seal_1C_186.svg" alt="Illinois State University Logo" style="width: 100px; height: auto;">
+            <!--user role-->
+            <% if (user) { %>
+                <div>
+                    Hi <%= user.role.charAt(0).toUpperCase() + user.role.substring(1) %><% if (user.role !== 'admin') { %> <%= user.fname %><% } %>!
+                </div>
+            <% } %>
+        </div>
 
 
         <!--Admin Nav-->
@@ -35,8 +40,8 @@
             </div>
         <!--Student Nav-->
         <% } else if (user && user.role === 'student') { %>
-            <div><a href="/studentIndex">Book Appointment</a></div>
             <div><a href="/studentAppointment">My Appointments</a></div>
+            <div><a href="/studentIndex">Book Appointment</a></div>
             <div>
                 <form action="/logout" method="POST"> <!--After log out action, get sent to index page-->
                     <button class="white-button">Logout</button>
