@@ -127,3 +127,29 @@
   color: black;
   background-color: white;
 }
+
+/* responsive design for screens 900px & smaller */
+@media (max-width: 900px) {
+
+  /* search/dropdown wrapping */
+  .auditControls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+
+  /* horizontal scroll on audit log table */
+  .table-responsive-wrapper {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .auditTable {
+    min-width: 800px;
+  }
+}
+
+body {
+  overflow-x: hidden;
+}

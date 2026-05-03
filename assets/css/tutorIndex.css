@@ -89,6 +89,11 @@ row is greyed out to indicate inactivity*/
   color: white;
 }
 
+.tutorTable th,
+.tutorTable td {
+  border: 1px solid black;
+  padding: 6px;
+}
 
 
 /* Copied from student Modal code, same styling */
@@ -124,10 +129,10 @@ row is greyed out to indicate inactivity*/
 
 
 
-.assign-modal-content,
-.edit-modal-content {
+.edit-modal-content,
+.add-tutor-modal-content {
   background-color: white;
-  margin: 10% auto;
+  margin: 5% auto;
   padding: 20px;
   max-width: 500px;
   border-radius: 8px;
@@ -141,14 +146,24 @@ row is greyed out to indicate inactivity*/
 }
 
 
+.assign-modal-content,
+.course-modal-content {
+  background-color: white;
+  margin: 8% auto;
+  padding: 20px;
+  max-width: 500px;
+  border-radius: 8px;
+}
+
 
 
 
 .clear-modal-content {
   background-color: white;
-  margin: 10% auto;
+  margin: 8% auto;
   padding: 20px;
   width: 500px;
+  max-width: 90%;
   border-radius: 8px;
 }
 
@@ -173,6 +188,74 @@ row is greyed out to indicate inactivity*/
 
 .leftAdminTutorPanel {
   flex: 1 1 45%;
+}
+
+/* for bootstrap responsive design */
+
+/* for screens smaller than 900px wide */
+@media (max-width: 900px) {
+
+  /* vertical stacking */
+  .adminTutorContent {
+    flex-direction: column;
+  }
+
+/* panels --> full width when vertically stacked */
+  .leftAdminTutorPanel,
+  .rightAdminTutorSchedulePanel {
+    width: 100%;
+    flex: none;
+  }
+
+  .rightAdminTutorSchedulePanel {
+    max-width: 100%;
+  }
+} 
+
+
+/* Modal responsive design */
+@media (max-width: 768px) {
+  .modal-content,
+  .add-tutor-modal-content,
+  .edit-modal-content,
+  .assign-modal-content,
+  .clear-modal-content,
+  .course-modal-content {
+    width: 90%;
+    max-width: 90%;
+    margin: 8% auto;
+    padding: 16px;
+  }
+
+  .edit-modal-content,
+  .assign-modal-content,
+  .clear-modal-content,
+  .course-modal-content {
+    max-width: 500px;
+  }
+}
+
+/* horiztonal scrolling for table on smaller screens */
+.table-responsive-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+/* Search bar & buttons responsive design */
+#tutorTableForm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.table-responsive-wrapper {
+  flex-basis: 100%;
+}
+
+/* prevent horizontal page scrolling */
+body {
+  overflow-x: hidden;
 }
 
 .rightAdminTutorSchedulePanel {
@@ -235,3 +318,24 @@ select {
     border-color: var(--gray2);
 }
   
+.formRow {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  align-items: center;
+  /* column-gap: 20px; */
+}
+
+.formRow label {
+  text-align: left;
+}
+
+.formRow .inputFunc {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.tutorTable th:nth-child(1),
+.tutorTable td:nth-child(1) {
+  text-align: center;
+  vertical-align: middle;
+}

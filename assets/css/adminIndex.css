@@ -66,6 +66,7 @@
   /* Appointment table */
   .apptTable {
   margin-top: 10px;
+  min-width: 600px;
   border: 1px solid black;     
   border-collapse: collapse;   
 }
@@ -183,3 +184,96 @@
 }
 
 
+.confirm-cancel-content{
+    background-color: white;
+    margin: 12% auto;
+    padding: 20px;
+    width: 500px;
+    border-radius: 8px;
+  }
+
+
+.calendar-container iframe {
+  width: 100%;
+  min-width: 600px;
+  max-width: 700px;
+  height: 600px;
+  border: solid 1px #777;
+}
+
+
+
+@media (max-width: 870px) {
+  .history-modal {
+    padding: 16px;
+  }
+
+  .history-modal-content,
+  .confirm-cancel-content {
+    width: 90%;
+    max-width: 90%;
+    margin: 5% auto;
+    padding: 16px;
+  }
+
+  .confirm-cancel-content{
+    max-width: 500px;
+  }
+  
+  .historyTable {
+    min-width: 650px;
+  }
+
+  .notificationsContent {
+    width: 90% !important;
+    max-width: 90% !important;
+    min-width: 0 !important;  
+    margin: 5% auto !important;
+    padding: 16px;
+  }
+
+  .notifTable {
+    min-width: 650px;
+  }
+}
+
+
+/* responsive design for appt controls, table, and calendar */
+@media (max-width: 1200px) {
+
+  .apptSection {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .apptSection > div {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .table-responsive-wrapper {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .apptTable {
+    min-width: 600px;
+  }
+
+  .calendar-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+
+  .calendar-container iframe {
+    width: 100%;
+    min-width: 0;
+    max-width: 700px;
+    max-height: 600px;
+  }
+}
+
+body{
+  overflow-x: hidden;
+}

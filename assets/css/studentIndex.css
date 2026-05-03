@@ -67,6 +67,16 @@
     color: #4a148c;            
   }
 
+  /* Student modal box */
+.modal-content {
+  background-color: white;
+  margin: 5% auto;
+  padding: 20px;
+  max-width: 500px;
+  border-radius: 8px;
+  box-sizing: border-box;
+  position: relative;
+}
 
 /* When a student's status is changed to inactive, 
 row is greyed out to indicate inactivity*/ 
@@ -75,6 +85,14 @@ row is greyed out to indicate inactivity*/
   background-color: var(--gray0);
 }
 
+/* for "x" button on student modal alignment */
+.close-btn {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  font-size: 20px;
+  cursor: pointer;
+}
 
 
 
@@ -136,3 +154,67 @@ row is greyed out to indicate inactivity*/
     border-color: var(--gray2);
 }
   
+
+.formRow {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  align-items: center;
+  column-gap: 20px;
+}
+
+.formRow label {
+  text-align: left;
+}
+
+.formRow .inputFunc {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.studentTable th:nth-child(1),
+.studentTable td:nth-child(1) {
+  text-align: center;
+  vertical-align: middle;
+}
+
+
+/* for screens 900px & smaller */
+@media (max-width: 900px) {
+
+  /* wrapping search/buttons/dropdowns */
+  form[action="/adminStudentIndex/toggle"] {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+
+  /* horizontal scroll on student table */
+  .table-responsive-wrapper {
+    flex-basis: 100%;
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .studentTable {
+    min-width: 700px;
+  }
+}
+
+
+@media (max-width: 768px) {
+
+  /* adjusting modal size based on screen size  */
+  .modal-content {
+    width: 90%;
+    max-width: 90%;
+    margin: 5% auto;   
+    padding: 16px;     
+    box-sizing: border-box;
+  }
+}
+
+/* prevent horizontal page scrolling */
+body {
+  overflow-x: hidden;
+}

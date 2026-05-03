@@ -58,3 +58,35 @@ a {                         /* For link color */
   background-color: white;
   color: var(--gray2);
 }
+
+
+@media (max-width: 900px) {
+    /* navbar spreads across entire page */
+  .navbar-container {
+    width: 100%;
+  }
+
+  /* vertical stacking of navbar */
+  .nav-links {
+    width: 100%;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 15px;
+  }
+
+  /* for centering links */
+  .nav-links div {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+
+
+  .nav-links a {
+    display: inline-block;
+    width: auto;
+    text-align: center;
+  }
+}
